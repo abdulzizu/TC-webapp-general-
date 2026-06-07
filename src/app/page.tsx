@@ -15,7 +15,7 @@ function Navbar() {
         {/* Logo */}
         <Link href="/" aria-label="Thrift Collision home">
           <Image
-            src="/tc-logo.png"
+            src="/Ftc-logo.png"
             alt="Thrift Collision"
             width={52}
             height={52}
