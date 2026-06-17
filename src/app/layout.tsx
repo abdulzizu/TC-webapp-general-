@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { CartProvider } from "@/lib/cart-context";
+import { UserProvider } from "@/lib/user-context";
 
 export const metadata: Metadata = {
   title: "Thrift Collision — Premium Thrifted Streetwear",
@@ -34,7 +36,13 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-full flex flex-col antialiased">{children}</body>
+      <body className="min-h-full flex flex-col antialiased">
+        <UserProvider>
+          <CartProvider>
+            {children}
+          </CartProvider>
+        </UserProvider>
+      </body>
     </html>
   );
 }

@@ -3,106 +3,9 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-
-// ─── Nav ────────────────────────────────────────────────────────────────────
-
-function Navbar() {
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  return (
-    <header className="sticky top-0 z-50 bg-white border-b border-[#1a1a1a]/10 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-14 sm:h-16">
-        {/* Logo */}
-        <Link href="/" aria-label="Thrift Collision home">
-          <Image
-            src="/Ftc-logo.png"
-            alt="Thrift Collision"
-            width={52}
-            height={52}
-            className="object-contain"
-            priority
-          />
-        </Link>
-
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-8" aria-label="Main navigation">
-          <Link href="#shop" className="text-sm font-500 text-[#1a1a1a] hover:text-[#1a6b2f] transition-colors">Shop</Link>
-          <Link href="#how-it-works" className="text-sm font-500 text-[#1a1a1a] hover:text-[#1a6b2f] transition-colors">How It Works</Link>
-          <Link href="#drops" className="text-sm font-500 text-[#1a1a1a] hover:text-[#1a6b2f] transition-colors">Drops</Link>
-          <Link href="#about" className="text-sm font-500 text-[#1a1a1a] hover:text-[#1a6b2f] transition-colors">About</Link>
-        </nav>
-
-        {/* Actions */}
-        <div className="flex items-center gap-3">
-          <Link
-            href="#notify"
-            className="hidden sm:inline-flex btn-tc-primary px-4 py-2 text-xs rounded-full"
-          >
-            Get Notified
-          </Link>
-          <Link
-            href="#shop"
-            className="btn-tc-outline px-4 py-2 text-xs rounded-full"
-          >
-            Shop Now
-          </Link>
-          {/* Mobile menu toggle */}
-          <button
-            className="md:hidden p-2 rounded-md hover:bg-[#1a6b2f]/10 transition-colors"
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Toggle menu"
-            aria-expanded={menuOpen}
-          >
-            <div className="w-5 h-0.5 bg-[#1a1a1a] mb-1 transition-all" style={{ transform: menuOpen ? 'rotate(45deg) translateY(6px)' : 'none' }} />
-            <div className="w-5 h-0.5 bg-[#1a1a1a] mb-1 transition-all" style={{ opacity: menuOpen ? 0 : 1 }} />
-            <div className="w-5 h-0.5 bg-[#1a1a1a] transition-all" style={{ transform: menuOpen ? 'rotate(-45deg) translateY(-6px)' : 'none' }} />
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile menu */}
-      {menuOpen && (
-        <nav className="md:hidden border-t border-[#1a1a1a]/10 bg-white px-4 py-4 flex flex-col gap-4" aria-label="Mobile navigation">
-          <Link href="#shop" className="text-sm font-500 text-[#1a1a1a]" onClick={() => setMenuOpen(false)}>Shop</Link>
-          <Link href="#how-it-works" className="text-sm font-500 text-[#1a1a1a]" onClick={() => setMenuOpen(false)}>How It Works</Link>
-          <Link href="#drops" className="text-sm font-500 text-[#1a1a1a]" onClick={() => setMenuOpen(false)}>Drops</Link>
-          <Link href="#about" className="text-sm font-500 text-[#1a1a1a]" onClick={() => setMenuOpen(false)}>About</Link>
-          <Link href="#notify" className="btn-tc-primary px-4 py-2 text-xs rounded-full text-center" onClick={() => setMenuOpen(false)}>Get Notified</Link>
-        </nav>
-      )}
-    </header>
-  );
-}
-
-// ─── Marquee Banner ──────────────────────────────────────────────────────────
-
-function MarqueeBanner() {
-  const items = [
-    "NEW DROP EVERY WEEK",
-    "UNISEX STREETWEAR",
-    "SUSTAINABLY THRIFTED",
-    "FREE SHIPPING ON ORDERS OVER ₦30,000",
-    "GOOD-AS-NEW QUALITY",
-    "NEW DROP EVERY WEEK",
-    "UNISEX STREETWEAR",
-    "SUSTAINABLY THRIFTED",
-    "FREE SHIPPING ON ORDERS OVER ₦30,000",
-    "GOOD-AS-NEW QUALITY",
-  ];
-
-  return (
-    <div className="bg-[#1a6b2f] text-white py-2.5 overflow-hidden" aria-label="Promotions">
-      <div className="marquee-track">
-        {items.map((item, i) => (
-          <span key={i} className="text-xs font-700 tracking-widest uppercase mx-6">
-            {item}
-            <span className="mx-6 opacity-50">✦</span>
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
+import Navbar from "@/components/Navbar";
+import MarqueeBanner from "@/components/MarqueeBanner";
+import { PRODUCTS } from "@/lib/products";
 
 // ─── Hero ────────────────────────────────────────────────────────────────────
 
@@ -292,29 +195,12 @@ function HowItWorks() {
 
 // ─── Current Drop ────────────────────────────────────────────────────────────
 
-const MOCK_ITEMS = [
-  { id: 1,  name: "Inter Milan Lautaro #10 Jersey", category: "Jerseys",      price: 14500, size: "M–L",    tag: "NEW",    image: "/products/lautaro inter milan jersey.jpeg" },
-  { id: 2,  name: "Liverpool FC 2006 Jersey",       category: "Jerseys",      price: 12500, size: "S–XL",   tag: "2 LEFT", image: "/products/liverpool 2006 jersey.jpeg" },
-  { id: 3,  name: "Burgundy Vintage Windbreaker",   category: "Jackets",      price: 18000, size: "M",      tag: "NEW",    image: "/products/burgundy wind breaker jacket.jpeg" },
-  { id: 4,  name: "Bomber Jacket",                  category: "Jackets",      price: 16500, size: "M–L",    tag: "NEW",    image: "/products/bomber jacket.jpeg" },
-  { id: 5,  name: "Navy Blue Sweatshirt",           category: "Sweatshirts",  price: 13500, size: "M",      tag: "1 LEFT", image: "/products/navy blue sweatshirt.jpeg" },
-  { id: 6,  name: "Light Grey Sweatshirt",          category: "Sweatshirts",  price: 12000, size: "S–M",    tag: "NEW",    image: "/products/light grey sweatshirt.jpeg" },
-  { id: 7,  name: "Classic Polo Shirt",             category: "Shirts",       price: 9000,  size: "M–L",    tag: "NEW",    image: "/products/polo shirt.jpeg" },
-  { id: 8,  name: "Striped T-Shirt",                category: "T-Shirts",     price: 7500,  size: "S–XL",   tag: "NEW",    image: "/products/t-shirt.jpeg" },
-  { id: 9,  name: "Red Casual Shorts",              category: "Bottoms",      price: 6500,  size: "S–XL",   tag: "NEW",    image: "/products/red casual short.jpeg" },
-  { id: 10, name: "White Casual Shorts",            category: "Bottoms",      price: 6500,  size: "S–XL",   tag: "NEW",    image: "/products/white casual short.jpeg" },
-  { id: 11, name: "Black Baggy Jeans",              category: "Bottoms",      price: 15000, size: "30–34",  tag: "NEW",    image: "/products/black baggy jeans.jpeg" },
-  { id: 12, name: "Blue Jeans",                     category: "Bottoms",      price: 13000, size: "30–34",  tag: "NEW",    image: "/products/blue jeans.jpeg" },
-  { id: 13, name: "Black Sweatpants",               category: "Bottoms",      price: 9000,  size: "S–XL",   tag: "NEW",    image: "/products/black sweatpants.jpeg" },
-  { id: 14, name: "Grey Washed Sweatpants",         category: "Bottoms",      price: 9500,  size: "S–XL",   tag: "NEW",    image: "/products/greys weatpants.jpeg" },
-  { id: 15, name: "Vintage Puma Cap",               category: "Accessories",  price: 5000,  size: "One Size", tag: "NEW",  image: "/products/puma cap.jpeg" },
-  { id: 16, name: "Pink MLB Cap",                   category: "Accessories",  price: 5500,  size: "One Size", tag: "NEW",  image: "/products/pink MLB cap.jpeg" },
-  { id: 17, name: "Adidas × FOG Sneakers",          category: "Footwear",     price: 28000, size: "40–44",  tag: "NEW",    image: "/products/adidas x fog sneakers.jpeg" },
-];
+// Use shared product catalogue — no duplicate data
+const MOCK_ITEMS = PRODUCTS;
 
 function ProductGrid() {
   const [filter, setFilter] = useState("All");
-  const categories = ["All", "Jerseys", "Jackets", "Shirts", "T-Shirts", "Sweatshirts", "Bottoms", "Accessories", "Footwear"];
+  const categories = ["All", "Clothing", "Accessories", "Shoes"];
 
   const filtered =
     filter === "All" ? MOCK_ITEMS : MOCK_ITEMS.filter((i) => i.category === filter);
@@ -332,7 +218,7 @@ function ProductGrid() {
             </h2>
           </div>
           <Link
-            href="#notify"
+            href="/shop"
             className="btn-tc-primary px-5 py-2.5 text-xs rounded-full self-start sm:self-auto"
           >
             Notify me for next drop →
@@ -375,8 +261,9 @@ function ProductCard({
     id: number;
     name: string;
     category: string;
+    subcategory: string;
     price: number;
-    size: string;
+    sizes: string[];
     tag: string;
     image: string;
   };
@@ -390,7 +277,7 @@ function ProductCard({
       : "bg-amber-400 text-[#1a1a1a]";
 
   return (
-    <article className={`product-card rounded-2xl overflow-hidden border border-[#1a1a1a]/10 bg-[#ede8d8] ${isSoldOut ? "opacity-70" : ""}`}>
+    <Link href={`/product/${item.id}`} className={`product-card rounded-2xl overflow-hidden border border-[#1a1a1a]/10 bg-[#ede8d8] block ${isSoldOut ? "opacity-70" : ""}`}>
       {/* Product image */}
       <div className="relative w-full aspect-square overflow-hidden">
         <Image
@@ -405,33 +292,18 @@ function ProductCard({
         >
           {item.tag}
         </span>
-        {!isSoldOut && (
-          <button
-            className="absolute bottom-2.5 right-2.5 bg-[#1a6b2f] text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-[#104020] transition-colors shadow-md"
-            aria-label={`Add ${item.name} to cart`}
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-          </button>
-        )}
       </div>
 
       {/* Info */}
       <div className="p-3">
-        <p className="text-[10px] text-[#6b7280] uppercase tracking-widest mb-1">{item.category}</p>
-        <p className="text-sm font-600 text-[#1a1a1a] leading-snug mb-2 line-clamp-2">{item.name}</p>
+        <p className="text-[10px] text-[#6b7280] uppercase tracking-widest mb-1">{item.subcategory}</p>
+        <p className="text-sm font-semibold text-[#1a1a1a] leading-snug mb-2 line-clamp-2">{item.name}</p>
         <div className="flex items-center justify-between">
-          <p className="text-sm font-700 text-[#1a6b2f]">₦{item.price.toLocaleString()}</p>
-          <span className="text-[10px] text-[#6b7280] border border-[#6b7280]/30 rounded px-1.5 py-0.5">{item.size}</span>
+          <p className="text-sm font-bold text-[#1a6b2f]">₦{item.price.toLocaleString()}</p>
+          <span className="text-[10px] text-[#6b7280] border border-[#6b7280]/30 rounded px-1.5 py-0.5">{item.sizes[0]}{item.sizes.length > 1 ? `–${item.sizes[item.sizes.length-1]}` : ""}</span>
         </div>
-        {isSoldOut && (
-          <button className="w-full mt-2 text-[10px] font-600 uppercase tracking-wider text-[#1a6b2f] border border-[#1a6b2f] rounded-full py-1.5 hover:bg-[#1a6b2f] hover:text-white transition-colors">
-            Notify me
-          </button>
-        )}
       </div>
-    </article>
+    </Link>
   );
 }
 
@@ -630,13 +502,13 @@ function NotifySignup() {
           <p className="text-[#9ca3af] text-sm mb-4">Already shopped with us?</p>
           <div className="flex justify-center gap-3 flex-wrap">
             <Link
-              href="#"
+              href="/auth/signin"
               className="btn-tc-outline px-6 py-2.5 text-xs rounded-full"
             >
               Sign In
             </Link>
             <Link
-              href="#"
+              href="/profile"
               className="btn-tc-primary px-6 py-2.5 text-xs rounded-full"
             >
               Create Account
