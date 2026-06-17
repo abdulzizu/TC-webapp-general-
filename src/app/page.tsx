@@ -168,10 +168,10 @@ function Hero() {
           {/* Hero visual — real product cards */}
           <div className="relative hidden lg:block">
             <div className="grid grid-cols-2 gap-3">
-              <HeroCard label="Liverpool FC Jersey" price="₦12,500" size="S–XL" tag="2 LEFT" rotate="-rotate-2" image="/products/jersey-liverpool.jpg" />
-              <HeroCard label="Nassau Track Jacket" price="₦18,000" size="M" tag="NEW" rotate="rotate-1" delay image="/products/jacket.jpg" />
-              <HeroCard label="Navy Stripe Tee" price="₦7,500" size="S–XL" tag="NEW" rotate="rotate-2" image="/products/tshirt.jpg" />
-              <HeroCard label="Wide-Leg Denim" price="₦15,000" size="30–34" tag="NEW" rotate="-rotate-1" delay image="/products/jeans.jpg" />
+              <HeroCard label="Liverpool FC Jersey" price="₦12,500" size="S–XL" tag="2 LEFT" rotate="-rotate-2" image="/products/liverpool 2006 jersey.jpeg" />
+              <HeroCard label="Burgundy Windbreaker" price="₦18,000" size="M" tag="NEW" rotate="rotate-1" delay image="/products/burgundy wind breaker jacket.jpeg" />
+              <HeroCard label="Striped T-Shirt" price="₦7,500" size="S–XL" tag="NEW" rotate="rotate-2" image="/products/t-shirt.jpeg" />
+              <HeroCard label="Black Baggy Jeans" price="₦15,000" size="30–34" tag="NEW" rotate="-rotate-1" delay image="/products/black baggy jeans.jpeg" />
             </div>
           </div>
         </div>
@@ -293,20 +293,28 @@ function HowItWorks() {
 // ─── Current Drop ────────────────────────────────────────────────────────────
 
 const MOCK_ITEMS = [
-  { id: 1, name: "Inter Milan Lautaro #10 Jersey", category: "Jerseys", price: 14500, size: "M–L", tag: "NEW", image: "/products/jersey-inter.jpg" },
-  { id: 2, name: "Liverpool FC Carlsberg Jersey", category: "Jerseys", price: 12500, size: "S–XL", tag: "2 LEFT", image: "/products/jersey-liverpool.jpg" },
-  { id: 3, name: "Nassau Vintage Track Jacket", category: "Jackets", price: 18000, size: "M", tag: "NEW", image: "/products/jacket.jpg" },
-  { id: 4, name: "Aztec Print Flannel Shirt", category: "Shirts", price: 11000, size: "M–L", tag: "NEW", image: "/products/shirt.jpg" },
-  { id: 5, name: "Outlier 1991 Quarter-Zip Sweatshirt", category: "Sweatshirts", price: 13500, size: "M", tag: "1 LEFT", image: "/products/sweatshirt.jpg" },
-  { id: 6, name: "Navy Stripe Oversized Tee", category: "T-Shirts", price: 7500, size: "S–XL", tag: "NEW", image: "/products/tshirt.jpg" },
-  { id: 7, name: "Black Wide-Leg Denim", category: "Bottoms", price: 15000, size: "30–34", tag: "NEW", image: "/products/jeans.jpg" },
-  { id: 8, name: "Grey Acid Wash Sweatpants", category: "Bottoms", price: 9500, size: "S–XL", tag: "NEW", image: "/products/sweatpants.jpg" },
-  { id: 9, name: "Vintage Puma Cap", category: "Accessories", price: 5000, size: "One Size", tag: "NEW", image: "/products/cap.jpg" },
+  { id: 1,  name: "Inter Milan Lautaro #10 Jersey", category: "Jerseys",      price: 14500, size: "M–L",    tag: "NEW",    image: "/products/lautaro inter milan jersey.jpeg" },
+  { id: 2,  name: "Liverpool FC 2006 Jersey",       category: "Jerseys",      price: 12500, size: "S–XL",   tag: "2 LEFT", image: "/products/liverpool 2006 jersey.jpeg" },
+  { id: 3,  name: "Burgundy Vintage Windbreaker",   category: "Jackets",      price: 18000, size: "M",      tag: "NEW",    image: "/products/burgundy wind breaker jacket.jpeg" },
+  { id: 4,  name: "Bomber Jacket",                  category: "Jackets",      price: 16500, size: "M–L",    tag: "NEW",    image: "/products/bomber jacket.jpeg" },
+  { id: 5,  name: "Navy Blue Sweatshirt",           category: "Sweatshirts",  price: 13500, size: "M",      tag: "1 LEFT", image: "/products/navy blue sweatshirt.jpeg" },
+  { id: 6,  name: "Light Grey Sweatshirt",          category: "Sweatshirts",  price: 12000, size: "S–M",    tag: "NEW",    image: "/products/light grey sweatshirt.jpeg" },
+  { id: 7,  name: "Classic Polo Shirt",             category: "Shirts",       price: 9000,  size: "M–L",    tag: "NEW",    image: "/products/polo shirt.jpeg" },
+  { id: 8,  name: "Striped T-Shirt",                category: "T-Shirts",     price: 7500,  size: "S–XL",   tag: "NEW",    image: "/products/t-shirt.jpeg" },
+  { id: 9,  name: "Red Casual Shorts",              category: "Bottoms",      price: 6500,  size: "S–XL",   tag: "NEW",    image: "/products/red casual short.jpeg" },
+  { id: 10, name: "White Casual Shorts",            category: "Bottoms",      price: 6500,  size: "S–XL",   tag: "NEW",    image: "/products/white casual short.jpeg" },
+  { id: 11, name: "Black Baggy Jeans",              category: "Bottoms",      price: 15000, size: "30–34",  tag: "NEW",    image: "/products/black baggy jeans.jpeg" },
+  { id: 12, name: "Blue Jeans",                     category: "Bottoms",      price: 13000, size: "30–34",  tag: "NEW",    image: "/products/blue jeans.jpeg" },
+  { id: 13, name: "Black Sweatpants",               category: "Bottoms",      price: 9000,  size: "S–XL",   tag: "NEW",    image: "/products/black sweatpants.jpeg" },
+  { id: 14, name: "Grey Washed Sweatpants",         category: "Bottoms",      price: 9500,  size: "S–XL",   tag: "NEW",    image: "/products/greys weatpants.jpeg" },
+  { id: 15, name: "Vintage Puma Cap",               category: "Accessories",  price: 5000,  size: "One Size", tag: "NEW",  image: "/products/puma cap.jpeg" },
+  { id: 16, name: "Pink MLB Cap",                   category: "Accessories",  price: 5500,  size: "One Size", tag: "NEW",  image: "/products/pink MLB cap.jpeg" },
+  { id: 17, name: "Adidas × FOG Sneakers",          category: "Footwear",     price: 28000, size: "40–44",  tag: "NEW",    image: "/products/adidas x fog sneakers.jpeg" },
 ];
 
 function ProductGrid() {
   const [filter, setFilter] = useState("All");
-  const categories = ["All", "Jerseys", "Jackets", "Shirts", "T-Shirts", "Sweatshirts", "Bottoms", "Accessories"];
+  const categories = ["All", "Jerseys", "Jackets", "Shirts", "T-Shirts", "Sweatshirts", "Bottoms", "Accessories", "Footwear"];
 
   const filtered =
     filter === "All" ? MOCK_ITEMS : MOCK_ITEMS.filter((i) => i.category === filter);
