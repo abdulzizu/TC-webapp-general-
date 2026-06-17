@@ -10,7 +10,7 @@ function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 bg-[#f5f0e8] border-b border-[#1a1a1a]/10">
+    <header className="sticky top-0 z-50 bg-white border-b border-[#1a1a1a]/10 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-14 sm:h-16">
         {/* Logo */}
         <Link href="/" aria-label="Thrift Collision home">
@@ -62,7 +62,7 @@ function Navbar() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <nav className="md:hidden border-t border-[#1a1a1a]/10 bg-[#f5f0e8] px-4 py-4 flex flex-col gap-4" aria-label="Mobile navigation">
+        <nav className="md:hidden border-t border-[#1a1a1a]/10 bg-white px-4 py-4 flex flex-col gap-4" aria-label="Mobile navigation">
           <Link href="#shop" className="text-sm font-500 text-[#1a1a1a]" onClick={() => setMenuOpen(false)}>Shop</Link>
           <Link href="#how-it-works" className="text-sm font-500 text-[#1a1a1a]" onClick={() => setMenuOpen(false)}>How It Works</Link>
           <Link href="#drops" className="text-sm font-500 text-[#1a1a1a]" onClick={() => setMenuOpen(false)}>Drops</Link>
@@ -165,13 +165,13 @@ function Hero() {
             </div>
           </div>
 
-          {/* Hero visual — newspaper-style product cards */}
+          {/* Hero visual — real product cards */}
           <div className="relative hidden lg:block">
             <div className="grid grid-cols-2 gap-3">
-              <HeroCard label="Vintage Jersey" price="₦12,500" size="L" tag="SOLD OUT" rotate="-rotate-2" />
-              <HeroCard label="90s Windbreaker" price="₦18,000" size="M" tag="NEW" rotate="rotate-1" delay />
-              <HeroCard label="Streetwear Tee" price="₦8,500" size="S–XL" tag="2 LEFT" rotate="rotate-2" />
-              <HeroCard label="Cargo Trousers" price="₦15,000" size="32" tag="NEW" rotate="-rotate-1" delay />
+              <HeroCard label="Liverpool FC Jersey" price="₦12,500" size="S–XL" tag="2 LEFT" rotate="-rotate-2" image="/products/jersey-liverpool.jpg" />
+              <HeroCard label="Nassau Track Jacket" price="₦18,000" size="M" tag="NEW" rotate="rotate-1" delay image="/products/jacket.jpg" />
+              <HeroCard label="Navy Stripe Tee" price="₦7,500" size="S–XL" tag="NEW" rotate="rotate-2" image="/products/tshirt.jpg" />
+              <HeroCard label="Wide-Leg Denim" price="₦15,000" size="30–34" tag="NEW" rotate="-rotate-1" delay image="/products/jeans.jpg" />
             </div>
           </div>
         </div>
@@ -187,6 +187,7 @@ function HeroCard({
   tag,
   rotate = "",
   delay = false,
+  image,
 }: {
   label: string;
   price: string;
@@ -194,6 +195,7 @@ function HeroCard({
   tag: string;
   rotate?: string;
   delay?: boolean;
+  image: string;
 }) {
   const tagColor =
     tag === "SOLD OUT"
@@ -204,16 +206,16 @@ function HeroCard({
 
   return (
     <div
-      className={`newspaper-bg border border-[#1a1a1a]/15 rounded-xl p-3 product-card ${rotate} ${delay ? "mt-6" : ""}`}
+      className={`bg-white border border-[#1a1a1a]/10 rounded-xl p-3 product-card ${rotate} ${delay ? "mt-6" : ""}`}
     >
-      <div
-        className="w-full h-44 rounded-lg mb-3 flex items-center justify-center relative overflow-hidden"
-        style={{
-          backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 22px, rgba(26,26,26,0.06) 22px, rgba(26,26,26,0.06) 23px), repeating-linear-gradient(90deg, transparent, transparent 22px, rgba(26,26,26,0.03) 22px, rgba(26,26,26,0.03) 23px)`,
-          backgroundColor: "#ede8d8",
-        }}
-      >
-        <span className="text-4xl" aria-hidden="true">👕</span>
+      <div className="relative w-full h-44 rounded-lg mb-3 overflow-hidden">
+        <Image
+          src={image}
+          alt={label}
+          fill
+          className="object-cover"
+          sizes="200px"
+        />
         <span className={`absolute top-2 right-2 text-[10px] font-700 tracking-wider px-2 py-0.5 rounded-full ${tagColor}`}>
           {tag}
         </span>
@@ -291,19 +293,20 @@ function HowItWorks() {
 // ─── Current Drop ────────────────────────────────────────────────────────────
 
 const MOCK_ITEMS = [
-  { id: 1, name: "Vintage NBA Jersey", category: "Jerseys", price: 12500, size: "L", tag: "SOLD OUT", emoji: "🏀" },
-  { id: 2, name: "90s Nike Windbreaker", category: "Jackets", price: 18000, size: "M", tag: "NEW", emoji: "🌬️" },
-  { id: 3, name: "Oversized Graphic Tee", category: "T-Shirts", price: 7500, size: "S–XL", tag: "2 LEFT", emoji: "👕" },
-  { id: 4, name: "Cargo Trousers", category: "Bottoms", price: 15000, size: "32", tag: "NEW", emoji: "👖" },
-  { id: 5, name: "Vintage Polo Shirt", category: "Tops", price: 9000, size: "M–L", tag: "NEW", emoji: "👔" },
-  { id: 6, name: "Retro Track Jacket", category: "Jackets", price: 14500, size: "S–M", tag: "1 LEFT", emoji: "🎽" },
-  { id: 7, name: "Wide-leg Jeans", category: "Bottoms", price: 11000, size: "30–34", tag: "NEW", emoji: "👖" },
-  { id: 8, name: "Vintage Hooded Sweat", category: "Hoodies", price: 13000, size: "L–XL", tag: "NEW", emoji: "🧥" },
+  { id: 1, name: "Inter Milan Lautaro #10 Jersey", category: "Jerseys", price: 14500, size: "M–L", tag: "NEW", image: "/products/jersey-inter.jpg" },
+  { id: 2, name: "Liverpool FC Carlsberg Jersey", category: "Jerseys", price: 12500, size: "S–XL", tag: "2 LEFT", image: "/products/jersey-liverpool.jpg" },
+  { id: 3, name: "Nassau Vintage Track Jacket", category: "Jackets", price: 18000, size: "M", tag: "NEW", image: "/products/jacket.jpg" },
+  { id: 4, name: "Aztec Print Flannel Shirt", category: "Shirts", price: 11000, size: "M–L", tag: "NEW", image: "/products/shirt.jpg" },
+  { id: 5, name: "Outlier 1991 Quarter-Zip Sweatshirt", category: "Sweatshirts", price: 13500, size: "M", tag: "1 LEFT", image: "/products/sweatshirt.jpg" },
+  { id: 6, name: "Navy Stripe Oversized Tee", category: "T-Shirts", price: 7500, size: "S–XL", tag: "NEW", image: "/products/tshirt.jpg" },
+  { id: 7, name: "Black Wide-Leg Denim", category: "Bottoms", price: 15000, size: "30–34", tag: "NEW", image: "/products/jeans.jpg" },
+  { id: 8, name: "Grey Acid Wash Sweatpants", category: "Bottoms", price: 9500, size: "S–XL", tag: "NEW", image: "/products/sweatpants.jpg" },
+  { id: 9, name: "Vintage Puma Cap", category: "Accessories", price: 5000, size: "One Size", tag: "NEW", image: "/products/cap.jpg" },
 ];
 
 function ProductGrid() {
   const [filter, setFilter] = useState("All");
-  const categories = ["All", "Jerseys", "Jackets", "T-Shirts", "Bottoms", "Tops", "Hoodies"];
+  const categories = ["All", "Jerseys", "Jackets", "Shirts", "T-Shirts", "Sweatshirts", "Bottoms", "Accessories"];
 
   const filtered =
     filter === "All" ? MOCK_ITEMS : MOCK_ITEMS.filter((i) => i.category === filter);
@@ -367,7 +370,7 @@ function ProductCard({
     price: number;
     size: string;
     tag: string;
-    emoji: string;
+    image: string;
   };
 }) {
   const isSoldOut = item.tag === "SOLD OUT";
@@ -380,15 +383,15 @@ function ProductCard({
 
   return (
     <article className={`product-card rounded-2xl overflow-hidden border border-[#1a1a1a]/10 bg-[#ede8d8] ${isSoldOut ? "opacity-70" : ""}`}>
-      {/* Product image area — newspaper background */}
-      <div
-        className="relative w-full aspect-square flex items-center justify-center"
-        style={{
-          backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 22px, rgba(26,26,26,0.07) 22px, rgba(26,26,26,0.07) 23px), repeating-linear-gradient(90deg, transparent, transparent 22px, rgba(26,26,26,0.03) 22px, rgba(26,26,26,0.03) 23px)`,
-          backgroundColor: "#e8e0cc",
-        }}
-      >
-        <span className="text-5xl sm:text-6xl" aria-hidden="true">{item.emoji}</span>
+      {/* Product image */}
+      <div className="relative w-full aspect-square overflow-hidden">
+        <Image
+          src={item.image}
+          alt={item.name}
+          fill
+          className="object-cover"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+        />
         <span
           className={`absolute top-2.5 left-2.5 text-[10px] font-700 tracking-wider px-2 py-0.5 rounded-full ${tagColor}`}
         >
