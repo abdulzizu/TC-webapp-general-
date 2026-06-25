@@ -20,7 +20,7 @@ const DISCOUNT_CODES: Record<string, number> = {
 };
 
 export default function CartPage() {
-  const { items, removeItem, updateQty, subtotal } = useCart();
+  const { items, removeItem, subtotal } = useCart();
   const [shippingIndex, setShippingIndex] = useState(0);
   const [discountCode, setDiscountCode] = useState("");
   const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; pct: number } | null>(null);
@@ -79,6 +79,7 @@ export default function CartPage() {
                         <p className="font-semibold text-[#1a1a1a] hover:text-[#1a6b2f] transition-colors line-clamp-2">{item.product.name}</p>
                       </Link>
                       <p className="text-xs text-gray-400 mt-0.5">Size: {item.size}</p>
+                      <p className="text-xs text-gray-400">One-of-one piece</p>
                     </div>
                     <button
                       onClick={() => removeItem(item.product.id, item.size)}
@@ -91,21 +92,7 @@ export default function CartPage() {
                     </button>
                   </div>
                   <div className="flex items-center justify-between mt-3">
-                    {/* Qty controls */}
-                    <div className="flex items-center border border-gray-200 rounded-full overflow-hidden">
-                      <button
-                        onClick={() => updateQty(item.product.id, item.size, item.quantity - 1)}
-                        className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition-colors text-gray-600 font-bold"
-                        aria-label="Decrease quantity"
-                      >−</button>
-                      <span className="w-8 text-center text-sm font-semibold" aria-live="polite">{item.quantity}</span>
-                      <button
-                        onClick={() => updateQty(item.product.id, item.size, item.quantity + 1)}
-                        className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition-colors text-gray-600 font-bold"
-                        aria-label="Increase quantity"
-                      >+</button>
-                    </div>
-                    <p className="font-bold text-[#1a6b2f]">₦{(item.product.price * item.quantity).toLocaleString()}</p>
+                    <p className="font-bold text-[#1a6b2f] text-base">₦{item.product.price.toLocaleString()}</p>
                   </div>
                 </div>
               </div>

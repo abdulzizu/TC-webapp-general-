@@ -263,7 +263,7 @@ function ProductCard({
     category: string;
     subcategory: string;
     price: number;
-    sizes: string[];
+    size: string;
     tag: string;
     image: string;
   };
@@ -300,7 +300,7 @@ function ProductCard({
         <p className="text-sm font-semibold text-[#1a1a1a] leading-snug mb-2 line-clamp-2">{item.name}</p>
         <div className="flex items-center justify-between">
           <p className="text-sm font-bold text-[#1a6b2f]">₦{item.price.toLocaleString()}</p>
-          <span className="text-[10px] text-[#6b7280] border border-[#6b7280]/30 rounded px-1.5 py-0.5">{item.sizes[0]}{item.sizes.length > 1 ? `–${item.sizes[item.sizes.length-1]}` : ""}</span>
+          <span className="text-[10px] text-[#6b7280] border border-[#6b7280]/30 rounded px-1.5 py-0.5">{item.size}</span>
         </div>
       </div>
     </Link>
