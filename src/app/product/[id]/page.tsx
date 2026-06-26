@@ -8,6 +8,7 @@ import MarqueeBanner from "@/components/MarqueeBanner";
 import Navbar from "@/components/Navbar";
 import { getProduct, getProductByName, PRODUCTS } from "@/lib/products";
 import { useCart } from "@/lib/cart-context";
+import { useUser } from "@/lib/user-context";
 
 const SIZING_GUIDE = [
   { label: "XS",  chest: '32–34"', sleeve: '24"', waist: '26–28"' },
@@ -23,8 +24,10 @@ export default function ProductPage() {
   const router = useRouter();
   const product = getProduct(Number(id));
   const { addItem } = useCart();
+  const { isSignedIn, addKeyword } = useUser();
   const [sizingOpen, setSizingOpen] = useState(false);
   const [added, setAdded] = useState(false);
+  const [notifyAdded, setNotifyAdded] = useState(false);
 
   if (!product) {
     return (
@@ -56,6 +59,12 @@ export default function ProductPage() {
   function handleBuyNow() {
     addItem(product!, product!.size);
     router.push("/cart");
+  }
+
+  function handleNotifyMe() {
+    const keyword = product!.subcategory.toLowerCase();
+    addKeyword(keyword);
+    setNotifyAdded(true);
   }
 
   // Style guide: resolve pairing items from product catalogue
@@ -206,14 +215,34 @@ export default function ProductPage() {
               {/* ── CTAs ── most visually striking elements on the page */}
               {isSoldOut ? (
                 <div className="space-y-3">
-                  <div className="w-full py-4 rounded-full bg-gray-200 text-gray-500 text-center font-bold text-sm">
-                    Sold Out
+                  {/* Sold banner */}
+                  <div className="w-full py-3 rounded-2xl bg-[#1a1a1a] text-white text-center font-bold text-sm flex items-center justify-center gap-2">
+                    <span aria-hidden="true">🏷️</span> This item has been sold
                   </div>
-                  <Link
-                    href="/shop"
-                    className="btn-tc-outline block text-center py-3.5 rounded-full text-sm"
-                  >
-                    Browse other items
+                  {/* Notify me */}
+                  {isSignedIn ? (
+                    notifyAdded ? (
+                      <div className="w-full py-3.5 rounded-full bg-[#1a6b2f]/10 border border-[#1a6b2f] text-[#1a6b2f] text-center font-bold text-sm" role="status">
+                        ✓ We&apos;ll notify you when a similar {product.subcategory} drops
+                      </div>
+                    ) : (
+                      <button
+                        onClick={handleNotifyMe}
+                        className="w-full py-3.5 rounded-full border-2 border-[#1a6b2f] text-[#1a6b2f] font-bold text-sm hover:bg-[#1a6b2f] hover:text-white transition-all"
+                      >
+                        🔔 Notify me when a similar item drops
+                      </button>
+                    )
+                  ) : (
+                    <Link
+                      href="/auth/signin"
+                      className="block w-full py-3.5 rounded-full border-2 border-[#1a6b2f] text-[#1a6b2f] font-bold text-sm text-center hover:bg-[#1a6b2f] hover:text-white transition-all"
+                    >
+                      Sign in to get notified when similar items drop
+                    </Link>
+                  )}
+                  <Link href="/shop" className="block text-center text-sm text-gray-400 hover:text-[#1a6b2f] transition-colors">
+                    Browse available items →
                   </Link>
                 </div>
               ) : (

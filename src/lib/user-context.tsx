@@ -12,16 +12,54 @@ export type SizeProfile = {
   capInches: string;
 };
 
+export type OrderItem = {
+  productId: number;
+  productName: string;
+  productImage: string;
+  size: string;
+  quantity: number;
+  price: number;
+};
+
+export type OrderStatus =
+  | "processing"   // paid, being prepared
+  | "stockpiled"   // paid, held for later delivery
+  | "shipped"      // dispatched
+  | "delivered"    // received
+  | "unsuccessful"; // payment failed / item sold out
+
+export type Order = {
+  orderId: string;
+  date: string; // ISO string
+  items: OrderItem[];
+  subtotal: number;
+  shippingCost: number;
+  discountAmount: number;
+  total: number;
+  deliveryAddress: string;
+  payMethod: string;
+  status: OrderStatus;
+  isStockpile: boolean;
+  stockpiledUntil?: string; // ISO string — 1 month from order date
+};
+
 export type UserProfile = {
   name: string;
   phone: string;
+  email: string;
   deliveryAddress: string;
   sizes: SizeProfile;
+  orders: Order[];
+  keywords: string[]; // drop notification keywords
 };
 
 type UserContextType = {
   user: UserProfile | null;
   saveUser: (profile: UserProfile) => void;
+  saveOrder: (order: Order) => void;
+  updateOrderStatus: (orderId: string, status: OrderStatus) => void;
+  addKeyword: (keyword: string) => void;
+  removeKeyword: (keyword: string) => void;
   signOut: () => void;
   isSignedIn: boolean;
 };
@@ -35,26 +73,65 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) setUser(JSON.parse(stored));
+      if (stored) {
+        const parsed = JSON.parse(stored) as UserProfile;
+        if (!parsed.orders) parsed.orders = [];
+        if (!parsed.keywords) parsed.keywords = [];
+        if (!parsed.email) parsed.email = "";
+        setUser(parsed);
+      }
     } catch {}
   }, []);
 
-  function saveUser(profile: UserProfile) {
+  function persist(profile: UserProfile) {
     setUser(profile);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
-    } catch {}
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(profile)); } catch {}
+  }
+
+  function saveUser(profile: UserProfile) {
+    persist({
+      ...profile,
+      orders: profile.orders ?? [],
+      keywords: profile.keywords ?? [],
+      email: profile.email ?? "",
+    });
+  }
+
+  function saveOrder(order: Order) {
+    if (!user) return;
+    persist({ ...user, orders: [order, ...(user.orders ?? [])] });
+  }
+
+  function updateOrderStatus(orderId: string, status: OrderStatus) {
+    if (!user) return;
+    persist({
+      ...user,
+      orders: user.orders.map((o) => o.orderId === orderId ? { ...o, status } : o),
+    });
+  }
+
+  function addKeyword(keyword: string) {
+    if (!user) return;
+    const trimmed = keyword.trim().toLowerCase();
+    if (!trimmed || user.keywords.includes(trimmed)) return;
+    persist({ ...user, keywords: [...user.keywords, trimmed] });
+  }
+
+  function removeKeyword(keyword: string) {
+    if (!user) return;
+    persist({ ...user, keywords: user.keywords.filter((k) => k !== keyword) });
   }
 
   function signOut() {
     setUser(null);
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch {}
+    try { localStorage.removeItem(STORAGE_KEY); } catch {}
   }
 
   return (
-    <UserContext.Provider value={{ user, saveUser, signOut, isSignedIn: !!user }}>
+    <UserContext.Provider value={{
+      user, saveUser, saveOrder, updateOrderStatus,
+      addKeyword, removeKeyword, signOut, isSignedIn: !!user,
+    }}>
       {children}
     </UserContext.Provider>
   );
