@@ -73,7 +73,7 @@ function Hero() {
             <div className="grid grid-cols-2 gap-3">
               <HeroCard label="Liverpool FC Jersey" price="₦12,500" size="S–XL" tag="2 LEFT" rotate="-rotate-2" image="/products/liverpool 2006 jersey.jpeg" />
               <HeroCard label="Burgundy Windbreaker" price="₦18,000" size="M" tag="NEW" rotate="rotate-1" delay image="/products/burgundy wind breaker jacket.jpeg" />
-              <HeroCard label="Striped T-Shirt" price="₦7,500" size="S–XL" tag="NEW" rotate="rotate-2" image="/products/t-shirt.jpeg" />
+              <HeroCard label="Striped T-Shirt" price="₦7,500" size="S–XL" tag="NEW" rotate="rotate-2" image="/products/Stripe t-shirt.jpeg" />
               <HeroCard label="Black Baggy Jeans" price="₦15,000" size="30–34" tag="NEW" rotate="-rotate-1" delay image="/products/black baggy jeans.jpeg" />
             </div>
           </div>
@@ -449,15 +449,35 @@ function NotifySignup() {
         <h2 id="notify-heading" className="text-4xl sm:text-5xl font-700 text-white leading-tight mb-4">
           Never miss a drop.
         </h2>
-        <p className="text-[#9ca3af] text-lg mb-10">
-          Drop alerts straight to your phone. Be first in line before stock runs out.
+        <p className="text-[#9ca3af] text-lg mb-3">
+          Sign up and we&apos;ll hit you on <span className="text-white font-600">WhatsApp</span> the moment a new drop goes live — before anyone else.
         </p>
+        <p className="text-[#6b7280] text-sm mb-8">
+          Already follow us? Browse the drop on Instagram too.
+        </p>
+
+        {/* IG button */}
+        <a
+          href="https://www.instagram.com/thriftcollision/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2.5 border border-white/20 text-white rounded-full px-5 py-2.5 text-sm font-600 hover:border-[#1a6b2f] hover:bg-[#1a6b2f]/10 transition-all mb-10"
+          aria-label="Follow Thrift Collision on Instagram"
+        >
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+          </svg>
+          @thriftcollision on Instagram
+          <svg className="w-3 h-3 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+          </svg>
+        </a>
 
         {submitted ? (
           <div className="bg-[#1a6b2f]/20 border border-[#1a6b2f] rounded-2xl p-8" role="alert" aria-live="polite">
             <p className="text-3xl mb-3" aria-hidden="true">✅</p>
             <p className="text-white font-600 text-lg">You&apos;re on the list!</p>
-            <p className="text-[#9ca3af] text-sm mt-1">We&apos;ll hit you first when the next drop goes live.</p>
+            <p className="text-[#9ca3af] text-sm mt-1">We&apos;ll WhatsApp you the moment the next drop goes live.</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-3" noValidate>
@@ -489,10 +509,10 @@ function NotifySignup() {
               type="submit"
               className="btn-tc-primary py-3.5 rounded-full text-sm"
             >
-              Lock me in for the next drop
+              Notify me on WhatsApp
             </button>
             <p className="text-[#6b7280] text-xs">
-              No spam. Just drops. Unsubscribe any time.
+              We&apos;ll send drop alerts via WhatsApp. No spam. Unsubscribe any time.
             </p>
           </form>
         )}

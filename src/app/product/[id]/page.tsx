@@ -19,6 +19,15 @@ const SIZING_GUIDE = [
   { label: "2XL", chest: '47–50"', sleeve: '29"', waist: '36–38"' },
 ];
 
+const PANTS_SIZING_GUIDE = [
+  { waist: 'W28"', hip: '38"', inseam: 'L28–30"' },
+  { waist: 'W30"', hip: '40"', inseam: 'L28–30"' },
+  { waist: 'W32"', hip: '42"', inseam: 'L29–32"' },
+  { waist: 'W34"', hip: '44"', inseam: 'L30–32"' },
+  { waist: 'W36"', hip: '46"', inseam: 'L30–32"' },
+  { waist: 'W38"', hip: '48"', inseam: 'L30–32"' },
+];
+
 export default function ProductPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
@@ -158,13 +167,39 @@ export default function ProductPage() {
                     View sizing guide
                   </button>
                 </div>
-                {/* Single fixed size badge — not interactive */}
-                <div className="inline-flex items-center gap-2">
-                  <span className="px-5 py-2 rounded-full border-2 border-[#1a6b2f] bg-[#1a6b2f]/5 text-[#1a6b2f] text-sm font-bold">
-                    {product.size}
-                  </span>
-                  <span className="text-xs text-gray-400">This is a one-of-one piece — size is fixed</span>
-                </div>
+                {/* Size badges — pants show waist + length, others show label size */}
+                {product.waist ? (
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-col items-start">
+                        <span className="text-[10px] text-gray-400 uppercase tracking-widest mb-1">
+                          {product.elasticWaist ? "Waist (elastic)" : "Waist"}
+                        </span>
+                        <span className="px-4 py-2 rounded-full border-2 border-[#1a6b2f] bg-[#1a6b2f]/5 text-[#1a6b2f] text-sm font-bold">
+                          {product.waist}
+                        </span>
+                      </div>
+                      {product.length && (
+                        <div className="flex flex-col items-start">
+                          <span className="text-[10px] text-gray-400 uppercase tracking-widest mb-1">Length</span>
+                          <span className="px-4 py-2 rounded-full border-2 border-[#1a6b2f] bg-[#1a6b2f]/5 text-[#1a6b2f] text-sm font-bold">
+                            {product.length}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    {product.elasticWaist && (
+                      <p className="text-xs text-gray-400">Elastic/drawstring waist — fits a range of sizes</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="inline-flex items-center gap-2">
+                    <span className="px-5 py-2 rounded-full border-2 border-[#1a6b2f] bg-[#1a6b2f]/5 text-[#1a6b2f] text-sm font-bold">
+                      {product.size}
+                    </span>
+                    <span className="text-xs text-gray-400">One-of-one — size is fixed</span>
+                  </div>
+                )}
               </div>
 
               {/* Sizing guide accordion */}
@@ -181,33 +216,67 @@ export default function ProductPage() {
                     </button>
                   </div>
                   <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                      <thead className="bg-white border-b border-gray-100">
-                        <tr>
-                          {["Size", "Chest", "Sleeve", "Waist"].map((h) => (
-                            <th key={h} className="px-4 py-2 text-xs font-bold text-gray-500 uppercase tracking-wide">{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {SIZING_GUIDE.map((row, i) => (
-                          <tr
-                            key={row.label}
-                            className={`${i % 2 === 0 ? "bg-white" : "bg-gray-50"} ${row.label === product.size ? "ring-1 ring-inset ring-[#1a6b2f]" : ""}`}
-                          >
-                            <td className={`px-4 py-2 font-bold ${row.label === product.size ? "text-[#1a6b2f]" : ""}`}>
-                              {row.label}
-                              {row.label === product.size && (
-                                <span className="ml-2 text-[10px] bg-[#1a6b2f] text-white rounded px-1.5 py-0.5">this item</span>
-                              )}
-                            </td>
-                            <td className="px-4 py-2 text-gray-600">{row.chest}</td>
-                            <td className="px-4 py-2 text-gray-600">{row.sleeve}</td>
-                            <td className="px-4 py-2 text-gray-600">{row.waist}</td>
+                    {product.waist ? (
+                      // Pants sizing table
+                      <table className="w-full text-sm text-left">
+                        <thead className="bg-white border-b border-gray-100">
+                          <tr>
+                            {["Waist", "Hip", "Inseam"].map((h) => (
+                              <th key={h} className="px-4 py-2 text-xs font-bold text-gray-500 uppercase tracking-wide">{h}</th>
+                            ))}
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {PANTS_SIZING_GUIDE.map((row, i) => {
+                            const isThisItem = row.waist === product.waist;
+                            return (
+                              <tr
+                                key={row.waist}
+                                className={`${i % 2 === 0 ? "bg-white" : "bg-gray-50"} ${isThisItem ? "ring-1 ring-inset ring-[#1a6b2f]" : ""}`}
+                              >
+                                <td className={`px-4 py-2 font-bold ${isThisItem ? "text-[#1a6b2f]" : ""}`}>
+                                  {row.waist}
+                                  {isThisItem && (
+                                    <span className="ml-2 text-[10px] bg-[#1a6b2f] text-white rounded px-1.5 py-0.5">this item</span>
+                                  )}
+                                </td>
+                                <td className="px-4 py-2 text-gray-600">{row.hip}</td>
+                                <td className="px-4 py-2 text-gray-600">{row.inseam}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    ) : (
+                      // Tops sizing table
+                      <table className="w-full text-sm text-left">
+                        <thead className="bg-white border-b border-gray-100">
+                          <tr>
+                            {["Size", "Chest", "Sleeve", "Waist"].map((h) => (
+                              <th key={h} className="px-4 py-2 text-xs font-bold text-gray-500 uppercase tracking-wide">{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {SIZING_GUIDE.map((row, i) => (
+                            <tr
+                              key={row.label}
+                              className={`${i % 2 === 0 ? "bg-white" : "bg-gray-50"} ${row.label === product.size ? "ring-1 ring-inset ring-[#1a6b2f]" : ""}`}
+                            >
+                              <td className={`px-4 py-2 font-bold ${row.label === product.size ? "text-[#1a6b2f]" : ""}`}>
+                                {row.label}
+                                {row.label === product.size && (
+                                  <span className="ml-2 text-[10px] bg-[#1a6b2f] text-white rounded px-1.5 py-0.5">this item</span>
+                                )}
+                              </td>
+                              <td className="px-4 py-2 text-gray-600">{row.chest}</td>
+                              <td className="px-4 py-2 text-gray-600">{row.sleeve}</td>
+                              <td className="px-4 py-2 text-gray-600">{row.waist}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
                   </div>
                 </div>
               )}

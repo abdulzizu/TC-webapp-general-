@@ -227,10 +227,22 @@ export default function Navbar() {
               <Link href="/#how-it-works" className="text-sm font-semibold text-gray-800" onClick={() => setMenuOpen(false)}>How It Works</Link>
               <Link href="/#drops" className="text-sm font-semibold text-gray-800" onClick={() => setMenuOpen(false)}>Drops</Link>
               <Link href="/#about" className="text-sm font-semibold text-gray-800" onClick={() => setMenuOpen(false)}>About</Link>
-              {isSignedIn
-                ? <button onClick={() => { signOut(); setMenuOpen(false); }} className="text-sm text-left text-red-500">Sign out</button>
-                : <Link href="/auth/signin" className="text-sm font-semibold text-gray-800" onClick={() => setMenuOpen(false)}>Sign in / Register</Link>
-              }
+              {isSignedIn ? (
+                <>
+                  <Link href="/profile" className="text-sm font-semibold text-gray-800" onClick={() => setMenuOpen(false)}>
+                    My Profile ({user!.name.split(" ")[0]})
+                  </Link>
+                  <Link href="/cart" className="text-sm font-semibold text-gray-800" onClick={() => setMenuOpen(false)}>
+                    Cart {totalItems > 0 ? `(${totalItems})` : ""}
+                  </Link>
+                  <button onClick={() => { signOut(); setMenuOpen(false); }} className="text-sm text-left text-red-500">Sign out</button>
+                </>
+              ) : (
+                <>
+                  <Link href="/auth/signin" className="text-sm font-semibold text-gray-800" onClick={() => setMenuOpen(false)}>Sign in / Register</Link>
+                  <Link href="/profile" className="text-sm font-semibold text-gray-800" onClick={() => setMenuOpen(false)}>Create Account</Link>
+                </>
+              )}
             </div>
           </nav>
         </div>
