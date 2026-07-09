@@ -6,6 +6,7 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import MarqueeBanner from "@/components/MarqueeBanner";
 import { PRODUCTS } from "@/lib/products";
+import { createClient } from "@/lib/supabase/client";
 
 // ─── Hero ────────────────────────────────────────────────────────────────────
 
@@ -435,11 +436,29 @@ function NotifySignup() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!phone) return;
-    setSubmitted(true);
+    if (!phone.trim()) return;
+    setSubmitting(true);
+    setSubmitError("");
+
+    try {
+      const supabase = createClient();
+      // Upsert into temp_leads — phone is unique, so re-submissions update email
+      const { error } = await supabase.from("temp_leads").upsert(
+        { phone: phone.trim(), email: email.trim() || null, verified: false },
+        { onConflict: "phone" }
+      );
+      if (error) throw error;
+      setSubmitted(true);
+    } catch {
+      setSubmitError("Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -459,7 +478,7 @@ function NotifySignup() {
           <div className="bg-[#1a6b2f]/20 border border-[#1a6b2f] rounded-2xl p-8" role="alert" aria-live="polite">
             <p className="text-3xl mb-3" aria-hidden="true">✅</p>
             <p className="text-white font-600 text-lg">You&apos;re on the list!</p>
-            <p className="text-[#9ca3af] text-sm mt-1">We&apos;ll hit you first when the next drop goes live.</p>
+            <p className="text-[#9ca3af] text-sm mt-1">We&apos;ll WhatsApp you the moment the next drop goes live.</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-3" noValidate>
@@ -489,12 +508,16 @@ function NotifySignup() {
             </div>
             <button
               type="submit"
-              className="btn-tc-primary py-3.5 rounded-full text-sm"
+              disabled={submitting}
+              className="btn-tc-primary py-3.5 rounded-full text-sm disabled:opacity-60"
             >
-              Lock me in for the next drop
+              {submitting ? "Saving…" : "Notify me on WhatsApp"}
             </button>
+            {submitError && (
+              <p className="text-red-400 text-xs text-center" role="alert">{submitError}</p>
+            )}
             <p className="text-[#6b7280] text-xs">
-              No spam. Just drops. Unsubscribe any time.
+              We&apos;ll send drop alerts via WhatsApp. No spam. Unsubscribe any time.
             </p>
           </form>
         )}
