@@ -3,6 +3,9 @@
 -- Migration: 001_initial_schema.sql
 -- Run this in: Supabase Dashboard → SQL Editor
 -- ============================================================
+-- NOTE: After running this file, see the comment at the bottom
+-- to set up the auth trigger via the Dashboard UI.
+-- ============================================================
 
 -- ── Extensions ───────────────────────────────────────────────
 create extension if not exists "uuid-ossp";
@@ -17,29 +20,7 @@ create type order_status as enum (
   'unsuccessful'
 );
 
--- ── Table: products ──────────────────────────────────────────
--- Central product catalogue. Replaces products.ts hardcoded data.
-create table if not exists public.products (
-  id              integer primary key,
-  name            text not null,
-  category        text not null,
-  subcategory     text not null,
-  price           integer not null, -- stored in kobo-free NGN (e.g. 14500 = ₦14,500)
-  size            text not null,
-  waist           text,             -- e.g. 'W32"' or 'W28"–36"' for elastic
-  length          text,             -- e.g. 'L30"'
-  elastic_waist   boolean not null default false,
-  colours         text[] not null default '{}',
-  tag             text not null check (tag in ('NEW', '2 LEFT', '1 LEFT', 'SOLD OUT')),
-  image           text not null,    -- relative path e.g. /products/foo.jpeg
-  description     text not null default '',
-  available       boolean not null default true,
-  pairs_with      jsonb not null default '[]', -- array of {item, reason}
-  created_at      timestamptz not null default now(),
-  updated_at      timestamptz not null default now()
-);
-
--- Update timestamp trigger
+-- ── Shared updated_at trigger function ───────────────────────
 create or replace function public.set_updated_at()
 returns trigger language plpgsql as $$
 begin
@@ -48,16 +29,35 @@ begin
 end;
 $$;
 
+-- ── Table: products ──────────────────────────────────────────
+create table if not exists public.products (
+  id              integer primary key,
+  name            text not null,
+  category        text not null,
+  subcategory     text not null,
+  price           integer not null,
+  size            text not null,
+  waist           text,
+  length          text,
+  elastic_waist   boolean not null default false,
+  colours         text[] not null default '{}',
+  tag             text not null check (tag in ('NEW', '2 LEFT', '1 LEFT', 'SOLD OUT')),
+  image           text not null,
+  description     text not null default '',
+  available       boolean not null default true,
+  pairs_with      jsonb not null default '[]',
+  created_at      timestamptz not null default now(),
+  updated_at      timestamptz not null default now()
+);
+
 create trigger products_updated_at
   before update on public.products
   for each row execute function public.set_updated_at();
 
--- RLS: anyone can read products, only service role can write
 alter table public.products enable row level security;
 
 create policy "Products are publicly readable"
   on public.products for select
-  to anon, authenticated
   using (true);
 
 create policy "Service role can manage products"
@@ -66,14 +66,12 @@ create policy "Service role can manage products"
   using (true) with check (true);
 
 -- ── Table: profiles ──────────────────────────────────────────
--- One row per authenticated user. Linked to auth.users.
 create table if not exists public.profiles (
   id                uuid primary key references auth.users(id) on delete cascade,
   name              text not null default '',
-  phone             text not null,
+  phone             text not null default '',
   email             text,
   delivery_address  text,
-  -- size profile
   tshirt_size       text,
   chest_inches      text,
   sleeve_inches     text,
@@ -89,7 +87,6 @@ create trigger profiles_updated_at
   before update on public.profiles
   for each row execute function public.set_updated_at();
 
--- RLS: users can only read/write their own profile
 alter table public.profiles enable row level security;
 
 create policy "Users can view their own profile"
@@ -113,7 +110,11 @@ create policy "Service role full access to profiles"
   to service_role
   using (true) with check (true);
 
--- Auto-create profile row when user signs up via Auth
+-- ── Function: auto-create profile on new user ────────────────
+-- This function is called by a trigger on auth.users.
+-- After running this SQL, create the trigger in the Dashboard:
+--   Database → Triggers → New Trigger
+--   Table: auth.users  |  Event: INSERT  |  Function: handle_new_user
 create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer set search_path = public as $$
 begin
@@ -128,16 +129,12 @@ begin
 end;
 $$;
 
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute function public.handle_new_user();
-
 -- ── Table: orders ────────────────────────────────────────────
 create table if not exists public.orders (
   id                uuid primary key default uuid_generate_v4(),
-  order_id          text not null unique, -- human-readable e.g. TC-A1B2C3
+  order_id          text not null unique,
   user_id           uuid references auth.users(id) on delete set null,
-  guest_phone       text,             -- for guest checkouts
+  guest_phone       text,
   guest_name        text,
   status            order_status not null default 'processing',
   subtotal          integer not null,
@@ -156,11 +153,9 @@ create trigger orders_updated_at
   before update on public.orders
   for each row execute function public.set_updated_at();
 
--- Indexes
-create index orders_user_id_idx on public.orders(user_id);
-create index orders_order_id_idx on public.orders(order_id);
+create index if not exists orders_user_id_idx on public.orders(user_id);
+create index if not exists orders_order_id_idx on public.orders(order_id);
 
--- RLS
 alter table public.orders enable row level security;
 
 create policy "Users can view their own orders"
@@ -168,12 +163,11 @@ create policy "Users can view their own orders"
   to authenticated
   using (auth.uid() = user_id);
 
-create policy "Authenticated users can insert orders"
+create policy "Anyone can insert orders"
   on public.orders for insert
-  to authenticated, anon
   with check (true);
 
-create policy "Users can update their own order status"
+create policy "Users can update their own orders"
   on public.orders for update
   to authenticated
   using (auth.uid() = user_id);
@@ -195,9 +189,8 @@ create table if not exists public.order_items (
   price           integer not null
 );
 
-create index order_items_order_id_idx on public.order_items(order_id);
+create index if not exists order_items_order_id_idx on public.order_items(order_id);
 
--- RLS — inherit via order ownership
 alter table public.order_items enable row level security;
 
 create policy "Users can view their own order items"
@@ -212,7 +205,6 @@ create policy "Users can view their own order items"
 
 create policy "Anyone can insert order items"
   on public.order_items for insert
-  to authenticated, anon
   with check (true);
 
 create policy "Service role full access to order items"
@@ -221,8 +213,6 @@ create policy "Service role full access to order items"
   using (true) with check (true);
 
 -- ── Table: temp_leads ────────────────────────────────────────
--- Stores phone/email signups BEFORE OTP verification.
--- These are NOT in auth.users yet.
 create table if not exists public.temp_leads (
   id          uuid primary key default uuid_generate_v4(),
   phone       text not null,
@@ -231,27 +221,20 @@ create table if not exists public.temp_leads (
   created_at  timestamptz not null default now()
 );
 
--- Unique on phone so re-submits update the same row
-create unique index temp_leads_phone_idx on public.temp_leads(phone);
+create unique index if not exists temp_leads_phone_idx on public.temp_leads(phone);
 
--- RLS: only service role manages this table
 alter table public.temp_leads enable row level security;
+
+create policy "Anyone can insert temp leads"
+  on public.temp_leads for insert
+  with check (true);
 
 create policy "Service role manages temp leads"
   on public.temp_leads for all
   to service_role
   using (true) with check (true);
 
--- Anon can insert (for homepage signup form)
-create policy "Anon can insert temp leads"
-  on public.temp_leads for insert
-  to anon, authenticated
-  with check (true);
-
 -- ── Table: drop_leads ────────────────────────────────────────
--- Verified marketing list. Populated when:
--- (a) a temp_lead completes OTP → user_id is set
--- (b) an authenticated user subscribes to drops
 create table if not exists public.drop_leads (
   id          uuid primary key default uuid_generate_v4(),
   user_id     uuid references auth.users(id) on delete cascade,
@@ -260,18 +243,17 @@ create table if not exists public.drop_leads (
   created_at  timestamptz not null default now()
 );
 
-create unique index drop_leads_phone_idx on public.drop_leads(phone);
+create unique index if not exists drop_leads_phone_idx on public.drop_leads(phone);
 
 alter table public.drop_leads enable row level security;
 
-create policy "Users can view their own lead record"
+create policy "Users can view their own drop lead"
   on public.drop_leads for select
   to authenticated
   using (auth.uid() = user_id);
 
-create policy "Anon and authenticated can insert drop leads"
+create policy "Anyone can insert drop leads"
   on public.drop_leads for insert
-  to anon, authenticated
   with check (true);
 
 create policy "Service role full access to drop leads"
@@ -280,7 +262,6 @@ create policy "Service role full access to drop leads"
   using (true) with check (true);
 
 -- ── Table: keywords ──────────────────────────────────────────
--- Drop alert keywords per authenticated user
 create table if not exists public.keywords (
   id          uuid primary key default uuid_generate_v4(),
   user_id     uuid not null references auth.users(id) on delete cascade,
@@ -289,7 +270,7 @@ create table if not exists public.keywords (
   unique (user_id, keyword)
 );
 
-create index keywords_user_id_idx on public.keywords(user_id);
+create index if not exists keywords_user_id_idx on public.keywords(user_id);
 
 alter table public.keywords enable row level security;
 
@@ -303,3 +284,15 @@ create policy "Service role full access to keywords"
   on public.keywords for all
   to service_role
   using (true) with check (true);
+
+-- ============================================================
+-- AFTER RUNNING THIS FILE — one manual step required:
+--
+-- Go to: Database → Triggers → "Add a new trigger"
+--   Name:     on_auth_user_created
+--   Table:    users  (schema: auth)
+--   Events:   INSERT
+--   Function: handle_new_user
+--
+-- This auto-creates a profiles row every time a user signs up.
+-- ============================================================
