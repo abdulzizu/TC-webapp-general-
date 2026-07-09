@@ -199,7 +199,7 @@ create policy "Users can view their own order items"
   using (
     exists (
       select 1 from public.orders o
-      where o.id = order_id and o.user_id = auth.uid()
+      where o.id = public.order_items.order_id and o.user_id = auth.uid()
     )
   );
 
