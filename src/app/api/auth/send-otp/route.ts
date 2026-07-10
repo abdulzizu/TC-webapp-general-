@@ -35,8 +35,9 @@ export async function POST(req: NextRequest) {
       message_type: "NUMERIC",
       to: normalisedPhone,
       from: process.env.TERMII_SENDER_ID,
-      // whatsapp first, auto-falls back to generic SMS if not on WhatsApp
-      channel: "whatsapp",
+      // Channel controlled by TERMII_OTP_CHANNEL env var:
+      // "whatsapp" for production, "generic" for SMS testing
+      channel: process.env.TERMII_OTP_CHANNEL ?? "generic",
       pin_attempts: 3,
       pin_time_to_live: 10, // minutes
       pin_length: 6,

@@ -172,7 +172,7 @@ export default function SignInPage() {
                 <div className="flex items-start gap-2.5 p-3 bg-[#1a6b2f]/5 rounded-xl mb-5">
                   <span className="text-lg mt-0.5 shrink-0" aria-hidden="true">💬</span>
                   <p className="text-xs text-[#1a6b2f] leading-relaxed">
-                    We&apos;ll send your one-time code via <strong>WhatsApp</strong>. Make sure WhatsApp is active on this number. SMS fallback is automatic if WhatsApp fails.
+                    We&apos;ll send your one-time code via <strong>WhatsApp</strong> or <strong>SMS</strong>. Make sure your number is active and can receive messages.
                   </p>
                 </div>
 
