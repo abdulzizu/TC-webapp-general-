@@ -5,8 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import MarqueeBanner from "@/components/MarqueeBanner";
-import { PRODUCTS } from "@/lib/products";
 import { createClient } from "@/lib/supabase/client";
+import { useProducts } from "@/lib/use-products";
 
 // ─── Hero ────────────────────────────────────────────────────────────────────
 
@@ -196,17 +196,15 @@ function HowItWorks() {
 
 // ─── Current Drop ────────────────────────────────────────────────────────────
 
-// Use shared product catalogue — no duplicate data
-const MOCK_ITEMS = PRODUCTS;
-
 function ProductGrid() {
+  const { products, isLoading } = useProducts();
   const [filter, setFilter] = useState("All");
   const categories = ["All", "Available", "Clothing", "Accessories", "Shoes"];
 
   const filtered =
-    filter === "All" ? MOCK_ITEMS
-    : filter === "Available" ? MOCK_ITEMS.filter((i) => i.available && i.tag !== "SOLD OUT")
-    : MOCK_ITEMS.filter((i) => i.category === filter);
+    filter === "All" ? products
+    : filter === "Available" ? products.filter((i) => i.available && i.tag !== "SOLD OUT")
+    : products.filter((i) => i.category === filter);
 
   return (
     <section id="shop" className="py-16 sm:py-24 newspaper-bg" aria-labelledby="shop-heading">
@@ -248,9 +246,21 @@ function ProductGrid() {
 
         {/* Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-          {filtered.map((item) => (
-            <ProductCard key={item.id} item={item} />
-          ))}
+          {isLoading
+            ? Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="rounded-2xl overflow-hidden border border-[#1a1a1a]/10 bg-[#ede8d8] animate-pulse">
+                  <div className="w-full aspect-square bg-[#d4cdb8]" />
+                  <div className="p-3 space-y-2">
+                    <div className="h-2.5 bg-[#d4cdb8] rounded w-1/2" />
+                    <div className="h-3 bg-[#d4cdb8] rounded w-3/4" />
+                    <div className="h-3 bg-[#d4cdb8] rounded w-1/3" />
+                  </div>
+                </div>
+              ))
+            : filtered.map((item) => (
+                <ProductCard key={item.id} item={item} />
+              ))
+          }
         </div>
       </div>
     </section>

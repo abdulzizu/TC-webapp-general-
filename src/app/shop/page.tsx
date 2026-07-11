@@ -7,7 +7,8 @@ import Link from "next/link";
 import { Suspense } from "react";
 import MarqueeBanner from "@/components/MarqueeBanner";
 import Navbar from "@/components/Navbar";
-import { PRODUCTS, POPULAR_SEARCHES } from "@/lib/products";
+import { POPULAR_SEARCHES } from "@/lib/products";
+import { useProducts } from "@/lib/use-products";
 
 const ALL_SIZES = ["XS","S","M","L","XL","2XL","3XL","28","30","32","34","36","38","40","41","42","43","44","One Size"];
 const ALL_COLOURS = ["Black","White","Navy","Blue","Red","Grey","Burgundy","Pink","Green","Brown","Yellow"];
@@ -21,6 +22,7 @@ const SORT_OPTIONS = [
 function ShopContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { products, isLoading } = useProducts();
 
   const [query, setQuery] = useState(searchParams.get("q") || "");
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "");
@@ -47,7 +49,7 @@ function ShopContent() {
   }
 
   const filtered = useMemo(() => {
-    let result = [...PRODUCTS];
+    let result = [...products];
     if (query) {
       const q = query.toLowerCase();
       result = result.filter((p) =>
@@ -71,7 +73,7 @@ function ShopContent() {
       case "availability": return result.sort((a, b) => (a.tag === "SOLD OUT" ? 1 : 0) - (b.tag === "SOLD OUT" ? 1 : 0));
       default: return result.sort((a, b) => b.id - a.id);
     }
-  }, [query, selectedCategory, selectedSub, selectedSizes, selectedColours, priceRange, availableOnly, sort]);
+  }, [products, query, selectedCategory, selectedSub, selectedSizes, selectedColours, priceRange, availableOnly, sort]);
 
   function clearFilters() {
     setQuery(""); setSelectedCategory(""); setSelectedSub("");
