@@ -84,10 +84,11 @@ export default function SignInPage() {
       return;
     }
 
-    // Set the Supabase session client-side using the tokens from the server
-    const { error: sessionError } = await supabase.auth.setSession({
-      access_token: data.accessToken,
-      refresh_token: data.refreshToken,
+    // Set the Supabase session client-side using the token hash from the server
+    const { error: sessionError } = await supabase.auth.verifyOtp({
+      email: data.email,
+      token: data.tokenHash,
+      type: "email",
     });
 
     setLoading(false);

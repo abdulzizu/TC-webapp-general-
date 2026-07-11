@@ -33,7 +33,7 @@ export function useProducts(): UseProductsResult {
           setProducts(STATIC_PRODUCTS);
           if (dbError) setError(dbError.message);
         } else {
-          const mapped: Product[] = data.map((p) => ({
+          const mapped: Product[] = data.map((p: any) => ({
             id: p.id,
             name: p.name,
             category: p.category,

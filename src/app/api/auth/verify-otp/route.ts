@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import type { Database } from "@/lib/supabase/types";
 
 // ── Termii verify-token + Supabase session creation ───────────
 // POST /api/auth/verify-otp
 // Body: { pinId: string, pin: string, phone: string }
-// Returns: { success: true } with Supabase session cookies set
+// Returns: { success: true, accessToken, refreshToken } on success
 
 function normalisePhone(raw: string): string {
   const digits = raw.replace(/\D/g, "");
@@ -38,7 +37,7 @@ export async function POST(req: NextRequest) {
 
     const termiiData = await termiiRes.json();
 
-    // Termii returns { verified: "True", msisdn: "..." } on success
+    // Termii returns { verified: "True" } on success
     if (!termiiRes.ok || termiiData.verified !== "True") {
       console.error("Termii verify error:", termiiData);
       return NextResponse.json(
@@ -47,79 +46,63 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ── Step 2: Create or sign in the Supabase user ─────────
-    // Use admin client — we control auth here, not Supabase's phone provider
-    const adminClient = createClient<Database>(
+    // ── Step 2: Create or find Supabase user ────────────────
+    const adminClient = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
 
     const normalisedPhone = "+" + normalisePhone(phone);
+    // Use a deterministic placeholder email based on phone — needed for generateLink
+    const placeholderEmail = `phone_${normalisePhone(phone)}@tc.thriftcollision.app`;
 
-    // Try to find an existing user by phone
-    const { data: { users }, error: listError } = await adminClient.auth.admin.listUsers();
+    // Try to find existing user by phone
+    const { data: { users } } = await adminClient.auth.admin.listUsers();
+    let user = users?.find((u) => u.phone === normalisedPhone);
 
-    if (listError) {
-      console.error("Supabase listUsers error:", listError);
-      return NextResponse.json({ error: "Authentication error" }, { status: 500 });
+    if (!user) {
+      // Also check by placeholder email (in case phone field wasn't set)
+      user = users?.find((u) => u.email === placeholderEmail);
     }
 
-    let userId: string;
-    const existingUser = users.find((u) => u.phone === normalisedPhone);
-
-    if (existingUser) {
-      userId = existingUser.id;
-    } else {
-      // Create new user with phone
+    if (!user) {
+      // Create new user
       const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
         phone: normalisedPhone,
+        email: placeholderEmail,
         phone_confirm: true,
-        user_metadata: {},
+        email_confirm: true,
+        user_metadata: { phone_verified: true },
       });
 
       if (createError || !newUser.user) {
         console.error("Supabase createUser error:", createError);
         return NextResponse.json({ error: "Failed to create account" }, { status: 500 });
       }
-      userId = newUser.user.id;
+      user = newUser.user;
     }
 
-    // ── Step 3: Generate a session link and return the token ─
-    const { data: sessionData, error: sessionError } =
-      await adminClient.auth.admin.generateLink({
-        type: "magiclink",
-        email: `${userId}@tc-placeholder.internal`,
-      });
+    // ── Step 3: Generate a magic link to extract session tokens ─
+    // generateLink returns hashed_token + verification_type that we can
+    // use with the client's verifyOtp to establish a session
+    const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
+      type: "magiclink",
+      email: user.email || placeholderEmail,
+    });
 
-    // magiclink approach won't work for phone users — use createSession directly
-    // Generate a short-lived session token via signInWithPassword workaround:
-    // The correct approach is to use the service role to issue a token directly.
-    const { data: tokenData, error: tokenError } =
-      await adminClient.auth.admin.generateLink({
-        type: "magiclink",
-        email: `phone_${userId}@placeholder.tc`,
-      });
-
-    // Best approach: sign the user in via a custom access token
-    // Supabase admin lets us do this via createSession (available in supabase-js v2.39+)
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _ = { sessionData, sessionError, tokenData, tokenError };
-
-    // Use the correct API: generate a session directly for the user
-    const { data: { session }, error: signInError } =
-      await adminClient.auth.admin.createSession({ user_id: userId });
-
-    if (signInError || !session) {
-      console.error("Supabase createSession error:", signInError);
-      return NextResponse.json({ error: "Failed to create session" }, { status: 500 });
+    if (linkError || !linkData) {
+      console.error("Supabase generateLink error:", linkError);
+      return NextResponse.json({ error: "Failed to generate session" }, { status: 500 });
     }
 
-    // ── Step 4: Return tokens — client will set them via setSession ─
+    // The properties contain the OTP token hash we need
+    // Client will use verifyOtp with type 'email' and this token
     return NextResponse.json({
       success: true,
-      accessToken: session.access_token,
-      refreshToken: session.refresh_token,
+      email: user.email || placeholderEmail,
+      tokenHash: linkData.properties.hashed_token,
+      type: "email",
     });
   } catch (err) {
     console.error("verify-otp unexpected error:", err);
