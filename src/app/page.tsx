@@ -69,18 +69,53 @@ function Hero() {
             </div>
           </div>
 
-          {/* Hero visual — real product cards */}
+          {/* Hero visual — featured product cards from dashboard */}
           <div className="relative hidden lg:block">
-            <div className="grid grid-cols-2 gap-3">
-              <HeroCard label="Liverpool FC Jersey" price="₦12,500" size="S–XL" tag="2 LEFT" rotate="-rotate-2" image="/products/liverpool 2006 jersey.jpeg" />
-              <HeroCard label="Burgundy Windbreaker" price="₦18,000" size="M" tag="NEW" rotate="rotate-1" delay image="/products/burgundy wind breaker jacket.jpeg" />
-              <HeroCard label="Striped T-Shirt" price="₦7,500" size="S–XL" tag="NEW" rotate="rotate-2" image="/products/Stripe t-shirt.jpeg" />
-              <HeroCard label="Black Baggy Jeans" price="₦15,000" size="30–34" tag="NEW" rotate="-rotate-1" delay image="/products/black baggy jeans.jpeg" />
-            </div>
+            <FeaturedHeroCards />
           </div>
         </div>
       </div>
     </section>
+  );
+}
+
+const ROTATIONS = ["-rotate-2", "rotate-1", "rotate-2", "-rotate-1"];
+
+function FeaturedHeroCards() {
+  const [cards, setCards] = useState([
+    { label: "Liverpool FC Jersey", price: "₦12,500", size: "M", tag: "2 LEFT", image_url: "/products/liverpool 2006 jersey.jpeg" },
+    { label: "Burgundy Windbreaker", price: "₦18,000", size: "M", tag: "NEW", image_url: "/products/burgundy wind breaker jacket.jpeg" },
+    { label: "Striped T-Shirt", price: "₦7,500", size: "L", tag: "NEW", image_url: "/products/Stripe t-shirt.jpeg" },
+    { label: "Black Baggy Jeans", price: "₦15,000", size: "32", tag: "NEW", image_url: "/products/black baggy jeans.jpeg" },
+  ]);
+
+  useState(() => {
+    const supabase = createClient();
+    supabase
+      .from("featured_products")
+      .select("label, price, size, tag, image_url")
+      .order("display_order", { ascending: true })
+      .limit(4)
+      .then(({ data }) => {
+        if (data && data.length > 0) setCards(data);
+      });
+  });
+
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      {cards.map((card, i) => (
+        <HeroCard
+          key={i}
+          label={card.label}
+          price={card.price}
+          size={card.size}
+          tag={card.tag}
+          rotate={ROTATIONS[i % ROTATIONS.length]}
+          delay={i % 2 === 1}
+          image={card.image_url}
+        />
+      ))}
+    </div>
   );
 }
 
