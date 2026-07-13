@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Thrift Collision",
     description: "Premium thrifted streetwear drops, weekly.",
-    url: "https://tc-webapp-general.vercel.app",
+    url: "https://thriftcollision.com",
     siteName: "Thrift Collision",
     locale: "en_GB",
     type: "website",
