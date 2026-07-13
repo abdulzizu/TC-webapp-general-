@@ -28,7 +28,7 @@ function CheckoutContent() {
   const { items, subtotal, clearCart } = useCart();
   const { user } = useUser();
 
-  const cartShippingCost = Number(searchParams.get("shipping") || 3500);
+  const cartShippingCost = subtotal >= 55000 ? 0 : Number(searchParams.get("shipping") || 3500);
   const discountPct = Number(searchParams.get("discount") || 0);
   const discountCode = searchParams.get("code") || "";
 
@@ -230,20 +230,23 @@ function CheckoutContent() {
                       onChange={() => setDeliveryChoice("ship")}
                       className="accent-[#1a6b2f] mt-1 shrink-0"
                     />
-                    <div className="flex-1">
+                      <div className="flex-1">
                       <div className="flex items-center justify-between">
                         <p className="font-semibold text-[#1a1a1a] text-sm">Ship Immediately</p>
-                        <span className="text-xs font-bold text-[#1a1a1a]">+₦{cartShippingCost.toLocaleString()}</span>
+                        <span className="text-xs font-bold text-[#1a1a1a]">{cartShippingCost === 0 ? "FREE" : `+₦${cartShippingCost.toLocaleString()}`}</span>
                       </div>
                       <p className="text-xs text-gray-500 mt-1">
-                        We dispatch your order right away.
+                        {cartShippingCost === 0
+                          ? <span className="text-[#1a6b2f] font-semibold">Free delivery for orders above ₦55,000 🎉</span>
+                          : "We dispatch your order right away."
+                        }
                         {shippingEstimate && form.state && (
                           <span className="text-[#1a6b2f] font-semibold"> Estimated delivery to {form.state}: {shippingEstimate}.</span>
                         )}
                       </p>
                       {deliveryChoice === "ship" && (
                         <p className="text-xs text-[#1a6b2f] mt-2 font-semibold">
-                          📲 You&apos;ll be notified on WhatsApp when your order ships.
+                          📲 You&apos;ll be notified via SMS when your order ships.
                         </p>
                       )}
                     </div>
@@ -305,7 +308,7 @@ function CheckoutContent() {
                 <p className={deliveryChoice === "stockpile" ? "text-amber-800" : "text-[#1a6b2f]"}>
                   {deliveryChoice === "stockpile"
                     ? `Your items will be stockpiled until ${stockpileDeadline}. Shipping charged separately when you request delivery.`
-                    : `Shipping immediately to ${form.city || "your address"}${shippingEstimate ? ` — estimated ${shippingEstimate}` : ""}. You'll be notified on WhatsApp.`
+                    : `Shipping immediately to ${form.city || "your address"}${shippingEstimate ? ` — estimated ${shippingEstimate}` : ""}. You'll be notified via SMS.`
                   }
                 </p>
               </div>

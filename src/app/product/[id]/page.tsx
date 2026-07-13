@@ -37,6 +37,7 @@ export default function ProductPage() {
   const [sizingOpen, setSizingOpen] = useState(false);
   const [added, setAdded] = useState(false);
   const [notifyAdded, setNotifyAdded] = useState(false);
+  const [activeImage, setActiveImage] = useState(0);
 
   if (!product) {
     return (
@@ -112,20 +113,70 @@ export default function ProductPage() {
           {/* ── Product hero ───────────────────────────────────── */}
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 mb-16">
 
-            {/* Image */}
-            <div className="relative aspect-square rounded-2xl overflow-hidden bg-[#ede8d8]">
-              <Image
-                src={product.image}
-                alt={product.name}
-                fill
-                className="object-cover"
-                sizes="(max-width:1024px) 100vw, 50vw"
-                priority
-              />
-              <span className={`absolute top-4 left-4 text-xs font-bold tracking-wide px-3 py-1 rounded-full ${tagColor}`}>
-                {product.tag}
-              </span>
-            </div>
+            {/* Image gallery */}
+            {(() => {
+              // Combine primary image + additional images
+              const allImages = [product.image, ...(product.images ?? [])];
+              const hasMultiple = allImages.length > 1;
+
+              return (
+                <div className="relative">
+                  {/* Main image */}
+                  <div className="relative aspect-square rounded-2xl overflow-hidden bg-[#ede8d8]">
+                    <Image
+                      src={allImages[activeImage]}
+                      alt={`${product.name}${hasMultiple ? ` — image ${activeImage + 1}` : ""}`}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width:1024px) 100vw, 50vw"
+                      priority
+                    />
+                    <span className={`absolute top-4 left-4 text-xs font-bold tracking-wide px-3 py-1 rounded-full ${tagColor}`}>
+                      {product.tag}
+                    </span>
+
+                    {/* Prev/Next arrows */}
+                    {hasMultiple && (
+                      <>
+                        <button
+                          onClick={() => setActiveImage((prev) => prev === 0 ? allImages.length - 1 : prev - 1)}
+                          className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 backdrop-blur flex items-center justify-center shadow hover:bg-white transition"
+                          aria-label="Previous image"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+                        </button>
+                        <button
+                          onClick={() => setActiveImage((prev) => prev === allImages.length - 1 ? 0 : prev + 1)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 backdrop-blur flex items-center justify-center shadow hover:bg-white transition"
+                          aria-label="Next image"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+                        </button>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Thumbnail dots / strip */}
+                  {hasMultiple && (
+                    <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
+                      {allImages.map((img, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setActiveImage(i)}
+                          className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 shrink-0 transition ${
+                            i === activeImage ? "border-[#1a6b2f]" : "border-transparent opacity-60 hover:opacity-100"
+                          }`}
+                          aria-label={`View image ${i + 1}`}
+                          aria-current={i === activeImage ? "true" : undefined}
+                        >
+                          <Image src={img} alt="" fill className="object-cover" sizes="64px" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Info panel */}
             <div className="flex flex-col">

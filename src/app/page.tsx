@@ -488,7 +488,7 @@ function NotifySignup() {
           <div className="bg-[#1a6b2f]/20 border border-[#1a6b2f] rounded-2xl p-8" role="alert" aria-live="polite">
             <p className="text-3xl mb-3" aria-hidden="true">✅</p>
             <p className="text-white font-600 text-lg">You&apos;re on the list!</p>
-            <p className="text-[#9ca3af] text-sm mt-1">We&apos;ll WhatsApp you the moment the next drop goes live.</p>
+            <p className="text-[#9ca3af] text-sm mt-1">We&apos;ll text you the moment the next drop goes live.</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-3" noValidate>
@@ -521,13 +521,13 @@ function NotifySignup() {
               disabled={submitting}
               className="btn-tc-primary py-3.5 rounded-full text-sm disabled:opacity-60"
             >
-              {submitting ? "Saving…" : "Notify me on WhatsApp"}
+              {submitting ? "Saving…" : "Notify me via SMS"}
             </button>
             {submitError && (
               <p className="text-red-400 text-xs text-center" role="alert">{submitError}</p>
             )}
             <p className="text-[#6b7280] text-xs">
-              We&apos;ll send drop alerts via WhatsApp. No spam. Unsubscribe any time.
+              We&apos;ll send drop alerts via SMS. No spam. Unsubscribe any time.
             </p>
           </form>
         )}

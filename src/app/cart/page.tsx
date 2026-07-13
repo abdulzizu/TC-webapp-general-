@@ -10,7 +10,7 @@ import { useCart } from "@/lib/cart-context";
 const SHIPPING_RATES = [
   { label: "Standard (3–5 days)", price: 3500 },
   { label: "Express (1–2 days)", price: 6500 },
-  { label: "Free (Orders over ₦30,000)", price: 0 },
+  { label: "Free (Orders over ₦55,000)", price: 0 },
 ];
 
 const DISCOUNT_CODES: Record<string, number> = {
@@ -26,7 +26,7 @@ export default function CartPage() {
   const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; pct: number } | null>(null);
   const [discountError, setDiscountError] = useState("");
 
-  const shippingCost = subtotal >= 30000 ? 0 : SHIPPING_RATES[shippingIndex].price;
+  const shippingCost = subtotal >= 55000 ? 0 : SHIPPING_RATES[shippingIndex].price;
   const discountAmount = appliedDiscount ? Math.round((subtotal * appliedDiscount.pct) / 100) : 0;
   const total = subtotal - discountAmount + shippingCost;
 
@@ -101,7 +101,7 @@ export default function CartPage() {
             {/* Return policy note */}
             <div className="p-4 bg-[#f5f0e8] rounded-2xl border border-[#1a6b2f]/10">
               <p className="text-xs text-gray-600 leading-relaxed">
-                <span className="font-semibold">Return policy:</span> Items can be returned within 7 days of delivery if they are in their original condition. Contact us via WhatsApp or email to initiate a return.
+                <span className="font-semibold">Return policy:</span> Items can be returned within 7 days of delivery if they are in their original condition. Contact us via SMS or email to initiate a return.
               </p>
             </div>
           </div>
@@ -134,7 +134,7 @@ export default function CartPage() {
                 <p className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Shipping</p>
                 <div className="space-y-2">
                   {SHIPPING_RATES.map((rate, i) => (
-                    <label key={i} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-colors ${shippingIndex === i ? "border-[#1a6b2f] bg-[#1a6b2f]/5" : "border-gray-100 hover:border-gray-200"} ${rate.price === 0 && subtotal < 30000 ? "opacity-40 pointer-events-none" : ""}`}>
+                    <label key={i} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-colors ${shippingIndex === i ? "border-[#1a6b2f] bg-[#1a6b2f]/5" : "border-gray-100 hover:border-gray-200"} ${rate.price === 0 && subtotal < 55000 ? "opacity-40 pointer-events-none" : ""}`}>
                       <div className="flex items-center gap-2">
                         <input type="radio" name="shipping" checked={shippingIndex === i} onChange={() => setShippingIndex(i)}
                           className="accent-[#1a6b2f]" />

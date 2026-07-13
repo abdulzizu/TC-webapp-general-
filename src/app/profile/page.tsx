@@ -279,14 +279,14 @@ export default function ProfilePage() {
                             rel="noopener noreferrer"
                             className="inline-block mt-2 text-[#1a6b2f] font-semibold underline"
                           >
-                            Request delivery via WhatsApp →
+                            Request delivery via SMS →
                           </a>
                         </div>
                       )}
 
                       {order.status === "shipped" && (
                         <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-xl text-xs text-[#1a6b2f]">
-                          🚚 Your order is on its way! You&apos;ll receive WhatsApp updates.
+                          🚚 Your order is on its way! You&apos;ll receive SMS updates.
                         </div>
                       )}
                     </div>
@@ -303,7 +303,7 @@ export default function ProfilePage() {
             <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-5">
               <h2 className="font-bold text-lg mb-1">Drop Alert Keywords</h2>
               <p className="text-sm text-gray-400 mb-5">
-                Add keywords and we&apos;ll notify you via WhatsApp{user?.email ? " or email" : ""} when a matching item drops.
+                Add keywords and we&apos;ll notify you via SMS{user?.email ? " or email" : ""} when a matching item drops.
                 Use specific terms like <em>L42</em>, <em>acid wash</em>, <em>striped tee</em>, <em>rugby polo</em>, etc.
               </p>
 
@@ -365,7 +365,7 @@ export default function ProfilePage() {
               <div className="space-y-1.5 text-sm text-gray-600">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-[#1a6b2f]" aria-hidden="true" />
-                  <span>WhatsApp: <strong>{user?.phone}</strong></span>
+                  <span>Phone: <strong>{user?.phone}</strong></span>
                 </div>
                 {user?.email ? (
                   <div className="flex items-center gap-2">

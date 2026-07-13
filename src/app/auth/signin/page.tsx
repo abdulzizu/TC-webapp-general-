@@ -123,8 +123,8 @@ export default function SignInPage() {
               {step === "success" && "You're in!"}
             </h1>
             <p className="text-gray-500 text-sm mt-1">
-              {step === "phone" && "We'll send a one-time code to your WhatsApp"}
-              {step === "otp" && `Code sent to ${normaliseDisplay(phone)} via WhatsApp`}
+              {step === "phone" && "We'll send a one-time code via SMS"}
+              {step === "otp" && `Code sent to ${normaliseDisplay(phone)} via SMS`}
               {step === "success" && "Taking you to your profile…"}
             </p>
           </div>
@@ -169,11 +169,11 @@ export default function SignInPage() {
                   )}
                 </div>
 
-                {/* WhatsApp note */}
+                {/* SMS note */}
                 <div className="flex items-start gap-2.5 p-3 bg-[#1a6b2f]/5 rounded-xl mb-5">
-                  <span className="text-lg mt-0.5 shrink-0" aria-hidden="true">💬</span>
+                  <span className="text-lg mt-0.5 shrink-0" aria-hidden="true">📱</span>
                   <p className="text-xs text-[#1a6b2f] leading-relaxed">
-                    We&apos;ll send your one-time code via <strong>WhatsApp</strong> or <strong>SMS</strong>. Make sure your number is active and can receive messages.
+                    We&apos;ll send your one-time code via <strong>SMS</strong>. Make sure your number is active and can receive messages.
                   </p>
                 </div>
 
@@ -182,7 +182,7 @@ export default function SignInPage() {
                   disabled={loading}
                   className="w-full py-3.5 bg-[#1a6b2f] text-white font-bold rounded-full hover:bg-[#104020] transition-colors shadow-lg shadow-[#1a6b2f]/20 text-sm disabled:opacity-60"
                 >
-                  {loading ? "Sending code…" : "Send WhatsApp Code"}
+                  {loading ? "Sending code…" : "Send SMS Code"}
                 </button>
               </form>
             )}

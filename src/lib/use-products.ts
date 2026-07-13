@@ -46,6 +46,7 @@ export function useProducts(): UseProductsResult {
             colours: p.colours,
             tag: p.tag as Product["tag"],
             image: p.image,
+            images: p.images ?? [],
             description: p.description,
             available: p.available,
             pairsWith: (p.pairs_with as Product["pairsWith"]) ?? [],

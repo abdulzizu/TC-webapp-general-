@@ -15,7 +15,8 @@ export type Product = {
   elasticWaist?: boolean; // true = stretchy/drawstring waist
   colours: string[];
   tag: "NEW" | "2 LEFT" | "1 LEFT" | "SOLD OUT";
-  image: string;
+  image: string;         // primary image
+  images?: string[];     // additional images (for scrollable gallery)
   description: string;
   available: boolean;
   pairsWith: StylePairing[];  // suggested items to pair with

@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
       to: normalisedPhone,
       from: process.env.TERMII_SENDER_ID,
       // Channel controlled by TERMII_OTP_CHANNEL env var:
-      // "whatsapp" for production, "generic" for SMS testing
+      // "whatsapp" for WhatsApp delivery, "generic" for SMS
       channel: process.env.TERMII_OTP_CHANNEL ?? "generic",
       pin_attempts: 3,
       pin_time_to_live: 10, // minutes

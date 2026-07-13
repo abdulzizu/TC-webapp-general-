@@ -81,7 +81,7 @@ function ConfirmationContent() {
               <p className="text-sm font-semibold text-[#1a1a1a]">
                 {isStockpile
                   ? "Stockpiled — request delivery when you're ready"
-                  : "Processing — we'll send you a WhatsApp update when shipped"
+                  : "Processing — we'll send you an SMS update when shipped"
                 }
               </p>
             </div>
@@ -94,7 +94,7 @@ function ConfirmationContent() {
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-6 text-left">
           <p className="font-bold text-amber-800 mb-2">📦 Your items are stockpiled</p>
           <p className="text-sm text-amber-700 mb-3">
-            We&apos;re holding your items securely until <strong>{stockpileDeadline}</strong>. When you&apos;re ready for delivery, just message us on WhatsApp with your Order ID and we&apos;ll arrange shipping and charge the delivery fee then.
+            We&apos;re holding your items securely until <strong>{stockpileDeadline}</strong>. When you&apos;re ready for delivery, just message us with your Order ID and we&apos;ll arrange shipping and charge the delivery fee then.
           </p>
           <a
             href={`https://wa.me/2348000000000?text=Hi! I'd like to request delivery for order ${orderId}`}
@@ -102,7 +102,7 @@ function ConfirmationContent() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 bg-[#1a6b2f] text-white font-semibold px-5 py-2.5 rounded-full text-sm hover:bg-[#104020] transition-colors"
           >
-            Request delivery via WhatsApp
+            Request delivery via SMS
           </a>
         </div>
       )}
@@ -114,9 +114,9 @@ function ConfirmationContent() {
           <div className="space-y-2 text-sm text-gray-600">
             {[
               "We pack your order within 1–2 business days.",
-              "You'll receive a WhatsApp message when your order ships with tracking info.",
+              "You'll receive an SMS when your order ships with tracking info.",
               `Estimated delivery: ${deliveryDate}.`,
-              "Questions? Message us on WhatsApp with your Order ID.",
+              "Questions? Message us with your Order ID.",
             ].map((s, i) => (
               <div key={i} className="flex items-start gap-2">
                 <span className="text-[#1a6b2f] font-bold shrink-0">{i + 1}.</span>
