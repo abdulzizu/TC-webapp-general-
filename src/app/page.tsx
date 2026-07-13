@@ -74,7 +74,7 @@ function Hero() {
             <div className="grid grid-cols-2 gap-3">
               <HeroCard label="Liverpool FC Jersey" price="₦12,500" size="S–XL" tag="2 LEFT" rotate="-rotate-2" image="/products/liverpool 2006 jersey.jpeg" />
               <HeroCard label="Burgundy Windbreaker" price="₦18,000" size="M" tag="NEW" rotate="rotate-1" delay image="/products/burgundy wind breaker jacket.jpeg" />
-              <HeroCard label="Striped T-Shirt" price="₦7,500" size="S–XL" tag="NEW" rotate="rotate-2" image="/products/t-shirt.jpeg" />
+              <HeroCard label="Striped T-Shirt" price="₦7,500" size="S–XL" tag="NEW" rotate="rotate-2" image="/products/Stripe t-shirt.jpeg" />
               <HeroCard label="Black Baggy Jeans" price="₦15,000" size="30–34" tag="NEW" rotate="-rotate-1" delay image="/products/black baggy jeans.jpeg" />
             </div>
           </div>
