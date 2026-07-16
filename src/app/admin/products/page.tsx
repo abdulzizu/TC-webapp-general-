@@ -47,6 +47,8 @@ export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("All");
+  const [sortBy, setSortBy] = useState<"name" | "price-asc" | "price-desc" | "newest">("newest");
   const [editing, setEditing] = useState<Product | null>(null);
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState<Omit<Product, "id">>(EMPTY_PRODUCT);
@@ -62,11 +64,24 @@ export default function AdminProductsPage() {
 
   useEffect(() => { loadProducts(); }, [loadProducts]);
 
-  const filtered = products.filter((p) =>
-    p.name.toLowerCase().includes(search.toLowerCase()) ||
-    p.category.toLowerCase().includes(search.toLowerCase()) ||
-    p.subcategory.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = products
+    .filter((p) => {
+      if (categoryFilter !== "All" && p.category !== categoryFilter) return false;
+      if (!search) return true;
+      return (
+        p.name.toLowerCase().includes(search.toLowerCase()) ||
+        p.category.toLowerCase().includes(search.toLowerCase()) ||
+        p.subcategory.toLowerCase().includes(search.toLowerCase())
+      );
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "price-asc": return a.price - b.price;
+        case "price-desc": return b.price - a.price;
+        case "name": return a.name.localeCompare(b.name);
+        default: return b.id - a.id;
+      }
+    });
 
   function startCreate() {
     setForm(EMPTY_PRODUCT);
@@ -303,14 +318,34 @@ export default function AdminProductsPage() {
         </button>
       </div>
 
-      {/* Search */}
-      <input
-        type="text"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search products…"
-        className="w-full sm:w-72 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#1a6b2f]"
-      />
+      {/* Search + Filters */}
+      <div className="flex flex-wrap gap-3 items-center">
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search products…"
+          className="w-full sm:w-60 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#1a6b2f]"
+        />
+        <select
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+          className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1a6b2f]"
+        >
+          <option value="All">All Categories</option>
+          {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as any)}
+          className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1a6b2f]"
+        >
+          <option value="newest">Newest first</option>
+          <option value="name">Name A–Z</option>
+          <option value="price-asc">Price: Low → High</option>
+          <option value="price-desc">Price: High → Low</option>
+        </select>
+      </div>
 
       {loading ? (
         <div className="text-sm text-gray-400">Loading…</div>
