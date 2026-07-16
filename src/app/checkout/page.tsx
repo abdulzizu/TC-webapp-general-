@@ -28,7 +28,7 @@ function CheckoutContent() {
   const { items, subtotal, clearCart } = useCart();
   const { user } = useUser();
 
-  const cartShippingCost = subtotal >= 55000 ? 0 : Number(searchParams.get("shipping") || 3500);
+  const cartShippingCost = subtotal >= 60000 ? 0 : Number(searchParams.get("shipping") || 3500);
   const discountPct = Number(searchParams.get("discount") || 0);
   const discountCode = searchParams.get("code") || "";
 
@@ -237,7 +237,7 @@ function CheckoutContent() {
                       </div>
                       <p className="text-xs text-gray-500 mt-1">
                         {cartShippingCost === 0
-                          ? <span className="text-[#1a6b2f] font-semibold">Free delivery for orders above ₦55,000 🎉</span>
+                          ? <span className="text-[#1a6b2f] font-semibold">Free delivery for orders above ₦60,000 🎉</span>
                           : "We dispatch your order right away."
                         }
                         {shippingEstimate && form.state && (

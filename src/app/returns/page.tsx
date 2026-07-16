@@ -16,17 +16,39 @@ export default function ReturnsPage() {
         <div className="prose prose-sm max-w-none space-y-6 text-gray-700">
           <section>
             <h2 className="text-lg font-bold text-[#1a1a1a]">Return Window</h2>
-            <p>Items can be returned within <strong>7 days</strong> of delivery, provided they are in their original condition — unworn, unwashed, and with tags still attached where applicable.</p>
+            <p>You must reach out <strong>within 24 hours</strong> of receiving your order to initiate a return.</p>
+            <ul className="list-disc pl-5 space-y-1">
+              <li><strong>Abuja customers:</strong> Return must be completed within 24 hours of delivery.</li>
+              <li><strong>Outside Abuja:</strong> Contact us within 24 hours of receiving your item so we can process the return immediately.</li>
+            </ul>
           </section>
 
           <section>
             <h2 className="text-lg font-bold text-[#1a1a1a]">How to Return</h2>
-            <ol className="list-decimal pl-5 space-y-2">
-              <li>Contact us via SMS or email with your Order ID and reason for return.</li>
-              <li>We&apos;ll confirm eligibility and provide return instructions.</li>
-              <li>Ship the item back to us (return shipping is on the buyer).</li>
-              <li>Once we receive and inspect the item, we&apos;ll issue store credit or a refund within 3–5 business days.</li>
-            </ol>
+            <p>Contact us through any of these channels with your Order ID and reason for return:</p>
+            <ul className="list-disc pl-5 space-y-2">
+              <li>
+                <strong>WhatsApp:</strong>{" "}
+                <a href="https://wa.me/2348061979299" target="_blank" rel="noopener noreferrer" className="text-[#1a6b2f] font-semibold hover:underline">Chat with us</a>
+              </li>
+              <li>
+                <strong>Email:</strong>{" "}
+                <a href="mailto:gradedthriftshop@gmail.com" className="text-[#1a6b2f] font-semibold hover:underline">gradedthriftshop@gmail.com</a>
+              </li>
+              <li>
+                <strong>Instagram:</strong>{" "}
+                <a href="https://www.instagram.com/thriftcollision/" target="_blank" rel="noopener noreferrer" className="text-[#1a6b2f] font-semibold hover:underline">@thriftcollision</a>
+              </li>
+            </ul>
+            <p className="mt-3">Once confirmed, we&apos;ll provide return instructions. After we receive and inspect the item, we&apos;ll issue store credit or a refund within 3–5 business days.</p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-bold text-[#1a1a1a]">Conditions</h2>
+            <ul className="list-disc pl-5 space-y-1">
+              <li>Items must be in original condition — unworn, unwashed, and with tags attached where applicable.</li>
+              <li>Return shipping is on the buyer.</li>
+            </ul>
           </section>
 
           <section>

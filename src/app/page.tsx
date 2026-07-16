@@ -621,16 +621,20 @@ function Footer() {
                 Instagram ↗
               </a>
               <a
-                href="#"
+                href="https://wa.me/2348061979299"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-[#9ca3af] hover:text-[#1a6b2f] transition-colors text-sm font-500"
               >
                 WhatsApp ↗
               </a>
               <a
-                href="#"
+                href="https://x.com/thriftcollision"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-[#9ca3af] hover:text-[#1a6b2f] transition-colors text-sm font-500"
               >
-                Twitter/X ↗
+                X ↗
               </a>
             </div>
           </div>

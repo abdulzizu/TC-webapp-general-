@@ -24,21 +24,33 @@ export default function ContactPage() {
             </div>
 
             <div className="bg-white rounded-xl border border-gray-100 p-5">
+              <p className="text-xs text-gray-500 uppercase font-semibold mb-2">WhatsApp</p>
+              <a href="https://wa.me/2348061979299" target="_blank" rel="noopener noreferrer" className="text-[#1a6b2f] font-bold text-lg hover:underline">Chat on WhatsApp</a>
+              <p className="text-xs text-gray-400 mt-1">Quick questions and order updates</p>
+            </div>
+
+            <div className="bg-white rounded-xl border border-gray-100 p-5">
               <p className="text-xs text-gray-500 uppercase font-semibold mb-2">Instagram</p>
               <a href="https://www.instagram.com/thriftcollision/" target="_blank" rel="noopener noreferrer" className="text-[#1a6b2f] font-bold text-lg hover:underline">@thriftcollision</a>
               <p className="text-xs text-gray-400 mt-1">DMs open — we reply fast</p>
             </div>
 
             <div className="bg-white rounded-xl border border-gray-100 p-5">
+              <p className="text-xs text-gray-500 uppercase font-semibold mb-2">X (Twitter)</p>
+              <a href="https://x.com/thriftcollision" target="_blank" rel="noopener noreferrer" className="text-[#1a6b2f] font-bold text-lg hover:underline">@thriftcollision</a>
+              <p className="text-xs text-gray-400 mt-1">Updates and announcements</p>
+            </div>
+
+            <div className="bg-white rounded-xl border border-gray-100 p-5">
               <p className="text-xs text-gray-500 uppercase font-semibold mb-2">Email</p>
-              <a href="mailto:hello@thriftcollision.com" className="text-[#1a6b2f] font-bold hover:underline">hello@thriftcollision.com</a>
+              <a href="mailto:gradedthriftshop@gmail.com" className="text-[#1a6b2f] font-bold hover:underline">gradedthriftshop@gmail.com</a>
               <p className="text-xs text-gray-400 mt-1">We respond within 24 hours</p>
             </div>
 
             <div className="bg-white rounded-xl border border-gray-100 p-5">
-              <p className="text-xs text-gray-500 uppercase font-semibold mb-2">WhatsApp</p>
-              <a href="https://wa.me/2348061979299" target="_blank" rel="noopener noreferrer" className="text-[#1a6b2f] font-bold hover:underline">Chat on WhatsApp</a>
-              <p className="text-xs text-gray-400 mt-1">Quick questions and order updates</p>
+              <p className="text-xs text-gray-500 uppercase font-semibold mb-2">Location</p>
+              <p className="font-semibold text-[#1a1a1a]">Gwarinpa, Abuja</p>
+              <p className="text-xs text-gray-400 mt-1">No physical store — pickup available by arrangement</p>
             </div>
           </div>
         </div>

@@ -16,15 +16,15 @@ const FAQS = [
   },
   {
     q: "How do drops work?",
-    a: "We release new collections every week (usually on Sundays). Sign up for SMS notifications to be first in line — stock sells out fast.",
+    a: "We drop new collections just about weekly — Fridays through Mondays. Sign up for SMS notifications to be first in line. Stock sells out fast.",
   },
   {
     q: "What if the item doesn't fit?",
-    a: "Check the size guide on each product page. If it still doesn't work, you can return it within 7 days in original condition. See our Returns Policy for details.",
+    a: "Check the size guide on each product page. If it still doesn't work, you must reach out within 24 hours of receiving your order to initiate a return. See our Returns Policy for details.",
   },
   {
     q: "Do you ship outside Nigeria?",
-    a: "Not yet — we currently deliver across Nigeria only. International shipping is coming soon.",
+    a: "Yes! Reach out via WhatsApp or Instagram DM for an international shipping quote.",
   },
   {
     q: "How do I pay?",
@@ -36,7 +36,7 @@ const FAQS = [
   },
   {
     q: "Can I return an item?",
-    a: "Yes, within 7 days of delivery if the item is in its original condition (unworn, unwashed). Contact us with your Order ID to start a return.",
+    a: "Yes — you must reach out within 24 hours of receiving your order. Contact us via WhatsApp, email (gradedthriftshop@gmail.com), or Instagram DM with your Order ID.",
   },
   {
     q: "How do I track my order?",
