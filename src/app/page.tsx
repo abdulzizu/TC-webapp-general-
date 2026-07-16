@@ -450,18 +450,14 @@ function Sustainability() {
           {/* Visual block */}
           <div className="relative">
             <div
-              className="rounded-2xl aspect-square flex items-center justify-center border border-[#1a1a1a]/10"
-              style={{
-                backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 22px, rgba(26,26,26,0.06) 22px, rgba(26,26,26,0.06) 23px), repeating-linear-gradient(90deg, transparent, transparent 22px, rgba(26,26,26,0.03) 22px, rgba(26,26,26,0.03) 23px)`,
-                backgroundColor: "#e8e0cc",
-              }}
+              className="rounded-2xl aspect-square overflow-hidden border border-[#1a1a1a]/10"
             >
               <Image
-                src="/tc-logo.png"
-                alt="Thrift Collision — sustainably thrifted streetwear"
+                src="/tc-packaging.jpeg"
+                alt="Thrift Collision packaging — sustainably thrifted streetwear"
                 width={260}
                 height={260}
-                className="object-contain opacity-80"
+                className="object-cover w-full h-full"
               />
             </div>
             <div className="absolute -bottom-4 -right-4 bg-[#1a6b2f] text-white rounded-2xl p-4 text-center shadow-lg">
@@ -604,7 +600,7 @@ function Footer() {
               alt="Thrift Collision"
               width={56}
               height={56}
-              className="object-contain mb-4 brightness-0 invert"
+              className="object-contain mb-4"
             />
             <p className="text-[#9ca3af] text-sm leading-relaxed max-w-xs">
               Curating the best in thrifted drops. Unisex streetwear. Sustainably sourced.

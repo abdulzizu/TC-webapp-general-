@@ -1,9 +1,9 @@
 export default function MarqueeBanner() {
   const items = [
     "NEW DROP EVERY WEEK", "UNISEX STREETWEAR", "SUSTAINABLY THRIFTED",
-    "FREE SHIPPING OVER ₦30,000", "GOOD-AS-NEW QUALITY",
+    "FREE DELIVERY OVER ₦60,000", "GOOD-AS-NEW QUALITY",
     "NEW DROP EVERY WEEK", "UNISEX STREETWEAR", "SUSTAINABLY THRIFTED",
-    "FREE SHIPPING OVER ₦30,000", "GOOD-AS-NEW QUALITY",
+    "FREE DELIVERY OVER ₦60,000", "GOOD-AS-NEW QUALITY",
   ];
   return (
     <div className="bg-[#1a6b2f] text-white py-2.5 overflow-hidden" aria-label="Promotions">
