@@ -651,9 +651,16 @@ function Footer() {
           <div>
             <h3 className="text-xs font-700 uppercase tracking-widest text-white mb-4">Help</h3>
             <ul className="space-y-2 text-sm text-[#9ca3af]">
-              {["Sizing Guide", "Shipping Info", "Returns Policy", "Order Tracking", "Contact Us", "FAQs"].map((l) => (
-                <li key={l}>
-                  <Link href="#" className="hover:text-[#1a6b2f] transition-colors">{l}</Link>
+              {[
+                { label: "Sizing Guide", href: "/sizing-guide" },
+                { label: "Shipping Info", href: "/shipping" },
+                { label: "Returns Policy", href: "/returns" },
+                { label: "Order Tracking", href: "/tracking" },
+                { label: "Contact Us", href: "/contact" },
+                { label: "FAQs", href: "/faqs" },
+              ].map((l) => (
+                <li key={l.label}>
+                  <Link href={l.href} className="hover:text-[#1a6b2f] transition-colors">{l.label}</Link>
                 </li>
               ))}
             </ul>
