@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import MarqueeBanner from "@/components/MarqueeBanner";
 import Navbar from "@/components/Navbar";
-import { getProduct, getProductByName, PRODUCTS } from "@/lib/products";
+import { getProduct, getProductByName, PRODUCTS, type Product } from "@/lib/products";
+import { createClient } from "@/lib/supabase/client";
 import { useCart } from "@/lib/cart-context";
 import { useUser } from "@/lib/user-context";
 
@@ -31,13 +32,68 @@ const PANTS_SIZING_GUIDE = [
 export default function ProductPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const product = getProduct(Number(id));
   const { addItem } = useCart();
   const { isSignedIn, addKeyword } = useUser();
   const [sizingOpen, setSizingOpen] = useState(false);
   const [added, setAdded] = useState(false);
   const [notifyAdded, setNotifyAdded] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
+  const [product, setProduct] = useState<Product | null | undefined>(() => getProduct(Number(id)));
+  const [loading, setLoading] = useState(!getProduct(Number(id)));
+
+  // Fetch from Supabase if not in static data
+  useEffect(() => {
+    const staticProduct = getProduct(Number(id));
+    if (staticProduct) {
+      setProduct(staticProduct);
+      setLoading(false);
+      return;
+    }
+
+    const supabase = createClient();
+    supabase
+      .from("products")
+      .select("*")
+      .eq("id", Number(id))
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          setProduct({
+            id: data.id,
+            name: data.name,
+            category: data.category,
+            subcategory: data.subcategory,
+            price: data.price,
+            size: data.size,
+            waist: data.waist ?? undefined,
+            length: data.length ?? undefined,
+            elasticWaist: data.elastic_waist,
+            colours: data.colours,
+            tag: data.tag as Product["tag"],
+            image: data.image,
+            images: data.images ?? [],
+            description: data.description,
+            available: data.available,
+            pairsWith: (data.pairs_with as Product["pairsWith"]) ?? [],
+          });
+        } else {
+          setProduct(null);
+        }
+        setLoading(false);
+      });
+  }, [id]);
+
+  if (loading) {
+    return (
+      <>
+        <MarqueeBanner />
+        <Navbar />
+        <main className="max-w-7xl mx-auto px-4 py-24 text-center">
+          <div className="animate-pulse text-gray-400">Loading…</div>
+        </main>
+      </>
+    );
+  }
 
   if (!product) {
     return (
