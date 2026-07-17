@@ -98,7 +98,10 @@ export default function Navbar() {
             </div>
 
             <Link href="/#how-it-works" className="text-sm font-semibold text-gray-800 hover:text-[#1a6b2f] transition-colors">How It Works</Link>
-            <Link href="/#drops" className="text-sm font-semibold text-gray-800 hover:text-[#1a6b2f] transition-colors">Drops</Link>
+            
+            {/* Drops dropdown */}
+            <DropsDropdown />
+
             <Link href="/#about" className="text-sm font-semibold text-gray-800 hover:text-[#1a6b2f] transition-colors">About</Link>
           </nav>
 
@@ -225,7 +228,12 @@ export default function Navbar() {
             ))}
             <div className="border-t border-gray-100 mt-2 pt-2 flex flex-col gap-2">
               <Link href="/#how-it-works" className="text-sm font-semibold text-gray-800" onClick={() => setMenuOpen(false)}>How It Works</Link>
-              <Link href="/#drops" className="text-sm font-semibold text-gray-800" onClick={() => setMenuOpen(false)}>Drops</Link>
+              <Link href="/#drops" className="text-sm font-semibold text-gray-800" onClick={() => setMenuOpen(false)}>Current Drop</Link>
+              <div className="pl-2 border-l-2 border-[#1a6b2f]/20 space-y-1.5">
+                <p className="text-xs font-bold text-[#1a6b2f] uppercase tracking-wide">Upcoming</p>
+                <p className="text-sm text-gray-600">🪖 Soja, not soldier — <span className="text-[#1a6b2f] text-xs font-semibold">Coming soon</span></p>
+                <p className="text-sm text-gray-600">⚽ Jersey Drop — <span className="text-[#1a6b2f] text-xs font-semibold">September</span></p>
+              </div>
               <Link href="/#about" className="text-sm font-semibold text-gray-800" onClick={() => setMenuOpen(false)}>About</Link>
               {isSignedIn ? (
                 <>
@@ -248,5 +256,78 @@ export default function Navbar() {
         </div>
       )}
     </header>
+  );
+}
+
+// ── Drops Dropdown ──────────────────────────────────────────────
+function DropsDropdown() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const upcomingDrops = [
+    {
+      title: "Soja, not soldier",
+      subtitle: "Camo capsule drop",
+      timing: "Coming soon",
+      emoji: "🪖",
+    },
+    {
+      title: "Jersey Drop",
+      subtitle: "Football jerseys collection",
+      timing: "September",
+      emoji: "⚽",
+    },
+  ];
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-1 text-sm font-semibold text-gray-800 hover:text-[#1a6b2f] transition-colors"
+        aria-expanded={open}
+        aria-haspopup="true"
+      >
+        Drops
+        <svg className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {open && (
+        <div className="absolute top-full left-0 mt-2 w-72 bg-white border border-gray-200 rounded-2xl shadow-xl p-4 z-50">
+          <p className="text-xs font-bold uppercase tracking-widest text-[#1a6b2f] mb-3">Upcoming Drops</p>
+          <div className="space-y-3">
+            {upcomingDrops.map((drop) => (
+              <div key={drop.title} className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 hover:bg-[#1a6b2f]/5 transition-colors">
+                <span className="text-xl mt-0.5">{drop.emoji}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm text-[#1a1a1a] leading-tight">{drop.title}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{drop.subtitle}</p>
+                  <span className="inline-block mt-1.5 text-[10px] font-bold uppercase tracking-wide bg-[#1a6b2f]/10 text-[#1a6b2f] px-2 py-0.5 rounded-full">
+                    {drop.timing}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <Link
+            href="/#drops"
+            onClick={() => setOpen(false)}
+            className="block mt-3 text-center text-xs font-semibold text-[#1a6b2f] hover:underline"
+          >
+            View current drop ↓
+          </Link>
+        </div>
+      )}
+    </div>
   );
 }
