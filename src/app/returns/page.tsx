@@ -16,10 +16,10 @@ export default function ReturnsPage() {
         <div className="prose prose-sm max-w-none space-y-6 text-gray-700">
           <section>
             <h2 className="text-lg font-bold text-[#1a1a1a]">Return Window</h2>
-            <p>You must reach out <strong>within 24 hours</strong> of receiving your order to initiate a return.</p>
+            <p>Returns should be initiated immediately after receiving your item — ideally same day.</p>
             <ul className="list-disc pl-5 space-y-1">
-              <li><strong>Abuja customers:</strong> Return must be completed within 24 hours of delivery.</li>
-              <li><strong>Outside Abuja:</strong> Contact us within 24 hours of receiving your item so we can process the return immediately.</li>
+              <li><strong>Abuja customers:</strong> We want returns completed same day if possible.</li>
+              <li><strong>Outside Abuja:</strong> Reach out to us as soon as you receive your item so we can process the return quickly.</li>
             </ul>
           </section>
 

@@ -34,14 +34,14 @@ create policy "Service role manages shipping zones"
 
 -- Seed initial zones
 insert into public.shipping_zones (zone_name, region, price_min, price_max, delivery_days, notes) values
-  ('Gwarinpa', 'Abuja', 2500, null, '1–2 business days', 'Free pickup available in Gwarinpa'),
-  ('Garki', 'Abuja', 3500, null, '1–2 business days', null),
-  ('Wuse', 'Abuja', 3500, null, '1–2 business days', null),
-  ('Maitama', 'Abuja', 3500, null, '1–2 business days', null),
-  ('Lugbe', 'Abuja', 4000, null, '1–2 business days', null),
-  ('Lokogoma', 'Abuja', 4000, null, '1–2 business days', null),
-  ('Kubwa', 'Abuja', 4000, null, '1–2 business days', null),
-  ('Jabi', 'Abuja', 3500, null, '1–2 business days', null),
-  ('Asokoro', 'Abuja', 3500, null, '1–2 business days', null),
+  ('Gwarinpa', 'Abuja', 2500, null, 'Same day – 1 day', 'Free pickup available by arrangement during the day'),
+  ('Garki', 'Abuja', 3500, null, 'Same day – 1 day', null),
+  ('Wuse', 'Abuja', 3500, null, 'Same day – 1 day', null),
+  ('Maitama', 'Abuja', 3500, null, 'Same day – 1 day', null),
+  ('Lugbe', 'Abuja', 4000, null, 'Same day – 1 day', null),
+  ('Lokogoma', 'Abuja', 4000, null, 'Same day – 1 day', null),
+  ('Kubwa', 'Abuja', 4000, null, 'Same day – 1 day', null),
+  ('Jabi', 'Abuja', 3500, null, 'Same day – 1 day', null),
+  ('Asokoro', 'Abuja', 3500, null, 'Same day – 1 day', null),
   ('Lagos (GUO)', 'Lagos', 5000, 5500, '2–4 business days', 'Shipped via GUO. Customer picks up at nearest GUO station or requests home delivery from GUO.'),
-  ('Other States (GUO)', 'Other States', 5000, 5500, '2–4 business days', 'Shipped via GUO. Customer picks up at nearest GUO station or requests home delivery from GUO.');
+  ('Other States', 'Other States', 3000, 6500, '2–4 business days', 'Park delivery (Kaduna, Jos, Bauchi, Kano, Adamawa, Calabar, Osun, Ekiti, etc). Customer picks up at nearest GUO station or requests home delivery from GUO.');

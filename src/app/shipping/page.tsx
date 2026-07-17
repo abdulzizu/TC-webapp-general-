@@ -54,7 +54,7 @@ export default function ShippingPage() {
           {/* Abuja */}
           <section>
             <h2 className="text-lg font-bold text-[#1a1a1a] mb-1">Delivery in Abuja</h2>
-            <p className="text-sm text-gray-500 mb-3">1–2 business days</p>
+            <p className="text-sm text-gray-500 mb-3">Same day – 1 business day</p>
             {loading ? (
               <p className="text-sm text-gray-400">Loading zones…</p>
             ) : (
@@ -83,10 +83,10 @@ export default function ShippingPage() {
             )}
           </section>
 
-          {/* Lagos */}
+          {/* Outside Abuja */}
           <section>
             <h2 className="text-lg font-bold text-[#1a1a1a] mb-1">Delivery outside Abuja</h2>
-            <p className="text-sm text-gray-500 mb-3">2–4 business days</p>
+            <p className="text-sm text-gray-500 mb-3">2–4 business days. Park delivery (Kaduna, Jos, Bauchi, Kano, Adamawa, Calabar, Osun, Ekiti, etc). For other states, customer can pick up at nearest GUO station or request home delivery from GUO.</p>
             {!loading && (
               <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
                 <table className="w-full text-sm">

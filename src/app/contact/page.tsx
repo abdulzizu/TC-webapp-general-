@@ -18,9 +18,9 @@ export default function ContactPage() {
 
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="bg-white rounded-xl border border-gray-100 p-5">
-              <p className="text-xs text-gray-500 uppercase font-semibold mb-2">Phone / SMS</p>
-              <a href="tel:+2348061979299" className="text-[#1a6b2f] font-bold text-lg hover:underline">0806 197 9299</a>
-              <p className="text-xs text-gray-400 mt-1">Mon–Sat, 9am–6pm WAT</p>
+              <p className="text-xs text-gray-500 uppercase font-semibold mb-2">SMS</p>
+              <a href="sms:+2348061979299" className="text-[#1a6b2f] font-bold text-lg hover:underline">0806 197 9299</a>
+              <p className="text-xs text-gray-400 mt-1">Text us — Mon–Sat, 9am–6pm WAT</p>
             </div>
 
             <div className="bg-white rounded-xl border border-gray-100 p-5">
@@ -49,8 +49,8 @@ export default function ContactPage() {
 
             <div className="bg-white rounded-xl border border-gray-100 p-5">
               <p className="text-xs text-gray-500 uppercase font-semibold mb-2">Location</p>
-              <p className="font-semibold text-[#1a1a1a]">Gwarinpa, Abuja</p>
-              <p className="text-xs text-gray-400 mt-1">No physical store — pickup available by arrangement</p>
+              <p className="font-semibold text-[#1a1a1a]">Abuja, Nigeria</p>
+              <p className="text-xs text-gray-400 mt-1">No physical store at the moment — pickup available by arrangement during the day</p>
             </div>
           </div>
         </div>
