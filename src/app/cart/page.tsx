@@ -7,12 +7,6 @@ import MarqueeBanner from "@/components/MarqueeBanner";
 import Navbar from "@/components/Navbar";
 import { useCart } from "@/lib/cart-context";
 
-const SHIPPING_RATES = [
-  { label: "Standard (3–5 days)", price: 3500 },
-  { label: "Express (1–2 days)", price: 6500 },
-  { label: "Free (Orders over ₦60,000)", price: 0 },
-];
-
 const DISCOUNT_CODES: Record<string, number> = {
   TCFIRST: 10,
   THRIFT15: 15,
@@ -21,14 +15,13 @@ const DISCOUNT_CODES: Record<string, number> = {
 
 export default function CartPage() {
   const { items, removeItem, subtotal } = useCart();
-  const [shippingIndex, setShippingIndex] = useState(0);
   const [discountCode, setDiscountCode] = useState("");
   const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; pct: number } | null>(null);
   const [discountError, setDiscountError] = useState("");
 
-  const shippingCost = subtotal >= 60000 ? 0 : SHIPPING_RATES[shippingIndex].price;
+  const isFreeShipping = subtotal >= 60000;
   const discountAmount = appliedDiscount ? Math.round((subtotal * appliedDiscount.pct) / 100) : 0;
-  const total = subtotal - discountAmount + shippingCost;
+  const total = subtotal - discountAmount;
 
   function applyDiscount() {
     const code = discountCode.trim().toUpperCase();
@@ -132,17 +125,16 @@ export default function CartPage() {
               {/* Shipping */}
               <div className="mb-5">
                 <p className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Shipping</p>
-                <div className="space-y-2">
-                  {SHIPPING_RATES.map((rate, i) => (
-                    <label key={i} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-colors ${shippingIndex === i ? "border-[#1a6b2f] bg-[#1a6b2f]/5" : "border-gray-100 hover:border-gray-200"} ${rate.price === 0 && subtotal < 60000 ? "opacity-40 pointer-events-none" : ""}`}>
-                      <div className="flex items-center gap-2">
-                        <input type="radio" name="shipping" checked={shippingIndex === i} onChange={() => setShippingIndex(i)}
-                          className="accent-[#1a6b2f]" />
-                        <span className="text-xs text-gray-600">{rate.label}</span>
-                      </div>
-                      <span className="text-xs font-bold text-gray-700">{rate.price === 0 ? "FREE" : `₦${rate.price.toLocaleString()}`}</span>
-                    </label>
-                  ))}
+                <div className="p-3 rounded-xl border border-gray-100 bg-gray-50">
+                  {isFreeShipping ? (
+                    <p className="text-sm text-[#1a6b2f] font-semibold">Free delivery on this order 🎉</p>
+                  ) : (
+                    <div>
+                      <p className="text-sm text-gray-700">Calculated at checkout based on your delivery address.</p>
+                      <p className="text-xs text-gray-400 mt-1">Abuja: same day – 1 day · Other states: 2–4 days via GUO</p>
+                      <p className="text-xs text-[#1a6b2f] font-semibold mt-1">Free delivery on orders above ₦60,000</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -157,15 +149,15 @@ export default function CartPage() {
                   </div>
                 )}
                 <div className="flex justify-between text-sm text-gray-600">
-                  <span>Shipping</span><span>{shippingCost === 0 ? "FREE" : `₦${shippingCost.toLocaleString()}`}</span>
+                  <span>Shipping</span><span>{isFreeShipping ? "FREE" : "At checkout"}</span>
                 </div>
                 <div className="flex justify-between font-bold text-base text-[#1a1a1a] pt-2 border-t border-gray-100">
-                  <span>Total</span><span>₦{total.toLocaleString()}</span>
+                  <span>Subtotal</span><span>₦{total.toLocaleString()}</span>
                 </div>
               </div>
 
               <Link
-                href={`/checkout?shipping=${shippingCost}${appliedDiscount ? `&discount=${appliedDiscount.pct}&code=${appliedDiscount.code}` : ""}`}
+                href={`/checkout${appliedDiscount ? `?discount=${appliedDiscount.pct}&code=${appliedDiscount.code}` : ""}`}
                 className="block w-full py-4 text-center bg-[#1a6b2f] text-white font-bold rounded-full hover:bg-[#104020] transition-colors shadow-lg shadow-[#1a6b2f]/20 text-sm"
               >
                 Proceed to Checkout
