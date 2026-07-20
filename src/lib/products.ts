@@ -678,7 +678,7 @@ export const PRODUCTS: Product[] = [
 ];
 
 export const CATEGORIES = {
-  Clothing: ["Jackets", "T-shirts", "Shirts", "Cargo pants", "Jeans", "Shorts", "Track suits", "Sweatpants"],
+  Clothing: ["Jackets", "T-shirts", "Shirts", "Cargo pants", "Jeans", "Shorts", "Track suits", "Sweatpants", "Sweatshirts", "Hoodies"],
   Accessories: ["Caps and hats", "Socks", "Ties", "Beanies", "Gloves"],
   Shoes: ["Clogs", "Slippers", "Sneakers", "Sandals"],
 };

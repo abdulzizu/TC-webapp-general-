@@ -26,8 +26,8 @@ export default function NewDropPage() {
   const [step, setStep] = useState<"details" | "products" | "review">("details");
 
   const loadProducts = useCallback(async () => {
-    // Show ALL products (including unavailable ones) so admin can assign them to a drop
-    const { data } = await supabase.from("products").select("id, name, image, price, available").order("id", { ascending: false });
+    // Only show hidden (unavailable) products — these are the ones ready for a drop
+    const { data } = await supabase.from("products").select("id, name, image, price, available").eq("available", false).order("id", { ascending: false });
     if (data) setAllProducts(data as any);
   }, [supabase]);
 
@@ -133,7 +133,7 @@ export default function NewDropPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold">Add Products to &quot;{name}&quot;</h1>
-            <p className="text-sm text-gray-500 mt-1">Select existing products or <a href="/admin/products" target="_blank" className="text-[#1a6b2f] font-semibold hover:underline">add new ones first</a>. Products in this drop are hidden from the store until you release.</p>
+            <p className="text-sm text-gray-500 mt-1">Only hidden products are shown here. <a href="/admin/products" target="_blank" className="text-[#1a6b2f] font-semibold hover:underline">Add new products</a> with &quot;Visible on store&quot; unchecked, then come back to assign them to this drop.</p>
           </div>
           <button onClick={() => setStep("review")} className="px-4 py-2 bg-[#1a6b2f] text-white font-semibold rounded-full text-sm hover:bg-[#104020] transition">
             Review & Release ({products.length} items)
