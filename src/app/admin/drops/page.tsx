@@ -109,14 +109,29 @@ export default function AdminDropsPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-[#1a1a1a]">Upcoming Drops</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage the drops shown in the navbar dropdown. Changes appear on the website instantly.</p>
+    <div className="space-y-8">
+      {/* Scheduled Drops Section */}
+      <div className="bg-white rounded-xl border border-gray-100 p-5">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h2 className="font-bold text-base text-[#1a1a1a]">Drop Scheduling</h2>
+            <p className="text-xs text-gray-500 mt-0.5">Create a new drop, add products, and release or schedule it.</p>
+          </div>
+          <a href="/admin/drops/new" className="px-4 py-2 bg-[#1a6b2f] text-white font-semibold rounded-full text-sm hover:bg-[#104020] transition inline-block">
+            🚀 Start New Drop
+          </a>
         </div>
-        <button onClick={startCreate} className="px-4 py-2 bg-[#1a6b2f] text-white font-semibold rounded-full text-sm hover:bg-[#104020] transition">+ Add Drop</button>
       </div>
+
+      {/* Upcoming Drops Announcements (navbar) */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold text-[#1a1a1a]">Drop Announcements (Navbar)</h1>
+            <p className="text-sm text-gray-500 mt-1">Manage the drops shown in the navbar dropdown. Changes appear on the website instantly.</p>
+          </div>
+          <button onClick={startCreate} className="px-4 py-2 bg-[#1a6b2f] text-white font-semibold rounded-full text-sm hover:bg-[#104020] transition">+ Add Announcement</button>
+        </div>
 
       {loading ? <p className="text-sm text-gray-400">Loading…</p> : drops.length === 0 ? (
         <p className="text-sm text-gray-400">No upcoming drops. Add one to show in the menu.</p>
@@ -143,6 +158,7 @@ export default function AdminDropsPage() {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 }

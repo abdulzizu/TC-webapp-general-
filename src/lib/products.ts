@@ -14,7 +14,7 @@ export type Product = {
   length?: string;       // inseam/outseam length e.g. 'L30"'
   elasticWaist?: boolean; // true = stretchy/drawstring waist
   colours: string[];
-  tag: "NEW" | "2 LEFT" | "1 LEFT" | "SOLD OUT";
+  tag: "NEW" | "2 LEFT" | "1 LEFT" | "SOLD OUT" | "👀 HOT" | "🔥 TRENDING";
   image: string;         // primary image
   images?: string[];     // additional images (for scrollable gallery)
   description: string;

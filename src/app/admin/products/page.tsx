@@ -40,11 +40,11 @@ const EMPTY_PRODUCT: Omit<Product, "id"> = {
 };
 
 const CATEGORIES = ["Clothing", "Accessories", "Shoes"];
-const TAGS = ["NEW", "2 LEFT", "1 LEFT", "SOLD OUT"];
+const TAGS = ["NEW", "2 LEFT", "1 LEFT", "SOLD OUT", "👀 HOT", "🔥 TRENDING"];
 const SUBCATEGORIES: Record<string, string[]> = {
-  Clothing: ["Jackets", "T-shirts", "Shirts", "Cargo pants", "Jeans", "Shorts", "Track suits", "Sweatpants", "Sweatshirts"],
-  Accessories: ["Caps and hats", "Socks", "Ties", "Beanies", "Gloves", "Bags"],
-  Shoes: ["Clogs", "Slippers", "Sneakers", "Sandals", "Boots"],
+  Clothing: ["Jackets", "T-shirts", "Shirts", "Cargo pants", "Jeans", "Shorts", "Track suits", "Sweatpants", "Sweatshirts", "Hoodies", "Dresses"],
+  Accessories: ["Caps and hats", "Socks", "Ties", "Beanies", "Gloves", "Bags", "Belts", "Scarves"],
+  Shoes: ["Clogs", "Slippers", "Sneakers", "Sandals", "Boots", "Loafers"],
 };
 
 export default function AdminProductsPage() {
@@ -194,12 +194,28 @@ export default function AdminProductsPage() {
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1">Subcategory</label>
-              <select value={form.subcategory} onChange={(e) => setForm({ ...form, subcategory: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a6b2f]">
+              <select
+                value={(SUBCATEGORIES[form.category] ?? []).includes(form.subcategory) ? form.subcategory : "__custom__"}
+                onChange={(e) => {
+                  if (e.target.value === "__custom__") return;
+                  setForm({ ...form, subcategory: e.target.value });
+                }}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a6b2f]"
+              >
                 <option value="">Select subcategory</option>
                 {(SUBCATEGORIES[form.category] ?? []).map((sub) => (
                   <option key={sub} value={sub}>{sub}</option>
                 ))}
+                <option value="__custom__">+ Add custom…</option>
               </select>
+              {(!(SUBCATEGORIES[form.category] ?? []).includes(form.subcategory) || form.subcategory === "") && (
+                <input
+                  value={(SUBCATEGORIES[form.category] ?? []).includes(form.subcategory) ? "" : form.subcategory}
+                  onChange={(e) => setForm({ ...form, subcategory: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a6b2f] mt-2"
+                  placeholder="Type custom subcategory (e.g. Hoodie)"
+                />
+              )}
             </div>
           </div>
 
