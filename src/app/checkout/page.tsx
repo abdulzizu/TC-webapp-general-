@@ -38,6 +38,8 @@ function CheckoutContent() {
   const [payMethod, setPayMethod] = useState("card");
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [shippingZones, setShippingZones] = useState<any[]>([]);
+  const [matchedZone, setMatchedZone] = useState<any>(null);
 
   const [form, setForm] = useState({
     name: user?.name || "",
@@ -47,6 +49,55 @@ function CheckoutContent() {
     city: "",
     state: "",
   });
+
+  // Load shipping zones from Supabase
+  useEffect(() => {
+    import("@/lib/supabase/client").then(({ createClient }) => {
+      const supabase = createClient();
+      supabase
+        .from("shipping_zones")
+        .select("*")
+        .eq("active", true)
+        .then(({ data }) => {
+          if (data) setShippingZones(data);
+        });
+    });
+  }, []);
+
+  // Match zone when city/state/address changes
+  useEffect(() => {
+    if (shippingZones.length === 0) return;
+    const searchText = `${form.address} ${form.city} ${form.state}`.toLowerCase();
+
+    // Try to find a matching zone by name (e.g. "Garki", "Lugbe", "Lagos")
+    const match = shippingZones.find((z) =>
+      searchText.includes(z.zone_name.toLowerCase())
+    );
+
+    if (match) {
+      setMatchedZone(match);
+    } else {
+      // Fallback: match by region based on state
+      const state = form.state.toLowerCase();
+      if (state.includes("abuja") || state.includes("fct")) {
+        // Default Abuja rate if no specific zone matched
+        const abujaDefault = shippingZones.find((z) => z.region === "Abuja") || null;
+        setMatchedZone(abujaDefault);
+      } else if (state.includes("lagos")) {
+        const lagosZone = shippingZones.find((z) => z.region === "Lagos");
+        setMatchedZone(lagosZone || null);
+      } else if (state) {
+        const otherZone = shippingZones.find((z) => z.region === "Other States");
+        setMatchedZone(otherZone || null);
+      } else {
+        setMatchedZone(null);
+      }
+    }
+  }, [form.address, form.city, form.state, shippingZones]);
+
+  // Dynamic shipping cost from matched zone
+  const dynamicShippingCost = matchedZone ? matchedZone.price_min : Number(searchParams.get("shipping") || 3500);
+  const actualShippingCost = subtotal >= 60000 ? 0 : dynamicShippingCost;
 
   useEffect(() => {
     if (user) {
@@ -63,9 +114,9 @@ function CheckoutContent() {
 
   // Costs
   const discountAmount = discountPct ? Math.round((subtotal * discountPct) / 100) : 0;
-  const shippingCost = deliveryChoice === "stockpile" ? 0 : cartShippingCost;
+  const shippingCost = deliveryChoice === "stockpile" ? 0 : actualShippingCost;
   const total = subtotal - discountAmount + shippingCost;
-  const shippingEstimate = form.state ? getShippingEstimate(form.state) : null;
+  const shippingEstimate = matchedZone?.delivery_days || (form.state ? getShippingEstimate(form.state) : null);
 
   // Stockpile expiry = 1 month from today
   const stockpiledUntil = new Date();
@@ -233,17 +284,22 @@ function CheckoutContent() {
                       <div className="flex-1">
                       <div className="flex items-center justify-between">
                         <p className="font-semibold text-[#1a1a1a] text-sm">Ship Immediately</p>
-                        <span className="text-xs font-bold text-[#1a1a1a]">{cartShippingCost === 0 ? "FREE" : `+₦${cartShippingCost.toLocaleString()}`}</span>
+                        <span className="text-xs font-bold text-[#1a1a1a]">{actualShippingCost === 0 ? "FREE" : `+₦${actualShippingCost.toLocaleString()}`}</span>
                       </div>
                       <p className="text-xs text-gray-500 mt-1">
-                        {cartShippingCost === 0
+                        {actualShippingCost === 0
                           ? <span className="text-[#1a6b2f] font-semibold">Free delivery for orders above ₦60,000 🎉</span>
-                          : "We dispatch your order right away."
+                          : matchedZone
+                            ? <span>Delivering to <strong>{matchedZone.zone_name}</strong> — {matchedZone.delivery_days}.</span>
+                            : "We dispatch your order right away."
                         }
-                        {shippingEstimate && form.state && (
+                        {!matchedZone && shippingEstimate && form.state && (
                           <span className="text-[#1a6b2f] font-semibold"> Estimated delivery to {form.state}: {shippingEstimate}.</span>
                         )}
                       </p>
+                      {matchedZone?.notes && actualShippingCost > 0 && (
+                        <p className="text-xs text-gray-400 mt-1">{matchedZone.notes}</p>
+                      )}
                       {deliveryChoice === "ship" && (
                         <p className="text-xs text-[#1a6b2f] mt-2 font-semibold">
                           📲 You&apos;ll be notified via SMS when your order ships.
