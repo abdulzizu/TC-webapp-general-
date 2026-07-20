@@ -57,13 +57,35 @@ export async function POST(req: NextRequest) {
     // Use a deterministic placeholder email based on phone — needed for generateLink
     const placeholderEmail = `phone_${normalisePhone(phone)}@tc.thriftcollision.app`;
 
-    // Try to find existing user by phone
-    const { data: { users } } = await adminClient.auth.admin.listUsers();
-    let user = users?.find((u) => u.phone === normalisedPhone);
+    // Try to find existing user by phone (scalable — doesn't load all users)
+    let user: any = null;
+
+    // Search by phone via profiles table (scalable)
+    const { data: profileMatch } = await adminClient
+      .from("profiles")
+      .select("id")
+      .eq("phone", normalisedPhone)
+      .limit(1)
+      .single();
+
+    if (profileMatch) {
+      const { data: existingUser } = await adminClient.auth.admin.getUserById(profileMatch.id);
+      if (existingUser?.user) user = existingUser.user;
+    }
 
     if (!user) {
-      // Also check by placeholder email (in case phone field wasn't set)
-      user = users?.find((u) => u.email === placeholderEmail);
+      // Also try by placeholder email
+      const { data: emailProfile } = await adminClient
+        .from("profiles")
+        .select("id")
+        .eq("email", placeholderEmail)
+        .limit(1)
+        .single();
+
+      if (emailProfile) {
+        const { data: existingUser } = await adminClient.auth.admin.getUserById(emailProfile.id);
+        if (existingUser?.user) user = existingUser.user;
+      }
     }
 
     if (!user) {
