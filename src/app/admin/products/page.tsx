@@ -41,6 +41,11 @@ const EMPTY_PRODUCT: Omit<Product, "id"> = {
 
 const CATEGORIES = ["Clothing", "Accessories", "Shoes"];
 const TAGS = ["NEW", "2 LEFT", "1 LEFT", "SOLD OUT"];
+const SUBCATEGORIES: Record<string, string[]> = {
+  Clothing: ["Jackets", "T-shirts", "Shirts", "Cargo pants", "Jeans", "Shorts", "Track suits", "Sweatpants", "Sweatshirts"],
+  Accessories: ["Caps and hats", "Socks", "Ties", "Beanies", "Gloves", "Bags"],
+  Shoes: ["Clogs", "Slippers", "Sneakers", "Sandals", "Boots"],
+};
 
 export default function AdminProductsPage() {
   const supabase = createClient();
@@ -189,7 +194,12 @@ export default function AdminProductsPage() {
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1">Subcategory</label>
-              <input value={form.subcategory} onChange={(e) => setForm({ ...form, subcategory: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a6b2f]" placeholder="e.g. Jeans, T-shirts" />
+              <select value={form.subcategory} onChange={(e) => setForm({ ...form, subcategory: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a6b2f]">
+                <option value="">Select subcategory</option>
+                {(SUBCATEGORIES[form.category] ?? []).map((sub) => (
+                  <option key={sub} value={sub}>{sub}</option>
+                ))}
+              </select>
             </div>
           </div>
 

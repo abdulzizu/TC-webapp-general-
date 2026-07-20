@@ -262,6 +262,10 @@ export default function Navbar() {
 // ── Drops Dropdown ──────────────────────────────────────────────
 function DropsDropdown() {
   const [open, setOpen] = useState(false);
+  const [drops, setDrops] = useState([
+    { title: "Soja, not soldier", subtitle: "Camo capsule drop", timing: "Coming soon", emoji: "🪖" },
+    { title: "Jersey Drop", subtitle: "Football jerseys collection", timing: "September", emoji: "⚽" },
+  ]);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -274,20 +278,19 @@ function DropsDropdown() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const upcomingDrops = [
-    {
-      title: "Soja, not soldier",
-      subtitle: "Camo capsule drop",
-      timing: "Coming soon",
-      emoji: "🪖",
-    },
-    {
-      title: "Jersey Drop",
-      subtitle: "Football jerseys collection",
-      timing: "September",
-      emoji: "⚽",
-    },
-  ];
+  useEffect(() => {
+    import("@/lib/supabase/client").then(({ createClient }) => {
+      const supabase = createClient();
+      supabase
+        .from("upcoming_drops")
+        .select("title, subtitle, timing, emoji")
+        .eq("active", true)
+        .order("display_order")
+        .then(({ data }) => {
+          if (data && data.length > 0) setDrops(data as any);
+        });
+    });
+  }, []);
 
   return (
     <div className="relative" ref={ref}>
@@ -306,7 +309,7 @@ function DropsDropdown() {
         <div className="absolute top-full left-0 mt-2 w-72 bg-white border border-gray-200 rounded-2xl shadow-xl p-4 z-50">
           <p className="text-xs font-bold uppercase tracking-widest text-[#1a6b2f] mb-3">Upcoming Drops</p>
           <div className="space-y-3">
-            {upcomingDrops.map((drop) => (
+            {drops.map((drop) => (
               <div key={drop.title} className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 hover:bg-[#1a6b2f]/5 transition-colors">
                 <span className="text-xl mt-0.5">{drop.emoji}</span>
                 <div className="flex-1 min-w-0">
