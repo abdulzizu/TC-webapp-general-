@@ -258,10 +258,13 @@ export default function AdminProductsPage() {
               </select>
             </div>
             <div className="flex items-end">
-              <label className="flex items-center gap-2 text-sm cursor-pointer">
-                <input type="checkbox" checked={form.available} onChange={(e) => setForm({ ...form, available: e.target.checked })} className="accent-[#1a6b2f]" />
-                Available for sale
-              </label>
+              <div>
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <input type="checkbox" checked={form.available} onChange={(e) => setForm({ ...form, available: e.target.checked })} className="accent-[#1a6b2f]" />
+                  Visible on store
+                </label>
+                <p className="text-[10px] text-gray-400 mt-1">Uncheck to hide from customers (e.g. for upcoming drops)</p>
+              </div>
             </div>
           </div>
 

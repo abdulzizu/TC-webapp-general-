@@ -26,6 +26,7 @@ export default function NewDropPage() {
   const [step, setStep] = useState<"details" | "products" | "review">("details");
 
   const loadProducts = useCallback(async () => {
+    // Show ALL products (including unavailable ones) so admin can assign them to a drop
     const { data } = await supabase.from("products").select("id, name, image, price, available").order("id", { ascending: false });
     if (data) setAllProducts(data as any);
   }, [supabase]);
@@ -56,9 +57,10 @@ export default function NewDropPage() {
 
   async function addProductToDrop(productId: number) {
     if (!dropId) return;
-    await supabase.from("products").update({ drop_id: dropId, available: false, tag: "NEW" }).eq("id", productId);
+    // Hide product from store — it will become visible when the drop is released
+    await supabase.from("products").update({ drop_id: dropId, available: false }).eq("id", productId);
     const product = allProducts.find((p) => p.id === productId);
-    if (product) setProducts((prev) => [...prev, product]);
+    if (product) setProducts((prev) => [...prev, { ...product, available: false }]);
   }
 
   async function removeProductFromDrop(productId: number) {
@@ -131,7 +133,7 @@ export default function NewDropPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold">Add Products to &quot;{name}&quot;</h1>
-            <p className="text-sm text-gray-500 mt-1">Select products to include in this drop. They&apos;ll be hidden until you release.</p>
+            <p className="text-sm text-gray-500 mt-1">Select existing products or <a href="/admin/products" target="_blank" className="text-[#1a6b2f] font-semibold hover:underline">add new ones first</a>. Products in this drop are hidden from the store until you release.</p>
           </div>
           <button onClick={() => setStep("review")} className="px-4 py-2 bg-[#1a6b2f] text-white font-semibold rounded-full text-sm hover:bg-[#104020] transition">
             Review & Release ({products.length} items)

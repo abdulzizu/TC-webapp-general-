@@ -26,6 +26,7 @@ export function useProducts(): UseProductsResult {
     supabase
       .from("products")
       .select("*")
+      .eq("available", true)
       .order("id", { ascending: true })
       .then(({ data, error: dbError }) => {
         if (dbError || !data || data.length === 0) {
