@@ -17,9 +17,9 @@ function getShippingEstimate(state: string): string {
   const Lagos = ["lagos"];
   const SameDay = ["abuja", "fct"];
   const s = state.toLowerCase();
-  if (Lagos.some((x) => s.includes(x))) return "2–3 business days";
-  if (SameDay.some((x) => s.includes(x))) return "1–2 business days";
-  return "3–5 business days";
+  if (SameDay.some((x) => s.includes(x))) return "Same day – 1 day";
+  if (Lagos.some((x) => s.includes(x))) return "2–4 business days";
+  return "2–4 business days";
 }
 
 function CheckoutContent() {

@@ -97,7 +97,7 @@ function ConfirmationContent() {
             We&apos;re holding your items securely until <strong>{stockpileDeadline}</strong>. When you&apos;re ready for delivery, just message us with your Order ID and we&apos;ll arrange shipping and charge the delivery fee then.
           </p>
           <a
-            href={`https://wa.me/2348000000000?text=Hi! I'd like to request delivery for order ${orderId}`}
+            href={`https://wa.me/2348061979299?text=Hi! I'd like to request delivery for order ${orderId}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 bg-[#1a6b2f] text-white font-semibold px-5 py-2.5 rounded-full text-sm hover:bg-[#104020] transition-colors"
@@ -144,7 +144,7 @@ function ConfirmationContent() {
       {/* Support */}
       <div className="bg-[#f5f0e8] rounded-2xl p-4 mb-8 text-sm text-gray-600">
         Questions? Message us on{" "}
-        <a href={`https://wa.me/2348000000000?text=Order ${orderId} query`} target="_blank" rel="noopener noreferrer" className="text-[#1a6b2f] font-semibold hover:underline">
+        <a href={`https://wa.me/2348061979299?text=Order ${orderId} query`} target="_blank" rel="noopener noreferrer" className="text-[#1a6b2f] font-semibold hover:underline">
           WhatsApp
         </a>{" "}
         with Order ID <span className="font-bold text-[#1a1a1a]">{orderId}</span>.

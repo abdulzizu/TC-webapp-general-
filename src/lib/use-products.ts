@@ -16,7 +16,7 @@ type UseProductsResult = {
  * unreachable or returns no rows.
  */
 export function useProducts(): UseProductsResult {
-  const [products, setProducts] = useState<Product[]>(STATIC_PRODUCTS);
+  const [products, setProducts] = useState<Product[]>(STATIC_PRODUCTS.filter(p => p.available));
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,8 +30,8 @@ export function useProducts(): UseProductsResult {
       .order("id", { ascending: true })
       .then(({ data, error: dbError }) => {
         if (dbError || !data || data.length === 0) {
-          // Silently fall back to static data
-          setProducts(STATIC_PRODUCTS);
+          // Silently fall back to static data (available only)
+          setProducts(STATIC_PRODUCTS.filter(p => p.available));
           if (dbError) setError(dbError.message);
         } else {
           const mapped: Product[] = data.map((p: any) => ({

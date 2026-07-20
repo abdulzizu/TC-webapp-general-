@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
@@ -89,7 +89,7 @@ function FeaturedHeroCards() {
     { label: "Black Baggy Jeans", price: "₦15,000", size: "32", tag: "NEW", image_url: "/products/black baggy jeans.jpeg" },
   ]);
 
-  useState(() => {
+  useEffect(() => {
     const supabase = createClient();
     supabase
       .from("featured_products")
@@ -99,7 +99,7 @@ function FeaturedHeroCards() {
       .then(({ data }) => {
         if (data && data.length > 0) setCards(data);
       });
-  });
+  }, []);
 
   return (
     <div className="grid grid-cols-2 gap-3">

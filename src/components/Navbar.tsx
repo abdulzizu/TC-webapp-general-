@@ -153,7 +153,7 @@ export default function Navbar() {
             {isSignedIn ? (
               <div className="hidden sm:flex items-center gap-2">
                 <Link href="/profile" className="text-sm font-semibold text-gray-700 hover:text-[#1a6b2f] transition-colors">
-                  Hi, {user!.name.split(" ")[0]}
+                  Hi, {user?.name?.split(" ")[0] || "there"}
                 </Link>
                 <button onClick={signOut} className="text-xs text-gray-400 hover:text-red-500 transition-colors">Sign out</button>
               </div>
@@ -238,7 +238,7 @@ export default function Navbar() {
               {isSignedIn ? (
                 <>
                   <Link href="/profile" className="text-sm font-semibold text-gray-800" onClick={() => setMenuOpen(false)}>
-                    My Profile ({user!.name.split(" ")[0]})
+                    My Profile ({user?.name?.split(" ")[0] || "there"})
                   </Link>
                   <Link href="/cart" className="text-sm font-semibold text-gray-800" onClick={() => setMenuOpen(false)}>
                     Cart {totalItems > 0 ? `(${totalItems})` : ""}
