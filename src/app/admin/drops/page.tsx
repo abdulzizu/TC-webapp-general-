@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
 type Drop = {
@@ -13,9 +14,21 @@ type Drop = {
   active: boolean;
 };
 
+type ScheduledDrop = {
+  id: number;
+  name: string;
+  description: string | null;
+  status: string;
+  scheduled_at: string | null;
+  released_at: string | null;
+  created_at: string;
+  product_count?: number;
+};
+
 export default function AdminDropsPage() {
   const supabase = createClient();
   const [drops, setDrops] = useState<Drop[]>([]);
+  const [scheduledDrops, setScheduledDrops] = useState<ScheduledDrop[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Drop | null>(null);
   const [creating, setCreating] = useState(false);
@@ -25,6 +38,28 @@ export default function AdminDropsPage() {
   const loadDrops = useCallback(async () => {
     const { data } = await supabase.from("upcoming_drops").select("*").order("display_order");
     if (data) setDrops(data as any);
+
+    // Load scheduled/draft drops
+    const { data: scheduled } = await supabase
+      .from("drops")
+      .select("*")
+      .in("status", ["draft", "scheduled"])
+      .order("created_at", { ascending: false });
+
+    if (scheduled) {
+      // Get product counts for each drop
+      const withCounts = await Promise.all(
+        scheduled.map(async (d: any) => {
+          const { count } = await supabase
+            .from("products")
+            .select("id", { count: "exact", head: true })
+            .eq("drop_id", d.id);
+          return { ...d, product_count: count ?? 0 };
+        })
+      );
+      setScheduledDrops(withCounts);
+    }
+
     setLoading(false);
   }, [supabase]);
 
@@ -111,16 +146,52 @@ export default function AdminDropsPage() {
   return (
     <div className="space-y-8">
       {/* Scheduled Drops Section */}
-      <div className="bg-white rounded-xl border border-gray-100 p-5">
-        <div className="flex items-center justify-between mb-3">
+      <div>
+        <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="font-bold text-base text-[#1a1a1a]">Drop Scheduling</h2>
-            <p className="text-xs text-gray-500 mt-0.5">Create a new drop, add products, and release or schedule it.</p>
+            <h2 className="text-xl font-bold text-[#1a1a1a]">Drop Queue</h2>
+            <p className="text-sm text-gray-500 mt-0.5">Plan drops ahead of time. Add products, set a date, release when ready.</p>
           </div>
-          <a href="/admin/drops/new" className="px-4 py-2 bg-[#1a6b2f] text-white font-semibold rounded-full text-sm hover:bg-[#104020] transition inline-block">
+          <Link href="/admin/drops/new" className="px-4 py-2 bg-[#1a6b2f] text-white font-semibold rounded-full text-sm hover:bg-[#104020] transition">
             🚀 Start New Drop
-          </a>
+          </Link>
         </div>
+
+        {scheduledDrops.length === 0 ? (
+          <div className="bg-white rounded-xl border border-gray-100 p-6 text-center">
+            <p className="text-gray-400 text-sm">No queued drops. Start one to plan your next release.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {scheduledDrops.map((drop) => (
+              <div key={drop.id} className="bg-white rounded-xl border border-gray-100 p-4 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className={`w-2 h-8 rounded-full ${drop.status === "scheduled" ? "bg-blue-500" : "bg-gray-300"}`} />
+                  <div>
+                    <p className="font-semibold text-sm text-[#1a1a1a]">{drop.name}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full ${
+                        drop.status === "scheduled" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-600"
+                      }`}>{drop.status}</span>
+                      <span className="text-xs text-gray-400">{drop.product_count} products</span>
+                      {drop.scheduled_at && (
+                        <span className="text-xs text-gray-400">
+                          · {new Date(drop.scheduled_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <Link
+                  href={`/admin/drops/new?edit=${drop.id}`}
+                  className="text-xs text-[#1a6b2f] font-semibold hover:underline"
+                >
+                  Edit / Manage
+                </Link>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Upcoming Drops Announcements (navbar) */}

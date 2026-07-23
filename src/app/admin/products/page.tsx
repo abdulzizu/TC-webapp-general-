@@ -333,85 +333,125 @@ export default function AdminProductsPage() {
           {/* Pairs With */}
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1">Pairs With (Style suggestions — up to 3)</label>
-            <p className="text-[10px] text-gray-400 mb-3">Select products that go well with this item and explain why.</p>
+            <p className="text-[10px] text-gray-400 mb-3">Select products that go well with this item. Auto-suggestions are based on complementary categories.</p>
 
             {/* Current pairings */}
             {form.pairs_with.length > 0 && (
-              <div className="space-y-2 mb-3">
+              <div className="space-y-2 mb-4">
                 {form.pairs_with.map((pairing, i) => (
-                  <div key={i} className="flex items-start gap-2 p-3 bg-gray-50 rounded-lg">
+                  <div key={i} className="flex items-start gap-3 p-3 bg-[#1a6b2f]/5 border border-[#1a6b2f]/20 rounded-xl">
+                    <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-100 shrink-0">
+                      {(() => { const p = products.find(x => x.name === pairing.item); return p?.image ? <Image src={p.image} alt="" fill className="object-cover" sizes="48px" /> : null; })()}
+                    </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-[#1a1a1a] truncate">{pairing.item}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{pairing.reason || "No reason added"}</p>
+                      <input
+                        value={pairing.reason}
+                        onChange={(e) => {
+                          const updated = [...form.pairs_with];
+                          updated[i] = { ...updated[i], reason: e.target.value };
+                          setForm((f) => ({ ...f, pairs_with: updated }));
+                        }}
+                        className="w-full border border-gray-200 rounded-lg px-2 py-1 text-xs mt-1 focus:outline-none focus:border-[#1a6b2f]"
+                        placeholder="Why do they pair well?"
+                      />
                     </div>
                     <button
                       type="button"
                       onClick={() => setForm((f) => ({ ...f, pairs_with: f.pairs_with.filter((_, idx) => idx !== i) }))}
-                      className="text-xs text-red-400 hover:text-red-600 shrink-0 mt-0.5"
+                      className="text-xs text-red-400 hover:text-red-600 shrink-0 mt-1"
                     >
-                      Remove
+                      ×
                     </button>
                   </div>
                 ))}
               </div>
             )}
 
-            {/* Add new pairing */}
+            {/* Auto-suggest + Manual select */}
             {form.pairs_with.length < 3 && (
-              <div className="border border-dashed border-gray-200 rounded-lg p-3 space-y-2">
-                <input
-                  type="text"
-                  value={pairingSearch}
-                  onChange={(e) => setPairingSearch(e.target.value)}
-                  placeholder="Search for a product to pair with…"
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a6b2f]"
-                />
-                {pairingSearch.trim() && (
-                  <div className="max-h-32 overflow-y-auto space-y-1">
+              <div className="space-y-3">
+                {/* Auto-suggest button */}
+                {form.pairs_with.length === 0 && form.name && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      // Auto-suggest from complementary categories
+                      const complementary: Record<string, string[]> = {
+                        "Jeans": ["T-shirts", "Jackets", "Sneakers", "Caps and hats"],
+                        "Sweatpants": ["T-shirts", "Sweatshirts", "Sneakers", "Caps and hats"],
+                        "Shorts": ["T-shirts", "Shirts", "Sneakers", "Caps and hats"],
+                        "T-shirts": ["Jeans", "Jackets", "Sneakers", "Caps and hats"],
+                        "Shirts": ["Jeans", "Shorts", "Sneakers"],
+                        "Jackets": ["Jeans", "T-shirts", "Sneakers"],
+                        "Sweatshirts": ["Jeans", "Sweatpants", "Sneakers", "Caps and hats"],
+                        "Hoodies": ["Jeans", "Sweatpants", "Sneakers", "Caps and hats"],
+                        "Sneakers": ["Jeans", "Sweatpants", "T-shirts"],
+                        "Caps and hats": ["Jeans", "T-shirts", "Jackets"],
+                        "Socks": ["Sneakers", "Shorts", "Jeans"],
+                      };
+                      const targetSubs = complementary[form.subcategory] ?? ["Jeans", "T-shirts", "Sneakers"];
+                      const suggestions = products
+                        .filter((p) => targetSubs.includes(p.subcategory) && p.name !== form.name && p.available)
+                        .slice(0, 3)
+                        .map((p) => ({ item: p.name, reason: "" }));
+                      if (suggestions.length > 0) {
+                        setForm((f) => ({ ...f, pairs_with: suggestions }));
+                      }
+                    }}
+                    className="w-full py-2 text-xs font-semibold text-[#1a6b2f] border border-[#1a6b2f]/30 rounded-lg hover:bg-[#1a6b2f]/5 transition"
+                  >
+                    ✨ Auto-suggest pairings based on category
+                  </button>
+                )}
+
+                {/* Search + visual grid */}
+                <div>
+                  <input
+                    type="text"
+                    value={pairingSearch}
+                    onChange={(e) => setPairingSearch(e.target.value)}
+                    placeholder="Search for a product to pair with…"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a6b2f] mb-2"
+                  />
+                  <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
                     {products
                       .filter((p) =>
-                        p.name.toLowerCase().includes(pairingSearch.toLowerCase()) &&
+                        (pairingSearch ? p.name.toLowerCase().includes(pairingSearch.toLowerCase()) : true) &&
                         !form.pairs_with.some((pw) => pw.item === p.name) &&
+                        p.name !== form.name &&
                         p.id !== editing?.id
                       )
-                      .slice(0, 5)
+                      .slice(0, 9)
                       .map((p) => (
                         <button
                           key={p.id}
                           type="button"
                           onClick={() => {
-                            const reason = prompt(`Why does "${p.name}" pair well with this product?`, "");
-                            if (reason !== null) {
-                              setForm((f) => ({
-                                ...f,
-                                pairs_with: [...f.pairs_with, { item: p.name, reason: reason || "" }],
-                              }));
-                              setPairingSearch("");
-                            }
+                            setForm((f) => ({
+                              ...f,
+                              pairs_with: [...f.pairs_with, { item: p.name, reason: "" }],
+                            }));
+                            setPairingSearch("");
                           }}
-                          className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-[#1a6b2f]/5 hover:text-[#1a6b2f] transition flex items-center gap-2"
+                          className="bg-white border border-gray-100 rounded-lg p-2 text-left hover:border-[#1a6b2f] transition group"
                         >
-                          <span className="w-6 h-6 rounded bg-gray-100 shrink-0 overflow-hidden relative">
-                            {p.image && <Image src={p.image} alt="" fill className="object-cover" sizes="24px" />}
-                          </span>
-                          <span className="truncate">{p.name}</span>
-                          <span className="text-xs text-gray-400 shrink-0">₦{p.price.toLocaleString()}</span>
+                          <div className="relative aspect-square rounded overflow-hidden bg-gray-100 mb-1">
+                            {p.image && <Image src={p.image} alt="" fill className="object-cover" sizes="100px" />}
+                            <div className="absolute inset-0 bg-[#1a6b2f]/0 group-hover:bg-[#1a6b2f]/10 transition flex items-center justify-center">
+                              <span className="opacity-0 group-hover:opacity-100 text-white bg-[#1a6b2f] rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold transition">+</span>
+                            </div>
+                          </div>
+                          <p className="text-[10px] font-medium truncate">{p.name}</p>
                         </button>
                       ))}
-                    {products.filter((p) =>
-                      p.name.toLowerCase().includes(pairingSearch.toLowerCase()) &&
-                      !form.pairs_with.some((pw) => pw.item === p.name) &&
-                      p.id !== editing?.id
-                    ).length === 0 && (
-                      <p className="text-xs text-gray-400 py-2 px-3">No matching products found</p>
-                    )}
                   </div>
-                )}
+                </div>
               </div>
             )}
 
             {form.pairs_with.length >= 3 && (
-              <p className="text-xs text-gray-400">Maximum 3 pairings reached. Remove one to add another.</p>
+              <p className="text-xs text-gray-400 mt-2">Maximum 3 pairings. Remove one to add another.</p>
             )}
           </div>
         </div>
