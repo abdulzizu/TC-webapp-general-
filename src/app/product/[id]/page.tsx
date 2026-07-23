@@ -83,6 +83,49 @@ export default function ProductPage() {
       });
   }, [id]);
 
+  // "You may also like" — fetch from Supabase, fallback to static
+  const [related, setRelated] = useState<Product[]>([]);
+
+  useEffect(() => {
+    if (!product) return;
+    // Set static fallback first
+    setRelated(
+      PRODUCTS
+        .filter((p) => p.id !== product.id && p.available)
+        .sort((a, b) => {
+          const aScore = a.subcategory === product.subcategory ? 2 : a.category === product.category ? 1 : 0;
+          const bScore = b.subcategory === product.subcategory ? 2 : b.category === product.category ? 1 : 0;
+          return bScore - aScore;
+        })
+        .slice(0, 4)
+    );
+
+    const supabase = createClient();
+    supabase
+      .from("products")
+      .select("*")
+      .eq("available", true)
+      .neq("id", product.id)
+      .limit(20)
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          const mapped: Product[] = data.map((p: any) => ({
+            id: p.id, name: p.name, category: p.category, subcategory: p.subcategory,
+            price: p.price, size: p.size, waist: p.waist ?? undefined, length: p.length ?? undefined,
+            elasticWaist: p.elastic_waist, colours: p.colours ?? [], tag: p.tag,
+            image: p.image, images: p.images ?? [], description: p.description,
+            available: p.available, pairsWith: p.pairs_with ?? [],
+          }));
+          const sorted = mapped.sort((a, b) => {
+            const aScore = a.subcategory === product.subcategory ? 2 : a.category === product.category ? 1 : 0;
+            const bScore = b.subcategory === product.subcategory ? 2 : b.category === product.category ? 1 : 0;
+            return bScore - aScore;
+          });
+          setRelated(sorted.slice(0, 4));
+        }
+      });
+  }, [product]);
+
   if (loading) {
     return (
       <>
@@ -137,45 +180,6 @@ export default function ProductPage() {
   const pairingProducts = product.pairsWith
     .map((p) => ({ ...p, product: getProductByName(p.item) }))
     .filter((p) => p.product !== undefined);
-
-  // "You may also like" — fetch from Supabase, fallback to static
-  const [related, setRelated] = useState<Product[]>(() =>
-    PRODUCTS
-      .filter((p) => p.id !== product.id && p.available)
-      .sort((a, b) => {
-        const aScore = a.subcategory === product.subcategory ? 2 : a.category === product.category ? 1 : 0;
-        const bScore = b.subcategory === product.subcategory ? 2 : b.category === product.category ? 1 : 0;
-        return bScore - aScore;
-      })
-      .slice(0, 4)
-  );
-
-  useEffect(() => {
-    const supabase = createClient();
-    supabase
-      .from("products")
-      .select("*")
-      .eq("available", true)
-      .neq("id", product.id)
-      .limit(20)
-      .then(({ data }) => {
-        if (data && data.length > 0) {
-          const mapped: Product[] = data.map((p: any) => ({
-            id: p.id, name: p.name, category: p.category, subcategory: p.subcategory,
-            price: p.price, size: p.size, waist: p.waist ?? undefined, length: p.length ?? undefined,
-            elasticWaist: p.elastic_waist, colours: p.colours ?? [], tag: p.tag,
-            image: p.image, images: p.images ?? [], description: p.description,
-            available: p.available, pairsWith: p.pairs_with ?? [],
-          }));
-          const sorted = mapped.sort((a, b) => {
-            const aScore = a.subcategory === product.subcategory ? 2 : a.category === product.category ? 1 : 0;
-            const bScore = b.subcategory === product.subcategory ? 2 : b.category === product.category ? 1 : 0;
-            return bScore - aScore;
-          });
-          setRelated(sorted.slice(0, 4));
-        }
-      });
-  }, [product.id, product.subcategory, product.category]);
 
   return (
     <>
