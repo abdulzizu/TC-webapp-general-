@@ -22,7 +22,9 @@ type Product = {
   available: boolean;
 };
 
-const EMPTY_PRODUCT: Omit<Product, "id"> = {
+type Pairing = { item: string; reason: string };
+
+const EMPTY_PRODUCT: Omit<Product, "id"> & { pairs_with: Pairing[] } = {
   name: "",
   category: "Clothing",
   subcategory: "",
@@ -37,6 +39,7 @@ const EMPTY_PRODUCT: Omit<Product, "id"> = {
   images: [],
   description: "",
   available: true,
+  pairs_with: [],
 };
 
 const CATEGORIES = ["Clothing", "Accessories", "Shoes"];
@@ -56,10 +59,11 @@ export default function AdminProductsPage() {
   const [sortBy, setSortBy] = useState<"name" | "price-asc" | "price-desc" | "newest">("newest");
   const [editing, setEditing] = useState<Product | null>(null);
   const [creating, setCreating] = useState(false);
-  const [form, setForm] = useState<Omit<Product, "id">>(EMPTY_PRODUCT);
+  const [form, setForm] = useState<Omit<Product, "id"> & { pairs_with: Pairing[] }>(EMPTY_PRODUCT);
   const [saving, setSaving] = useState(false);
   const [colourInput, setColourInput] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [pairingSearch, setPairingSearch] = useState("");
 
   const loadProducts = useCallback(async () => {
     const { data } = await supabase.from("products").select("*").order("id", { ascending: true });
@@ -92,12 +96,14 @@ export default function AdminProductsPage() {
     setForm(EMPTY_PRODUCT);
     setCreating(true);
     setEditing(null);
+    setPairingSearch("");
   }
 
   function startEdit(p: Product) {
-    setForm({ ...p });
+    setForm({ ...p, pairs_with: (p as any).pairs_with ?? [] });
     setEditing(p);
     setCreating(false);
+    setPairingSearch("");
   }
 
   function cancelForm() {
@@ -107,13 +113,14 @@ export default function AdminProductsPage() {
 
   async function handleSave() {
     setSaving(true);
+    const { pairs_with, ...productFields } = form;
+    const payload = { ...productFields, pairs_with };
     if (creating) {
-      // Get next ID
       const maxId = products.reduce((max, p) => Math.max(max, p.id), 0);
-      const { error } = await supabase.from("products").insert({ id: maxId + 1, ...form });
+      const { error } = await supabase.from("products").insert({ id: maxId + 1, ...payload });
       if (error) { alert("Error: " + error.message); setSaving(false); return; }
     } else if (editing) {
-      const { error } = await supabase.from("products").update(form).eq("id", editing.id);
+      const { error } = await supabase.from("products").update(payload).eq("id", editing.id);
       if (error) { alert("Error: " + error.message); setSaving(false); return; }
     }
     setSaving(false);
@@ -321,6 +328,91 @@ export default function AdminProductsPage() {
               {uploading ? "Uploading…" : "Add Image"}
               <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, "images")} disabled={uploading} />
             </label>
+          </div>
+
+          {/* Pairs With */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-1">Pairs With (Style suggestions — up to 3)</label>
+            <p className="text-[10px] text-gray-400 mb-3">Select products that go well with this item and explain why.</p>
+
+            {/* Current pairings */}
+            {form.pairs_with.length > 0 && (
+              <div className="space-y-2 mb-3">
+                {form.pairs_with.map((pairing, i) => (
+                  <div key={i} className="flex items-start gap-2 p-3 bg-gray-50 rounded-lg">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-[#1a1a1a] truncate">{pairing.item}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{pairing.reason || "No reason added"}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setForm((f) => ({ ...f, pairs_with: f.pairs_with.filter((_, idx) => idx !== i) }))}
+                      className="text-xs text-red-400 hover:text-red-600 shrink-0 mt-0.5"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Add new pairing */}
+            {form.pairs_with.length < 3 && (
+              <div className="border border-dashed border-gray-200 rounded-lg p-3 space-y-2">
+                <input
+                  type="text"
+                  value={pairingSearch}
+                  onChange={(e) => setPairingSearch(e.target.value)}
+                  placeholder="Search for a product to pair with…"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a6b2f]"
+                />
+                {pairingSearch.trim() && (
+                  <div className="max-h-32 overflow-y-auto space-y-1">
+                    {products
+                      .filter((p) =>
+                        p.name.toLowerCase().includes(pairingSearch.toLowerCase()) &&
+                        !form.pairs_with.some((pw) => pw.item === p.name) &&
+                        p.id !== editing?.id
+                      )
+                      .slice(0, 5)
+                      .map((p) => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => {
+                            const reason = prompt(`Why does "${p.name}" pair well with this product?`, "");
+                            if (reason !== null) {
+                              setForm((f) => ({
+                                ...f,
+                                pairs_with: [...f.pairs_with, { item: p.name, reason: reason || "" }],
+                              }));
+                              setPairingSearch("");
+                            }
+                          }}
+                          className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-[#1a6b2f]/5 hover:text-[#1a6b2f] transition flex items-center gap-2"
+                        >
+                          <span className="w-6 h-6 rounded bg-gray-100 shrink-0 overflow-hidden relative">
+                            {p.image && <Image src={p.image} alt="" fill className="object-cover" sizes="24px" />}
+                          </span>
+                          <span className="truncate">{p.name}</span>
+                          <span className="text-xs text-gray-400 shrink-0">₦{p.price.toLocaleString()}</span>
+                        </button>
+                      ))}
+                    {products.filter((p) =>
+                      p.name.toLowerCase().includes(pairingSearch.toLowerCase()) &&
+                      !form.pairs_with.some((pw) => pw.item === p.name) &&
+                      p.id !== editing?.id
+                    ).length === 0 && (
+                      <p className="text-xs text-gray-400 py-2 px-3">No matching products found</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {form.pairs_with.length >= 3 && (
+              <p className="text-xs text-gray-400">Maximum 3 pairings reached. Remove one to add another.</p>
+            )}
           </div>
         </div>
 
