@@ -68,7 +68,7 @@ export default function ProductPage() {
             waist: data.waist ?? undefined,
             length: data.length ?? undefined,
             elasticWaist: data.elastic_waist,
-            colours: data.colours,
+            colours: data.colours ?? [],
             tag: data.tag as Product["tag"],
             image: data.image,
             images: data.images ?? [],
@@ -163,7 +163,7 @@ export default function ProductPage() {
           const mapped: Product[] = data.map((p: any) => ({
             id: p.id, name: p.name, category: p.category, subcategory: p.subcategory,
             price: p.price, size: p.size, waist: p.waist ?? undefined, length: p.length ?? undefined,
-            elasticWaist: p.elastic_waist, colours: p.colours, tag: p.tag,
+            elasticWaist: p.elastic_waist, colours: p.colours ?? [], tag: p.tag,
             image: p.image, images: p.images ?? [], description: p.description,
             available: p.available, pairsWith: p.pairs_with ?? [],
           }));
@@ -281,14 +281,14 @@ export default function ProductPage() {
               <div className="mb-5">
                 <p className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Colours</p>
                 <div className="flex gap-2 flex-wrap">
-                  {product.colours.map((c) => (
+                  {(product.colours ?? []).length > 0 ? product.colours.map((c) => (
                     <span
                       key={c}
                       className="text-xs border border-gray-200 rounded-full px-3 py-1 text-gray-600 bg-gray-50"
                     >
                       {c}
                     </span>
-                  ))}
+                  )) : <span className="text-xs text-gray-400">—</span>}
                 </div>
               </div>
 
