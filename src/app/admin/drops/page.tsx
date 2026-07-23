@@ -182,12 +182,27 @@ export default function AdminDropsPage() {
                     </div>
                   </div>
                 </div>
-                <Link
-                  href={`/admin/drops/new?edit=${drop.id}`}
-                  className="text-xs text-[#1a6b2f] font-semibold hover:underline"
-                >
-                  Edit / Manage
-                </Link>
+                <div className="flex items-center gap-3">
+                  <Link
+                    href={`/admin/drops/new?edit=${drop.id}`}
+                    className="text-xs text-[#1a6b2f] font-semibold hover:underline"
+                  >
+                    Edit
+                  </Link>
+                  <button
+                    onClick={async () => {
+                      if (!confirm(`Delete "${drop.name}"? Products in this drop will be unassigned.`)) return;
+                      // Unassign products from this drop
+                      await supabase.from("products").update({ drop_id: null }).eq("drop_id", drop.id);
+                      // Delete the drop
+                      await supabase.from("drops").delete().eq("id", drop.id);
+                      loadDrops();
+                    }}
+                    className="text-xs text-red-400 hover:text-red-600 font-semibold"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             ))}
           </div>
