@@ -177,7 +177,7 @@ export default function ProductPage() {
   }
 
   // Style guide: resolve pairing items from product catalogue
-  const pairingProducts = product.pairsWith
+  const pairingProducts = (product.pairsWith ?? [])
     .map((p) => ({ ...p, product: getProductByName(p.item) }))
     .filter((p) => p.product !== undefined);
 

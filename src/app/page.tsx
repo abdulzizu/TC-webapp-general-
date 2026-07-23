@@ -328,13 +328,17 @@ function ProductCard({
     <Link href={`/product/${item.id}`} className={`product-card rounded-2xl overflow-hidden border border-[#1a1a1a]/10 bg-[#ede8d8] block ${isSoldOut ? "opacity-70" : ""}`}>
       {/* Product image */}
       <div className="relative w-full aspect-square overflow-hidden">
-        <Image
-          src={item.image}
-          alt={item.name}
-          fill
-          className="object-cover"
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-        />
+        {item.image ? (
+          <Image
+            src={item.image}
+            alt={item.name}
+            fill
+            className="object-cover"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          />
+        ) : (
+          <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400 text-xs">No image</div>
+        )}
         <span
           className={`absolute top-2.5 left-2.5 text-[10px] font-700 tracking-wider px-2 py-0.5 rounded-full ${tagColor}`}
         >

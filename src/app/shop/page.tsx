@@ -56,14 +56,14 @@ function ShopContent() {
         p.name.toLowerCase().includes(q) ||
         p.category.toLowerCase().includes(q) ||
         p.subcategory.toLowerCase().includes(q) ||
-        p.colours.some((c) => c.toLowerCase().includes(q)) ||
+        (p.colours ?? []).some((c) => c.toLowerCase().includes(q)) ||
         p.description.toLowerCase().includes(q)
       );
     }
     if (selectedCategory) result = result.filter((p) => p.category === selectedCategory);
     if (selectedSub) result = result.filter((p) => p.subcategory === selectedSub);
     if (selectedSizes.length > 0) result = result.filter((p) => selectedSizes.includes(p.size));
-    if (selectedColours.length > 0) result = result.filter((p) => p.colours.some((c) => selectedColours.includes(c)));
+    if (selectedColours.length > 0) result = result.filter((p) => (p.colours ?? []).some((c) => selectedColours.includes(c)));
     result = result.filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1]);
     if (availableOnly) result = result.filter((p) => p.available && p.tag !== "SOLD OUT");
 
