@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHmac } from "crypto";
+import { createClient } from "@supabase/supabase-js";
+import bcrypt from "bcryptjs";
 
 // POST /api/admin/login
-// Body: { pin: string }
+// Body: { email: string, password: string }
 // Sets an httpOnly cookie with HMAC-signed token
 
 const MAX_ATTEMPTS = 5;
@@ -14,7 +16,7 @@ function getClientIP(req: NextRequest): string {
 }
 
 function signToken(payload: string): string {
-  const secret = process.env.ADMIN_PIN || "fallback";
+  const secret = process.env.SUPABASE_SERVICE_ROLE_KEY || "fallback";
   return createHmac("sha256", secret).update(payload).digest("hex");
 }
 
@@ -31,29 +33,52 @@ export async function POST(req: NextRequest) {
         { status: 429 }
       );
     }
-    // Reset after lockout period
     attempts.delete(ip);
   }
 
-  const { pin } = await req.json();
+  const { email, password } = await req.json();
 
-  if (!pin || pin !== process.env.ADMIN_PIN) {
-    // Track failed attempt
+  if (!email || !password) {
+    return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
+  }
+
+  // Look up admin user
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || "https://cdxuppunppsgryvrieoz.supabase.co",
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
+
+  const { data: admin } = await supabase
+    .from("admin_users")
+    .select("id, name, email, password_hash, role")
+    .eq("email", email.trim().toLowerCase())
+    .single();
+
+  if (!admin) {
     const current = attempts.get(ip) || { count: 0, lastAttempt: 0 };
     attempts.set(ip, { count: current.count + 1, lastAttempt: Date.now() });
+    return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
+  }
 
-    return NextResponse.json({ error: "Invalid PIN" }, { status: 401 });
+  // Verify password
+  const valid = await bcrypt.compare(password, admin.password_hash);
+  if (!valid) {
+    const current = attempts.get(ip) || { count: 0, lastAttempt: 0 };
+    attempts.set(ip, { count: current.count + 1, lastAttempt: Date.now() });
+    return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
   }
 
   // Success — clear attempts
   attempts.delete(ip);
 
-  // Create a signed token (not reversible like base64)
+  // Create signed token with admin info
   const timestamp = Date.now().toString();
-  const signature = signToken(`admin:${timestamp}`);
-  const token = `${timestamp}:${signature}`;
+  const payload = `admin:${admin.id}:${admin.role}:${timestamp}`;
+  const signature = signToken(payload);
+  const token = `${admin.id}:${admin.role}:${timestamp}:${signature}`;
 
-  const res = NextResponse.json({ success: true });
+  const res = NextResponse.json({ success: true, name: admin.name, role: admin.role });
   res.cookies.set("tc_admin", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",

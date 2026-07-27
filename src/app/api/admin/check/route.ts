@@ -3,7 +3,7 @@ import { createHmac } from "crypto";
 
 // GET /api/admin/check — verifies admin cookie signature
 function signToken(payload: string): string {
-  const secret = process.env.ADMIN_PIN || "fallback";
+  const secret = process.env.SUPABASE_SERVICE_ROLE_KEY || "fallback";
   return createHmac("sha256", secret).update(payload).digest("hex");
 }
 
@@ -14,18 +14,21 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const [timestamp, signature] = cookie.split(":");
-    if (!timestamp || !signature) throw new Error("malformed");
+    const parts = cookie.split(":");
+    if (parts.length !== 4) throw new Error("malformed");
+
+    const [adminId, role, timestamp, signature] = parts;
 
     // Verify signature
-    const expected = signToken(`admin:${timestamp}`);
+    const payload = `admin:${adminId}:${role}:${timestamp}`;
+    const expected = signToken(payload);
     if (signature !== expected) throw new Error("invalid signature");
 
     // Check token age (max 24 hours)
     const age = Date.now() - Number(timestamp);
     if (age > 24 * 60 * 60 * 1000) throw new Error("expired");
 
-    return NextResponse.json({ authenticated: true });
+    return NextResponse.json({ authenticated: true, adminId, role });
   } catch {
     return NextResponse.json({ authenticated: false }, { status: 401 });
   }
