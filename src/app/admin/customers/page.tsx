@@ -161,6 +161,25 @@ export default function AdminCustomersPage() {
                       </span>
                     </div>
                   )}
+
+                  {/* Delete customer */}
+                  <div className="border-t border-gray-100 pt-3 mt-3">
+                    <button
+                      onClick={async () => {
+                        if (!confirm(`Delete ${customer.name || customer.email || customer.phone}? This removes their account and cannot be undone.`)) return;
+                        const res = await fetch(`/api/admin/customers?id=${customer.id}`, { method: "DELETE" });
+                        if (res.ok) {
+                          setCustomers((prev) => prev.filter((c) => c.id !== customer.id));
+                        } else {
+                          const data = await res.json();
+                          alert("Failed to delete: " + (data.error || "Unknown error"));
+                        }
+                      }}
+                      className="text-xs text-red-400 hover:text-red-600 font-semibold"
+                    >
+                      Delete customer
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
