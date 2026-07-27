@@ -496,8 +496,9 @@ function NotifySignup() {
 
     try {
       const supabase = createClient();
+      const phoneVal = phone.trim() || `email_${Date.now()}`;
       const { error } = await supabase.from("temp_leads").upsert(
-        { phone: phone.trim() || "N/A", email: email.trim(), verified: false },
+        { phone: phoneVal, email: email.trim(), verified: false },
         { onConflict: "phone" }
       );
       if (error) throw error;
