@@ -483,7 +483,6 @@ function Sustainability() {
 
 function NotifySignup() {
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -496,7 +495,7 @@ function NotifySignup() {
 
     try {
       const supabase = createClient();
-      const phoneVal = phone.trim() || `email_${Date.now()}`;
+      const phoneVal = `email_${Date.now()}`;
       const { error } = await supabase.from("temp_leads").upsert(
         { phone: phoneVal, email: email.trim(), verified: false },
         { onConflict: "phone" }
@@ -542,17 +541,6 @@ function NotifySignup() {
                 placeholder="Your email address"
                 className="w-full bg-white/10 border border-white/20 text-white placeholder:text-white/40 rounded-full px-5 py-3.5 text-sm focus:outline-none focus:border-[#1a6b2f] focus:ring-2 focus:ring-[#1a6b2f]/30 transition"
                 aria-required="true"
-              />
-            </div>
-            <div>
-              <label htmlFor="notify-phone" className="sr-only">Phone number (optional)</label>
-              <input
-                id="notify-phone"
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="Phone number (optional)"
-                className="w-full bg-white/10 border border-white/20 text-white placeholder:text-white/40 rounded-full px-5 py-3.5 text-sm focus:outline-none focus:border-[#1a6b2f] focus:ring-2 focus:ring-[#1a6b2f]/30 transition"
               />
             </div>
             <button
