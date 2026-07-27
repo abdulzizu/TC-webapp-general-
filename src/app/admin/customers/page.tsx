@@ -19,6 +19,8 @@ export default function AdminCustomersPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const perPage = 10;
 
   const loadCustomers = useCallback(async () => {
     // Load profiles with their orders
@@ -71,7 +73,7 @@ export default function AdminCustomersPage() {
       <input
         type="text"
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={(e) => { setSearch(e.target.value); setPage(1); }}
         placeholder="Search by name, phone, or email…"
         className="w-full sm:w-80 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#1a6b2f]"
       />
@@ -81,32 +83,34 @@ export default function AdminCustomersPage() {
       ) : filtered.length === 0 ? (
         <p className="text-sm text-gray-400">No customers found.</p>
       ) : (
-        <div className="space-y-3">
-          {filtered.map((customer) => (
-            <div key={customer.id} className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-              {/* Customer header */}
-              <button
-                onClick={() => setExpanded(expanded === customer.id ? null : customer.id)}
-                className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-gray-50/50 transition"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-9 h-9 rounded-full bg-[#1a6b2f]/10 flex items-center justify-center text-[#1a6b2f] font-bold text-sm">
-                    {customer.name ? customer.name[0].toUpperCase() : "?"}
+        <>
+          <div className="space-y-3">
+            {filtered.slice((page - 1) * perPage, page * perPage).map((customer, index) => (
+              <div key={customer.id} className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+                {/* Customer header */}
+                <button
+                  onClick={() => setExpanded(expanded === customer.id ? null : customer.id)}
+                  className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-gray-50/50 transition"
+                >
+                  <div className="flex items-center gap-4">
+                    <span className="text-xs font-bold text-gray-400 w-6">{(page - 1) * perPage + index + 1}.</span>
+                    <div className="w-9 h-9 rounded-full bg-[#1a6b2f]/10 flex items-center justify-center text-[#1a6b2f] font-bold text-sm">
+                      {customer.name ? customer.name[0].toUpperCase() : "?"}
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm text-[#1a1a1a]">{customer.name || "No name"}</p>
+                      <p className="text-xs text-gray-400">{customer.phone || customer.email}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-sm text-[#1a1a1a]">{customer.name || "No name"}</p>
-                    <p className="text-xs text-gray-400">{customer.phone}</p>
+                  <div className="flex items-center gap-4">
+                    <span className="text-xs text-gray-400 hidden sm:block">
+                      {customer.orders.length} order{customer.orders.length !== 1 ? "s" : ""}
+                    </span>
+                    <svg className={`w-4 h-4 text-gray-400 transition-transform ${expanded === customer.id ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
                   </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className="text-xs text-gray-400 hidden sm:block">
-                    {customer.orders.length} order{customer.orders.length !== 1 ? "s" : ""}
-                  </span>
-                  <svg className={`w-4 h-4 text-gray-400 transition-transform ${expanded === customer.id ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                  </svg>
-                </div>
-              </button>
+                </button>
 
               {/* Expanded details */}
               {expanded === customer.id && (
@@ -184,7 +188,36 @@ export default function AdminCustomersPage() {
               )}
             </div>
           ))}
-        </div>
+          </div>
+
+          {/* Pagination */}
+          {filtered.length > perPage && (
+            <div className="flex items-center justify-between pt-4">
+              <p className="text-xs text-gray-400">
+                Showing {(page - 1) * perPage + 1}–{Math.min(page * perPage, filtered.length)} of {filtered.length}
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="px-3 py-1.5 text-xs font-semibold border border-gray-200 rounded-lg hover:border-[#1a6b2f] disabled:opacity-40 transition"
+                >
+                  ← Prev
+                </button>
+                <span className="px-3 py-1.5 text-xs font-bold text-[#1a6b2f]">
+                  {page} / {Math.ceil(filtered.length / perPage)}
+                </span>
+                <button
+                  onClick={() => setPage((p) => Math.min(Math.ceil(filtered.length / perPage), p + 1))}
+                  disabled={page >= Math.ceil(filtered.length / perPage)}
+                  className="px-3 py-1.5 text-xs font-semibold border border-gray-200 rounded-lg hover:border-[#1a6b2f] disabled:opacity-40 transition"
+                >
+                  Next →
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
