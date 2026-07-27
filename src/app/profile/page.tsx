@@ -22,7 +22,7 @@ const STATUS_CONFIG: Record<Order["status"], { label: string; color: string; bg:
 };
 
 export default function ProfilePage() {
-  const { user, saveUser, isSignedIn, signOut, addKeyword, removeKeyword } = useUser();
+  const { user, saveUser, isSignedIn, isLoading, signOut, addKeyword, removeKeyword } = useUser();
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("details");
   const [saved, setSaved] = useState(false);
@@ -101,6 +101,22 @@ export default function ProfilePage() {
   const orders = user?.orders ?? [];
   const keywords = user?.keywords ?? [];
 
+  // Show loading while auth state is resolving
+  if (isLoading) {
+    return (
+      <>
+        <MarqueeBanner />
+        <Navbar />
+        <main className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 w-48 bg-gray-200 rounded" />
+            <div className="h-4 w-32 bg-gray-200 rounded" />
+          </div>
+        </main>
+      </>
+    );
+  }
+
   return (
     <>
       <MarqueeBanner />
@@ -111,10 +127,10 @@ export default function ProfilePage() {
         <div className="flex items-start justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold text-[#1a1a1a]">
-              {isSignedIn ? `Hi, ${user!.name.split(" ")[0]}` : "Create Account"}
+              {isSignedIn ? `Hi, ${user?.name?.split(" ")[0] || "there"}` : "Create Account"}
             </h1>
             <p className="text-gray-500 mt-1 text-sm">
-              {isSignedIn ? user!.phone : "Set your sizes once — we'll remember them for every drop."}
+              {isSignedIn ? (user?.email || user?.phone || "") : "Set your sizes once — we'll remember them for every drop."}
             </p>
           </div>
           {isSignedIn && (
