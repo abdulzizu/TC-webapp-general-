@@ -133,7 +133,7 @@ export default function ProfilePage() {
             {([
               { id: "details",  label: "My Details" },
               { id: "orders",   label: `Orders${orders.length > 0 ? ` (${orders.length})` : ""}` },
-              { id: "keywords", label: "Drop Alerts" },
+              { id: "keywords", label: "Wishlist" },
             ] as { id: Tab; label: string }[]).map((t) => (
               <button
                 key={t.id}
@@ -301,9 +301,9 @@ export default function ProfilePage() {
         {tab === "keywords" && isSignedIn && (
           <div>
             <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-5">
-              <h2 className="font-bold text-lg mb-1">Drop Alert Keywords</h2>
+              <h2 className="font-bold text-lg mb-1">Wishlist</h2>
               <p className="text-sm text-gray-400 mb-5">
-                Add keywords and we&apos;ll notify you via SMS{user?.email ? " or email" : ""} when a matching item drops.
+                Tell us what you&apos;re looking for. Add keywords for items you want and we&apos;ll let you know when something matching drops.
                 Use specific terms like <em>L42</em>, <em>acid wash</em>, <em>striped tee</em>, <em>rugby polo</em>, etc.
               </p>
 
