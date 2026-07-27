@@ -3,6 +3,9 @@ import { createHmac } from "crypto";
 import { createClient } from "@supabase/supabase-js";
 import bcrypt from "bcryptjs";
 
+// Force Node.js runtime (not Edge) — needed for bcryptjs
+export const runtime = "nodejs";
+
 // POST /api/admin/login
 // Body: { email: string, password: string }
 // Sets an httpOnly cookie with HMAC-signed token

@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import bcrypt from "bcryptjs";
 
+// Force Node.js runtime (not Edge) — needed for bcryptjs
+export const runtime = "nodejs";
+
 // GET /api/admin/setup?name=Admin&email=admin@thriftcollision.com&password=YourPassword
 // One-time setup — creates the first admin user
 // IMPORTANT: Delete this route or protect it after first use
