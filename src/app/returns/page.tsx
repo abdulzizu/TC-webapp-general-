@@ -33,7 +33,7 @@ export default function ReturnsPage() {
               </li>
               <li>
                 <strong>Email:</strong>{" "}
-                <a href="mailto:gradedthriftshop@gmail.com" className="text-[#1a6b2f] font-semibold hover:underline">gradedthriftshop@gmail.com</a>
+                <a href="mailto:help@thriftcollision.com" className="text-[#1a6b2f] font-semibold hover:underline">help@thriftcollision.com</a>
               </li>
               <li>
                 <strong>Instagram:</strong>{" "}

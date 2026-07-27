@@ -36,7 +36,7 @@ const FAQS = [
   },
   {
     q: "Can I return an item?",
-    a: "Yes — just reach out to us as soon as you receive it. We want returns initiated same day if possible. Contact us via WhatsApp, email (gradedthriftshop@gmail.com), or Instagram DM with your Order ID.",
+    a: "Yes — just reach out to us as soon as you receive it. We want returns initiated same day if possible. Contact us via WhatsApp, email (help@thriftcollision.com), or Instagram DM with your Order ID.",
   },
   {
     q: "How do I track my order?",

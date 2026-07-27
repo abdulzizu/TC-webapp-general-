@@ -43,7 +43,7 @@ export default function ContactPage() {
 
             <div className="bg-white rounded-xl border border-gray-100 p-5">
               <p className="text-xs text-gray-500 uppercase font-semibold mb-2">Email</p>
-              <a href="mailto:gradedthriftshop@gmail.com" className="text-[#1a6b2f] font-bold hover:underline">gradedthriftshop@gmail.com</a>
+              <a href="mailto:help@thriftcollision.com" className="text-[#1a6b2f] font-bold hover:underline">help@thriftcollision.com</a>
               <p className="text-xs text-gray-400 mt-1">We respond within 24 hours</p>
             </div>
 
