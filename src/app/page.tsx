@@ -490,15 +490,14 @@ function NotifySignup() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!phone.trim()) return;
+    if (!email.trim() || !email.includes("@")) return;
     setSubmitting(true);
     setSubmitError("");
 
     try {
       const supabase = createClient();
-      // Upsert into temp_leads — phone is unique, so re-submissions update email
       const { error } = await supabase.from("temp_leads").upsert(
-        { phone: phone.trim(), email: email.trim() || null, verified: false },
+        { phone: phone.trim() || "N/A", email: email.trim(), verified: false },
         { onConflict: "phone" }
       );
       if (error) throw error;
@@ -520,38 +519,38 @@ function NotifySignup() {
           Never miss a drop.
         </h2>
         <p className="text-[#9ca3af] text-lg mb-10">
-          Drop alerts straight to your phone. Be first in line before stock runs out.
+          Get notified by email when new pieces go live. Be first in line before stock runs out.
         </p>
 
         {submitted ? (
           <div className="bg-[#1a6b2f]/20 border border-[#1a6b2f] rounded-2xl p-8" role="alert" aria-live="polite">
             <p className="text-3xl mb-3" aria-hidden="true">✅</p>
             <p className="text-white font-600 text-lg">You&apos;re on the list!</p>
-            <p className="text-[#9ca3af] text-sm mt-1">We&apos;ll text you the moment the next drop goes live.</p>
+            <p className="text-[#9ca3af] text-sm mt-1">We&apos;ll email you the moment the next drop goes live.</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-3" noValidate>
             <div>
-              <label htmlFor="phone" className="sr-only">Phone number</label>
+              <label htmlFor="notify-email" className="sr-only">Email address</label>
               <input
-                id="phone"
-                type="tel"
+                id="notify-email"
+                type="email"
                 required
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="Phone number (required)"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Your email address"
                 className="w-full bg-white/10 border border-white/20 text-white placeholder:text-white/40 rounded-full px-5 py-3.5 text-sm focus:outline-none focus:border-[#1a6b2f] focus:ring-2 focus:ring-[#1a6b2f]/30 transition"
                 aria-required="true"
               />
             </div>
             <div>
-              <label htmlFor="email" className="sr-only">Email address (optional)</label>
+              <label htmlFor="notify-phone" className="sr-only">Phone number (optional)</label>
               <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email address (optional)"
+                id="notify-phone"
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="Phone number (optional)"
                 className="w-full bg-white/10 border border-white/20 text-white placeholder:text-white/40 rounded-full px-5 py-3.5 text-sm focus:outline-none focus:border-[#1a6b2f] focus:ring-2 focus:ring-[#1a6b2f]/30 transition"
               />
             </div>
@@ -560,13 +559,13 @@ function NotifySignup() {
               disabled={submitting}
               className="btn-tc-primary py-3.5 rounded-full text-sm disabled:opacity-60"
             >
-              {submitting ? "Saving…" : "Notify me via SMS"}
+              {submitting ? "Saving…" : "Notify me"}
             </button>
             {submitError && (
               <p className="text-red-400 text-xs text-center" role="alert">{submitError}</p>
             )}
             <p className="text-[#6b7280] text-xs">
-              We&apos;ll send drop alerts via SMS. No spam. Unsubscribe any time.
+              We&apos;ll only email you about new drops. No spam. Unsubscribe any time.
             </p>
           </form>
         )}
