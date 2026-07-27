@@ -1,71 +1,54 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-function CallbackContent() {
+export default function AuthCallbackPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [error, setError] = useState("");
   const supabase = createClient();
 
   useEffect(() => {
-    async function handleAuth() {
-      // Check for code in URL params (PKCE flow)
-      const code = searchParams.get("code");
-      if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-        if (error) {
-          setError(error.message);
-          return;
-        }
+    // Supabase client auto-detects hash fragments and exchanges them for a session
+    // We just need to wait for the auth state to resolve
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session) {
         router.replace("/profile");
-        return;
       }
+    });
 
-      // Check for hash-based tokens (implicit flow / magic link)
-      // Supabase puts access_token in the URL hash
-      const hash = window.location.hash;
-      if (hash) {
-        // The hash contains tokens — Supabase client auto-detects and sets session
-        // Just wait a moment for the auth state to update
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          router.replace("/profile");
-          return;
-        }
-      }
-
-      // If neither code nor hash, check if already signed in
-      const { data: { session } } = await supabase.auth.getSession();
+    // Also check if already signed in (in case the event fired before we subscribed)
+    supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         router.replace("/profile");
-        return;
       }
+    });
 
-      // Wait a bit and retry (auth state might be updating)
-      setTimeout(async () => {
-        const { data: { session } } = await supabase.auth.getSession();
+    // Timeout fallback
+    const timeout = setTimeout(() => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
         if (session) {
           router.replace("/profile");
         } else {
-          setError("Unable to verify sign-in. Please try again.");
+          setError("Sign-in link may have expired or was opened in a different browser. Please try again.");
         }
-      }, 2000);
-    }
+      });
+    }, 5000);
 
-    handleAuth();
-  }, [supabase, router, searchParams]);
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timeout);
+    };
+  }, [supabase, router]);
 
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
-        <div className="text-center">
+        <div className="text-center max-w-sm">
           <p className="text-red-500 text-sm mb-4">{error}</p>
-          <a href="/auth/signin" className="text-sm text-[#1a6b2f] font-semibold hover:underline">
-            ← Back to sign in
+          <a href="/auth/signin" className="inline-block px-5 py-2.5 bg-[#1a6b2f] text-white font-semibold rounded-full text-sm hover:bg-[#104020] transition">
+            Try Again
           </a>
         </div>
       </div>
@@ -79,17 +62,5 @@ function CallbackContent() {
         <p className="text-sm text-gray-500">Signing you in…</p>
       </div>
     </div>
-  );
-}
-
-export default function AuthCallbackPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-10 h-10 border-2 border-[#1a6b2f] border-t-transparent rounded-full animate-spin" />
-      </div>
-    }>
-      <CallbackContent />
-    </Suspense>
   );
 }

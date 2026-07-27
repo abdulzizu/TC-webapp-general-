@@ -5,5 +5,9 @@ const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGci
 
 // Browser-side Supabase client — safe to use in "use client" components
 export function createClient() {
-  return createBrowserClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  return createBrowserClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      flowType: "implicit",
+    },
+  });
 }
