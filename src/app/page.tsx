@@ -533,7 +533,10 @@ function NotifySignup() {
         email: email.trim(),
         verified: false,
       });
-      if (error) throw error;
+      if (error) {
+        console.error("Lead signup error:", error.message);
+        throw error;
+      }
       setSubmitted(true);
     } catch {
       setSubmitError("Something went wrong. Please try again.");

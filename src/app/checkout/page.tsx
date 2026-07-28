@@ -159,43 +159,48 @@ function CheckoutContent() {
 
   async function handlePlaceOrder() {
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 1500));
-
-    const orderId = "TC-" + Math.random().toString(36).substring(2, 8).toUpperCase();
-    const fullAddress = [form.address, form.city, form.state].filter(Boolean).join(", ");
-    const expiry = new Date();
-    expiry.setMonth(expiry.getMonth() + 1);
-
-    const order: Order = {
-      orderId,
-      date: new Date().toISOString(),
-      items: items.map((i) => ({
-        productId: i.product.id,
-        productName: i.product.name,
-        productImage: i.product.image,
-        size: i.size,
-        quantity: i.quantity,
-        price: i.product.price,
-      })),
-      subtotal,
-      shippingCost,
-      discountAmount,
-      total,
-      deliveryAddress: fullAddress,
-      payMethod,
-      status: deliveryChoice === "stockpile" ? "stockpiled" : "processing",
-      isStockpile: deliveryChoice === "stockpile",
-      stockpiledUntil: deliveryChoice === "stockpile" ? expiry.toISOString() : undefined,
-    };
-
     try {
-      sessionStorage.setItem(`tc_pending_order_${orderId}`, JSON.stringify(order));
-    } catch {}
+      await new Promise((r) => setTimeout(r, 1500));
 
-    clearCart();
-    router.push(
-      `/order-confirmation?orderId=${orderId}&name=${encodeURIComponent(form.name)}&guest=${asGuest}&stockpile=${deliveryChoice === "stockpile"}`
-    );
+      const orderId = "TC-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+      const fullAddress = [form.address, form.city, form.state].filter(Boolean).join(", ");
+      const expiry = new Date();
+      expiry.setMonth(expiry.getMonth() + 1);
+
+      const order: Order = {
+        orderId,
+        date: new Date().toISOString(),
+        items: items.map((i) => ({
+          productId: i.product.id,
+          productName: i.product.name,
+          productImage: i.product.image,
+          size: i.size,
+          quantity: i.quantity,
+          price: i.product.price,
+        })),
+        subtotal,
+        shippingCost,
+        discountAmount,
+        total,
+        deliveryAddress: fullAddress,
+        payMethod,
+        status: deliveryChoice === "stockpile" ? "stockpiled" : "processing",
+        isStockpile: deliveryChoice === "stockpile",
+        stockpiledUntil: deliveryChoice === "stockpile" ? expiry.toISOString() : undefined,
+      };
+
+      try {
+        sessionStorage.setItem(`tc_pending_order_${orderId}`, JSON.stringify(order));
+      } catch {}
+
+      clearCart();
+      router.push(
+        `/order-confirmation?orderId=${orderId}&name=${encodeURIComponent(form.name)}&guest=${asGuest}&stockpile=${deliveryChoice === "stockpile"}`
+      );
+    } catch {
+      setSubmitting(false);
+      alert("Something went wrong placing your order. Please try again.");
+    }
   }
 
   if (items.length === 0) {

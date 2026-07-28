@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -50,12 +50,16 @@ export default function SignInPage() {
   }
 
   // Listen for auth state change (when user clicks magic link and returns)
-  supabase.auth.onAuthStateChange((event) => {
-    if (event === "SIGNED_IN") {
-      setStep("success");
-      setTimeout(() => router.push("/profile"), 1200);
-    }
-  });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN") {
+        setStep("success");
+        setTimeout(() => router.push("/profile"), 1200);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [supabase, router]);
 
   return (
     <>

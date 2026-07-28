@@ -75,17 +75,21 @@ export default function ProfilePage() {
 
   function handleSave() {
     if (!validate()) return;
-    saveUser({
-      ...personal,
-      sizes,
-      orders: user?.orders ?? [],
-      keywords: user?.keywords ?? [],
-    });
-    setSaved(true);
-    if (!isSignedIn) {
-      setTimeout(() => { setSaved(false); router.push("/"); }, 2000);
-    } else {
-      setTimeout(() => setSaved(false), 2000);
+    try {
+      saveUser({
+        ...personal,
+        sizes,
+        orders: user?.orders ?? [],
+        keywords: user?.keywords ?? [],
+      });
+      setSaved(true);
+      if (!isSignedIn) {
+        setTimeout(() => { setSaved(false); router.push("/"); }, 2000);
+      } else {
+        setTimeout(() => setSaved(false), 2000);
+      }
+    } catch {
+      alert("Failed to save profile. Please try again.");
     }
   }
 
