@@ -362,6 +362,39 @@ function ProductCard({
 // ─── Drop Countdown ──────────────────────────────────────────────────────────
 
 function NextDrop() {
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
+
+  useEffect(() => {
+    function getNextDropDate(): Date {
+      const now = new Date();
+      const day = now.getDay(); // 0=Sun, 5=Fri
+      let daysUntilFriday = (5 - day + 7) % 7;
+      // If it's already Friday-Monday and past noon, target next Friday
+      if (daysUntilFriday === 0 && now.getHours() >= 12) daysUntilFriday = 7;
+      const target = new Date(now);
+      target.setDate(target.getDate() + daysUntilFriday);
+      target.setHours(12, 0, 0, 0); // Friday at noon WAT
+      return target;
+    }
+
+    function update() {
+      const now = new Date();
+      const target = getNextDropDate();
+      const diff = Math.max(0, target.getTime() - now.getTime());
+      const secs = Math.floor(diff / 1000);
+      setTimeLeft({
+        days: Math.floor(secs / 86400),
+        hours: Math.floor((secs % 86400) / 3600),
+        mins: Math.floor((secs % 3600) / 60),
+        secs: secs % 60,
+      });
+    }
+
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <section id="drops" className="py-16 sm:py-20 bg-[#1a6b2f] relative overflow-hidden" aria-labelledby="drop-heading">
       {/* Background texture */}
@@ -377,19 +410,19 @@ function NextDrop() {
           Coming Soon
         </span>
         <h2 id="drop-heading" className="text-4xl sm:text-5xl font-700 text-white mb-4 leading-tight">
-          Next drop drops Sunday.
+          Next drop drops Friday.
         </h2>
         <p className="text-white/80 text-lg mb-10 max-w-lg mx-auto">
           New pieces every week. Sign up and be the first in line — limited stock means fast fingers win.
         </p>
 
-        {/* Countdown placeholders */}
+        {/* Live countdown */}
         <div className="flex justify-center gap-4 sm:gap-8 mb-10">
           {[
-            { val: "06", label: "Days" },
-            { val: "14", label: "Hours" },
-            { val: "32", label: "Mins" },
-            { val: "00", label: "Secs" },
+            { val: String(timeLeft.days).padStart(2, "0"), label: "Days" },
+            { val: String(timeLeft.hours).padStart(2, "0"), label: "Hours" },
+            { val: String(timeLeft.mins).padStart(2, "0"), label: "Mins" },
+            { val: String(timeLeft.secs).padStart(2, "0"), label: "Secs" },
           ].map((item) => (
             <div key={item.label} className="text-center">
               <div className="text-3xl sm:text-5xl font-700 text-white bg-white/10 rounded-xl px-4 py-3 min-w-[64px] sm:min-w-[80px] font-mono">
@@ -495,11 +528,11 @@ function NotifySignup() {
 
     try {
       const supabase = createClient();
-      const phoneVal = `email_${Date.now()}`;
-      const { error } = await supabase.from("temp_leads").upsert(
-        { phone: phoneVal, email: email.trim(), verified: false },
-        { onConflict: "phone" }
-      );
+      const { error } = await supabase.from("temp_leads").insert({
+        phone: `email_${Date.now()}`,
+        email: email.trim(),
+        verified: false,
+      });
       if (error) throw error;
       setSubmitted(true);
     } catch {
