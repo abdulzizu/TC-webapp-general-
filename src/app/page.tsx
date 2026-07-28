@@ -519,14 +519,14 @@ function NotifySignup() {
           Never miss a drop.
         </h2>
         <p className="text-[#9ca3af] text-lg mb-10">
-          Get notified by email when new pieces go live. Be first in line before stock runs out.
+          Sign up to be the first to hear about our newest drops, exclusive promos and more!
         </p>
 
         {submitted ? (
           <div className="bg-[#1a6b2f]/20 border border-[#1a6b2f] rounded-2xl p-8" role="alert" aria-live="polite">
             <p className="text-3xl mb-3" aria-hidden="true">✅</p>
             <p className="text-white font-600 text-lg">You&apos;re on the list!</p>
-            <p className="text-[#9ca3af] text-sm mt-1">We&apos;ll email you the moment the next drop goes live.</p>
+            <p className="text-[#9ca3af] text-sm mt-1">We&apos;ll email you right before the next drop goes live.</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-3" noValidate>
