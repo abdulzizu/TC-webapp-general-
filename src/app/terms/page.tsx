@@ -142,8 +142,24 @@ export default function TermsOfServicePage() {
             <p>
               Our Site and products are provided on an &quot;as is&quot; and &quot;as available&quot; basis. While we make every effort to ensure accuracy in product descriptions and images, we do not warrant that the Site will be error-free, uninterrupted, or free from viruses.
             </p>
+
+            <h3 className="text-sm font-bold text-[#1a1a1a] mt-4">Brand Affiliation</h3>
             <p>
-              Since all items are thrifted and pre-owned, they may show minor signs of previous wear that are consistent with their vintage or second-hand nature, even when described as &quot;good condition&quot;.
+              Thrift Collision is not affiliated with any of the designers, brands, or manufacturers whose products appear on our Site. All items sold — even those in new condition or with original tags — are considered pre-owned by their manufacturer and are not covered by any manufacturer warranty.
+            </p>
+            <p>
+              We inspect all items thoroughly for quality and authenticity and would never knowingly list an item as genuine if we had any suspicion otherwise. Although rare, it is possible that something may slip through our inspection process. We are unable to provide the provenance of most items.
+            </p>
+
+            <h3 className="text-sm font-bold text-[#1a1a1a] mt-4">Condition of Used Items</h3>
+            <p>
+              We do our best to select the highest quality items and describe their condition as accurately as possible. However, when buying used items, please understand they may show minor signs of previous wear — including slight odours, loose threads, or missing buttons or clips.
+            </p>
+            <p>
+              We photograph and describe each item&apos;s condition carefully, and items with notable flaws will always be disclosed in the listing. That said, all items are sold in their current condition and may rarely have minor issues that are not immediately visible.
+            </p>
+            <p>
+              We do not cover cleaning costs or repairs. Please understand that thrifted items are pre-owned by nature — that&apos;s part of what makes them unique.
             </p>
           </section>
 
