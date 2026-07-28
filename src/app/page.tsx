@@ -667,7 +667,7 @@ function Footer() {
           <p>© 2026 Thrift Collision. All rights reserved.</p>
           <div className="flex gap-4">
             <Link href="/privacy" className="hover:text-[#1a6b2f] transition-colors">Privacy Policy</Link>
-            <Link href="#" className="hover:text-[#1a6b2f] transition-colors">Terms of Service</Link>
+            <Link href="/terms" className="hover:text-[#1a6b2f] transition-colors">Terms of Service</Link>
           </div>
         </div>
       </div>
