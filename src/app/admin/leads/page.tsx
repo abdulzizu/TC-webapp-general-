@@ -53,7 +53,8 @@ export default function AdminLeadsPage() {
 
   async function handleDelete(id: string) {
     if (!confirm("Remove this lead?")) return;
-    await supabase.from("temp_leads").delete().eq("id", id);
+    const { error } = await supabase.from("temp_leads").delete().eq("id", id);
+    if (error) { alert("Failed to remove: " + error.message); return; }
     setLeads((prev) => prev.filter((l) => l.id !== id));
   }
 

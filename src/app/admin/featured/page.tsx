@@ -62,7 +62,7 @@ export default function AdminFeaturedPage() {
       product_id: form.product_id ? Number(form.product_id) : null,
     }).eq("id", editing.id);
 
-    if (error) alert("Error: " + error.message);
+    if (error) { alert("Error: " + error.message); setSaving(false); return; }
     setSaving(false);
     setEditing(null);
     loadItems();

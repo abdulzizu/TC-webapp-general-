@@ -130,7 +130,8 @@ export default function AdminProductsPage() {
 
   async function handleDelete(id: number) {
     if (!confirm("Delete this product permanently?")) return;
-    await supabase.from("products").delete().eq("id", id);
+    const { error } = await supabase.from("products").delete().eq("id", id);
+    if (error) { alert("Delete failed: " + error.message); return; }
     loadProducts();
   }
 

@@ -67,11 +67,13 @@ export default function AdminShippingPage() {
       active: form.active,
     };
 
+    let error;
     if (creating) {
-      await supabase.from("shipping_zones").insert(payload);
+      ({ error } = await supabase.from("shipping_zones").insert(payload));
     } else if (editing) {
-      await supabase.from("shipping_zones").update(payload).eq("id", editing.id);
+      ({ error } = await supabase.from("shipping_zones").update(payload).eq("id", editing.id));
     }
+    if (error) { alert("Error: " + error.message); setSaving(false); return; }
     setSaving(false);
     cancel();
     loadZones();
@@ -79,7 +81,8 @@ export default function AdminShippingPage() {
 
   async function handleDelete(id: number) {
     if (!confirm("Delete this shipping zone?")) return;
-    await supabase.from("shipping_zones").delete().eq("id", id);
+    const { error } = await supabase.from("shipping_zones").delete().eq("id", id);
+    if (error) { alert("Delete failed: " + error.message); return; }
     loadZones();
   }
 

@@ -91,34 +91,39 @@ function NewDropContent() {
   async function handleUpdateDrop() {
     if (!dropId) return;
     setSaving(true);
-    await supabase.from("drops").update({
+    const { error } = await supabase.from("drops").update({
       name: name.trim(),
       description: description.trim() || null,
       scheduled_at: scheduledAt ? new Date(scheduledAt).toISOString() : null,
     }).eq("id", dropId);
+    if (error) { alert("Error: " + error.message); }
     setSaving(false);
   }
 
   async function addProductToDrop(productId: number) {
     if (!dropId) return;
-    await supabase.from("products").update({ drop_id: dropId }).eq("id", productId);
+    const { error } = await supabase.from("products").update({ drop_id: dropId }).eq("id", productId);
+    if (error) { alert("Error adding product: " + error.message); return; }
     const product = allProducts.find((p) => p.id === productId);
     if (product) setProducts((prev) => [...prev, { ...product, drop_id: dropId }]);
   }
 
   async function removeProductFromDrop(productId: number) {
-    await supabase.from("products").update({ drop_id: null }).eq("id", productId);
+    const { error } = await supabase.from("products").update({ drop_id: null }).eq("id", productId);
+    if (error) { alert("Error removing product: " + error.message); return; }
     setProducts((prev) => prev.filter((p) => p.id !== productId));
   }
 
   async function releaseDrop() {
     if (!dropId) return;
     setSaving(true);
-    await supabase.from("products").update({ available: true, tag: "NEW" }).eq("drop_id", dropId);
-    await supabase.from("drops").update({
+    const { error: prodError } = await supabase.from("products").update({ available: true, tag: "NEW" }).eq("drop_id", dropId);
+    if (prodError) { alert("Error releasing products: " + prodError.message); setSaving(false); return; }
+    const { error } = await supabase.from("drops").update({
       status: "live",
       released_at: new Date().toISOString(),
     }).eq("id", dropId);
+    if (error) { alert("Error updating drop status: " + error.message); setSaving(false); return; }
     setSaving(false);
     router.push("/admin/drops");
   }
@@ -126,10 +131,11 @@ function NewDropContent() {
   async function scheduleDrop() {
     if (!dropId || !scheduledAt) return;
     setSaving(true);
-    await supabase.from("drops").update({
+    const { error } = await supabase.from("drops").update({
       status: "scheduled",
       scheduled_at: new Date(scheduledAt).toISOString(),
     }).eq("id", dropId);
+    if (error) { alert("Error scheduling: " + error.message); setSaving(false); return; }
     setSaving(false);
     router.push("/admin/drops");
   }

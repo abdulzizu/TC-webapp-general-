@@ -46,7 +46,8 @@ export default function AdminOrdersPage() {
 
   async function updateStatus(orderId: string, newStatus: string) {
     setUpdating(orderId);
-    await supabase.from("orders").update({ status: newStatus }).eq("id", orderId);
+    const { error } = await supabase.from("orders").update({ status: newStatus }).eq("id", orderId);
+    if (error) { alert("Failed to update: " + error.message); setUpdating(null); return; }
     setOrders((prev) => prev.map((o) => o.id === orderId ? { ...o, status: newStatus } : o));
     setUpdating(null);
   }

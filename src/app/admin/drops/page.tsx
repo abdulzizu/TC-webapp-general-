@@ -82,11 +82,13 @@ export default function AdminDropsPage() {
   async function handleSave() {
     setSaving(true);
     const payload = { ...form };
+    let error;
     if (creating) {
-      await supabase.from("upcoming_drops").insert(payload);
+      ({ error } = await supabase.from("upcoming_drops").insert(payload));
     } else if (editing) {
-      await supabase.from("upcoming_drops").update(payload).eq("id", editing.id);
+      ({ error } = await supabase.from("upcoming_drops").update(payload).eq("id", editing.id));
     }
+    if (error) { alert("Error: " + error.message); setSaving(false); return; }
     setSaving(false);
     cancel();
     loadDrops();
@@ -94,7 +96,8 @@ export default function AdminDropsPage() {
 
   async function handleDelete(id: number) {
     if (!confirm("Delete this drop?")) return;
-    await supabase.from("upcoming_drops").delete().eq("id", id);
+    const { error } = await supabase.from("upcoming_drops").delete().eq("id", id);
+    if (error) { alert("Delete failed: " + error.message); return; }
     loadDrops();
   }
 
