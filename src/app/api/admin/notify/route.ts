@@ -63,16 +63,38 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify(
           batch.map((email: string) => ({
             from: "Thrift Collision <hello@thriftcollision.com>",
+            reply_to: "help@thriftcollision.com",
             to: email,
             subject,
             html: `
-              <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto;">
-                <h2 style="color: #1a6b2f;">Thrift Collision</h2>
-                <p>${message.replace(/\n/g, "<br>")}</p>
-                <br>
-                <a href="https://www.thriftcollision.com/shop" style="display: inline-block; background: #1a6b2f; color: white; padding: 12px 24px; border-radius: 50px; text-decoration: none; font-weight: bold;">Shop the Drop</a>
-                <br><br>
-                <p style="color: #999; font-size: 12px;">You're receiving this because you signed up for drop notifications at thriftcollision.com</p>
+              <div style="font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif; max-width: 520px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 16px; overflow: hidden;">
+                <!-- Header -->
+                <div style="background: #1a1a1a; padding: 32px 24px; text-align: center;">
+                  <h1 style="color: #ffffff; font-size: 22px; font-weight: 700; margin: 0; letter-spacing: -0.5px;">THRIFT COLLISION</h1>
+                  <p style="color: #9ca3af; font-size: 12px; margin: 8px 0 0 0; letter-spacing: 2px; text-transform: uppercase;">Premium Thrifted Streetwear</p>
+                </div>
+                
+                <!-- Body -->
+                <div style="padding: 40px 32px;">
+                  <h2 style="color: #1a1a1a; font-size: 20px; font-weight: 700; margin: 0 0 12px 0;">${subject}</h2>
+                  <p style="color: #4b5563; font-size: 14px; line-height: 1.7; margin: 0 0 28px 0; white-space: pre-line;">${message}</p>
+                  
+                  <!-- CTA Button -->
+                  <a href="https://www.thriftcollision.com/shop" style="display: inline-block; background: #1a6b2f; color: #ffffff; font-size: 14px; font-weight: 700; text-decoration: none; padding: 14px 32px; border-radius: 50px; letter-spacing: 0.5px;">
+                    Shop the Drop
+                  </a>
+                </div>
+                
+                <!-- Footer -->
+                <div style="background: #f9fafb; padding: 20px 32px; border-top: 1px solid #e5e7eb;">
+                  <p style="color: #9ca3af; font-size: 11px; margin: 0; text-align: center; line-height: 1.6;">
+                    You signed up for drop notifications at thriftcollision.com<br>
+                    <a href="https://www.thriftcollision.com" style="color: #1a6b2f; text-decoration: none;">thriftcollision.com</a> · 
+                    <a href="https://www.instagram.com/thriftcollision/" style="color: #1a6b2f; text-decoration: none;">Instagram</a> · 
+                    <a href="https://x.com/thriftcollision" style="color: #1a6b2f; text-decoration: none;">X</a><br>
+                    Thrift Collision · Abuja, Nigeria
+                  </p>
+                </div>
               </div>
             `,
           }))
