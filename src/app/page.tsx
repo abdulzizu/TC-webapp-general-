@@ -666,7 +666,7 @@ function Footer() {
         <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#6b7280]">
           <p>© 2026 Thrift Collision. All rights reserved.</p>
           <div className="flex gap-4">
-            <Link href="#" className="hover:text-[#1a6b2f] transition-colors">Privacy Policy</Link>
+            <Link href="/privacy" className="hover:text-[#1a6b2f] transition-colors">Privacy Policy</Link>
             <Link href="#" className="hover:text-[#1a6b2f] transition-colors">Terms of Service</Link>
           </div>
         </div>
