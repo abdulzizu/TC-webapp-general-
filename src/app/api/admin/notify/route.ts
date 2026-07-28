@@ -86,13 +86,24 @@ export async function POST(req: NextRequest) {
                 </div>
                 
                 <!-- Footer -->
-                <div style="background: #f9fafb; padding: 20px 32px; border-top: 1px solid #e5e7eb;">
-                  <p style="color: #9ca3af; font-size: 11px; margin: 0; text-align: center; line-height: 1.6;">
-                    You signed up for drop notifications at thriftcollision.com<br>
-                    <a href="https://www.thriftcollision.com" style="color: #1a6b2f; text-decoration: none;">thriftcollision.com</a> · 
-                    <a href="https://www.instagram.com/thriftcollision/" style="color: #1a6b2f; text-decoration: none;">Instagram</a> · 
-                    <a href="https://x.com/thriftcollision" style="color: #1a6b2f; text-decoration: none;">X</a><br>
-                    Thrift Collision · Abuja, Nigeria
+                <div style="background: #f9fafb; padding: 20px 32px; border-top: 1px solid #e5e7eb; text-align: center;">
+                  <!-- Social icons -->
+                  <div style="margin-bottom: 12px;">
+                    <a href="https://www.instagram.com/thriftcollision/" style="display: inline-block; margin: 0 6px; text-decoration: none;" title="Instagram">
+                      <img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" alt="Instagram" width="20" height="20" style="border-radius: 4px;">
+                    </a>
+                    <a href="https://x.com/thriftcollision" style="display: inline-block; margin: 0 6px; text-decoration: none;" title="X (Twitter)">
+                      <img src="https://cdn-icons-png.flaticon.com/512/5969/5969020.png" alt="X" width="20" height="20">
+                    </a>
+                  </div>
+                  <p style="color: #9ca3af; font-size: 11px; margin: 0 0 8px 0;">
+                    <a href="https://www.thriftcollision.com" style="color: #1a6b2f; text-decoration: none;">thriftcollision.com</a>
+                  </p>
+                  <p style="color: #d1d5db; font-size: 10px; margin: 0 0 4px 0;">
+                    You signed up for drop notifications at thriftcollision.com
+                  </p>
+                  <p style="color: #d1d5db; font-size: 10px; margin: 0;">
+                    © 2026 Thrift Collision. All rights reserved.
                   </p>
                 </div>
               </div>
