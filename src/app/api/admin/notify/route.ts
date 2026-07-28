@@ -70,7 +70,6 @@ export async function POST(req: NextRequest) {
               <div style="font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif; max-width: 520px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 16px; overflow: hidden;">
                 <!-- Header -->
                 <div style="background: #1a1a1a; padding: 32px 24px; text-align: center;">
-                  <img src="https://www.thriftcollision.com/tc-logo.png" alt="Thrift Collision" width="48" height="48" style="margin-bottom: 12px; border-radius: 8px;">
                   <h1 style="color: #ffffff; font-size: 22px; font-weight: 700; margin: 0; letter-spacing: -0.5px;">THRIFT COLLISION</h1>
                   <p style="color: #9ca3af; font-size: 12px; margin: 8px 0 0 0; letter-spacing: 2px; text-transform: uppercase;">Premium Thrifted Streetwear</p>
                 </div>
