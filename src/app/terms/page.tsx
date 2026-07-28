@@ -39,7 +39,7 @@ export default function TermsOfServicePage() {
             <h2 className="text-lg font-bold text-[#1a1a1a]">Products and Availability</h2>
             <ul className="list-disc pl-5 space-y-2">
               <li>All items listed on Thrift Collision are <strong>thrifted, pre-owned, or vintage</strong> pieces. They are curated, cleaned, and inspected for quality before listing.</li>
-              <li>Each item is <strong>one-of-one</strong> — once sold, it is no longer available. We do not restock identical items.</li>
+              <li>Each item is <strong>one-of-one</strong> — once sold, it is no longer available. Identical items can be restocked, only out of sheer luck or coincidence.</li>
               <li>Product descriptions, images, and measurements are as accurate as possible. Minor variations may exist due to the nature of thrifted goods.</li>
               <li>We reserve the right to limit quantities, refuse orders, or cancel transactions at our discretion — including in cases of pricing errors or suspected fraud.</li>
               <li>Availability shown on the Site is updated in real-time but is not guaranteed until your order is confirmed.</li>
