@@ -14,6 +14,7 @@ const TSHIRT_SIZES = ["S", "M", "L", "XL", "2XL", "3XL", "3XL+"];
 type Tab = "details" | "orders" | "keywords";
 
 const STATUS_CONFIG: Record<Order["status"], { label: string; color: string; bg: string }> = {
+  pending:      { label: "Pending",      color: "text-gray-600",   bg: "bg-gray-50 border-gray-200" },
   processing:   { label: "Processing",   color: "text-blue-700",   bg: "bg-blue-50 border-blue-200" },
   stockpiled:   { label: "Stockpiled",   color: "text-amber-700",  bg: "bg-amber-50 border-amber-200" },
   shipped:      { label: "Shipped",      color: "text-[#1a6b2f]",  bg: "bg-green-50 border-green-200" },
