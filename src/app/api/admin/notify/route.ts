@@ -102,8 +102,11 @@ export async function POST(req: NextRequest) {
                   <p style="color: #d1d5db; font-size: 10px; margin: 0 0 4px 0;">
                     You signed up for drop notifications at thriftcollision.com
                   </p>
-                  <p style="color: #d1d5db; font-size: 10px; margin: 0;">
+                  <p style="color: #d1d5db; font-size: 10px; margin: 0 0 4px 0;">
                     © 2026 Thrift Collision. All rights reserved.
+                  </p>
+                  <p style="margin: 8px 0 0 0;">
+                    <a href="https://www.thriftcollision.com/unsubscribe?email=${encodeURIComponent(email)}" style="color: #9ca3af; font-size: 10px; text-decoration: underline;">Unsubscribe from notifications</a>
                   </p>
                 </div>
               </div>

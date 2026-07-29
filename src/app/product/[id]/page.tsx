@@ -83,6 +83,13 @@ export default function ProductPage() {
       });
   }, [id]);
 
+  // Update page title for SEO
+  useEffect(() => {
+    if (product) {
+      document.title = `${product.name} — ₦${product.price.toLocaleString()} | Thrift Collision`;
+    }
+  }, [product]);
+
   // "You may also like" — fetch from Supabase, fallback to static
   const [related, setRelated] = useState<Product[]>([]);
 

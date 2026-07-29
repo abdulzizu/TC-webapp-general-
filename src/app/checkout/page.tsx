@@ -193,6 +193,26 @@ function CheckoutContent() {
         sessionStorage.setItem(`tc_pending_order_${orderId}`, JSON.stringify(order));
       } catch {}
 
+      // Send order confirmation email (non-blocking)
+      if (form.email) {
+        fetch("/api/orders/confirm", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: form.email,
+            name: form.name,
+            orderId,
+            items: order.items,
+            subtotal,
+            shippingCost,
+            discountAmount,
+            total,
+            deliveryAddress: fullAddress,
+            isStockpile: deliveryChoice === "stockpile",
+          }),
+        }).catch(() => {}); // Don't block checkout if email fails
+      }
+
       clearCart();
       router.push(
         `/order-confirmation?orderId=${orderId}&name=${encodeURIComponent(form.name)}&guest=${asGuest}&stockpile=${deliveryChoice === "stockpile"}`
