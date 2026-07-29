@@ -28,7 +28,6 @@ function CheckoutContent() {
   const { items, subtotal, clearCart } = useCart();
   const { user } = useUser();
 
-  const cartShippingCost = subtotal >= freeShippingThreshold ? 0 : Number(searchParams.get("shipping") || 3500);
   const discountPct = Number(searchParams.get("discount") || 0);
   const discountType = searchParams.get("dtype") || "percentage";
   const discountValue = Number(searchParams.get("dvalue") || 0);
@@ -43,6 +42,8 @@ function CheckoutContent() {
   const [shippingZones, setShippingZones] = useState<any[]>([]);
   const [matchedZone, setMatchedZone] = useState<any>(null);
   const [freeShippingThreshold, setFreeShippingThreshold] = useState(60000);
+
+  const cartShippingCost = subtotal >= freeShippingThreshold ? 0 : Number(searchParams.get("shipping") || 3500);
 
   const [form, setForm] = useState({
     name: user?.name || "",
