@@ -13,10 +13,40 @@ export default function Navbar() {
   const [productsOpen, setProductsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
+  const [dynamicCategories, setDynamicCategories] = useState<Record<string, string[]>>(CATEGORIES as Record<string, string[]>);
   const { totalItems } = useCart();
   const { user, isSignedIn, signOut } = useUser();
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Load categories from DB products
+  useEffect(() => {
+    import("@/lib/supabase/client").then(({ createClient }) => {
+      const supabase = createClient();
+      supabase
+        .from("products")
+        .select("category, subcategory")
+        .eq("available", true)
+        .then(({ data }) => {
+          if (data && data.length > 0) {
+            const cats: Record<string, Set<string>> = {};
+            data.forEach((p: any) => {
+              if (!cats[p.category]) cats[p.category] = new Set();
+              cats[p.category].add(p.subcategory);
+            });
+            const result: Record<string, string[]> = {};
+            Object.entries(cats).forEach(([cat, subs]) => {
+              result[cat] = Array.from(subs).sort();
+            });
+            // Merge with static to ensure all main categories show
+            Object.keys(CATEGORIES).forEach((cat) => {
+              if (!result[cat]) result[cat] = (CATEGORIES as Record<string, string[]>)[cat];
+            });
+            setDynamicCategories(result);
+          }
+        });
+    });
+  }, []);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -69,7 +99,7 @@ export default function Navbar() {
               </button>
               {productsOpen && (
                 <div className="absolute top-full left-0 mt-2 w-[520px] bg-white border border-gray-200 rounded-2xl shadow-xl p-6 grid grid-cols-3 gap-6 z-50">
-                  {Object.entries(CATEGORIES).map(([cat, subs]) => (
+                  {Object.entries(dynamicCategories).map(([cat, subs]) => (
                     <div key={cat}>
                       <Link
                         href={`/shop?category=${encodeURIComponent(cat)}`}

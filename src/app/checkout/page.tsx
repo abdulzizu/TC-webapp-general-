@@ -28,7 +28,7 @@ function CheckoutContent() {
   const { items, subtotal, clearCart } = useCart();
   const { user } = useUser();
 
-  const cartShippingCost = subtotal >= 60000 ? 0 : Number(searchParams.get("shipping") || 3500);
+  const cartShippingCost = subtotal >= freeShippingThreshold ? 0 : Number(searchParams.get("shipping") || 3500);
   const discountPct = Number(searchParams.get("discount") || 0);
   const discountType = searchParams.get("dtype") || "percentage";
   const discountValue = Number(searchParams.get("dvalue") || 0);
@@ -42,6 +42,7 @@ function CheckoutContent() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [shippingZones, setShippingZones] = useState<any[]>([]);
   const [matchedZone, setMatchedZone] = useState<any>(null);
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState(60000);
 
   const [form, setForm] = useState({
     name: user?.name || "",
@@ -52,7 +53,7 @@ function CheckoutContent() {
     state: "",
   });
 
-  // Load shipping zones from Supabase
+  // Load shipping zones and free shipping threshold from Supabase
   useEffect(() => {
     import("@/lib/supabase/client").then(({ createClient }) => {
       const supabase = createClient();
@@ -62,6 +63,14 @@ function CheckoutContent() {
         .eq("active", true)
         .then(({ data }) => {
           if (data) setShippingZones(data);
+        });
+      supabase
+        .from("store_settings")
+        .select("value")
+        .eq("key", "free_shipping_threshold")
+        .single()
+        .then(({ data }) => {
+          if (data?.value) setFreeShippingThreshold(Number(data.value));
         });
     });
   }, []);
@@ -99,7 +108,7 @@ function CheckoutContent() {
 
   // Dynamic shipping cost from matched zone
   const dynamicShippingCost = matchedZone ? matchedZone.price_min : Number(searchParams.get("shipping") || 3500);
-  const actualShippingCost = subtotal >= 60000 ? 0 : dynamicShippingCost;
+  const actualShippingCost = subtotal >= freeShippingThreshold ? 0 : dynamicShippingCost;
 
   useEffect(() => {
     if (user) {
@@ -319,7 +328,7 @@ function CheckoutContent() {
                       </div>
                       <p className="text-xs text-gray-500 mt-1">
                         {actualShippingCost === 0
-                          ? <span className="text-[#1a6b2f] font-semibold">Free delivery for orders above ₦60,000 🎉</span>
+                          ? <span className="text-[#1a6b2f] font-semibold">Free delivery for orders above ₦{freeShippingThreshold.toLocaleString()} 🎉</span>
                           : matchedZone
                             ? <span>Delivering to <strong>{matchedZone.zone_name}</strong> — {matchedZone.delivery_days}.</span>
                             : "We dispatch your order right away."

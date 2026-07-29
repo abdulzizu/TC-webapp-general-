@@ -41,6 +41,55 @@ function FreeShippingSettings() {
   );
 }
 
+function DropDaySettings() {
+  const supabase = createClient();
+  const [day, setDay] = useState("5"); // Default Friday
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const days = [
+    { value: "0", label: "Sunday" },
+    { value: "1", label: "Monday" },
+    { value: "2", label: "Tuesday" },
+    { value: "3", label: "Wednesday" },
+    { value: "4", label: "Thursday" },
+    { value: "5", label: "Friday" },
+    { value: "6", label: "Saturday" },
+  ];
+
+  useEffect(() => {
+    supabase.from("store_settings").select("value").eq("key", "drop_day").single()
+      .then(({ data }) => { if (data) setDay(data.value); });
+  }, [supabase]);
+
+  async function handleSave() {
+    setSaving(true);
+    const { error } = await supabase.from("store_settings").upsert({ key: "drop_day", value: day, updated_at: new Date().toISOString() }, { onConflict: "key" });
+    setSaving(false);
+    if (error) { alert("Error: " + error.message); return; }
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-100 p-5">
+      <h2 className="font-bold text-sm mb-1">Drop Day</h2>
+      <p className="text-xs text-gray-400 mb-4">The countdown timer on the homepage targets this day at noon. Change it when your drop schedule shifts.</p>
+      <div className="flex gap-3 items-end">
+        <div className="flex-1">
+          <label className="block text-xs font-semibold text-gray-600 mb-1">Day of Week</label>
+          <select value={day} onChange={(e) => setDay(e.target.value)} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a6b2f]">
+            {days.map((d) => <option key={d.value} value={d.value}>{d.label}</option>)}
+          </select>
+        </div>
+        <button onClick={handleSave} disabled={saving} className="px-4 py-2 bg-[#1a6b2f] text-white font-bold rounded-full text-sm hover:bg-[#104020] transition disabled:opacity-50">
+          {saving ? "Saving…" : saved ? "Saved ✓" : "Update"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function MarqueeSettings() {
   const supabase = createClient();
   const [items, setItems] = useState<string[]>([
@@ -171,6 +220,9 @@ export default function AdminSettingsPage() {
 
       {/* Free Shipping Threshold */}
       <FreeShippingSettings />
+
+      {/* Drop Day */}
+      <DropDaySettings />
 
       {/* Marquee Banner */}
       <MarqueeSettings />

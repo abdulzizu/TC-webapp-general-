@@ -363,17 +363,28 @@ function ProductCard({
 
 function NextDrop() {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
+  const [dropDay, setDropDay] = useState(5); // 0=Sun, 1=Mon, ... 5=Fri
+
+  // Load drop day from settings
+  useEffect(() => {
+    import("@/lib/supabase/client").then(({ createClient }) => {
+      const supabase = createClient();
+      supabase.from("store_settings").select("value").eq("key", "drop_day").single()
+        .then(({ data }) => {
+          if (data?.value) setDropDay(Number(data.value));
+        });
+    });
+  }, []);
 
   useEffect(() => {
     function getNextDropDate(): Date {
       const now = new Date();
-      const day = now.getDay(); // 0=Sun, 5=Fri
-      let daysUntilFriday = (5 - day + 7) % 7;
-      // If it's already Friday-Monday and past noon, target next Friday
-      if (daysUntilFriday === 0 && now.getHours() >= 12) daysUntilFriday = 7;
+      const day = now.getDay();
+      let daysUntil = (dropDay - day + 7) % 7;
+      if (daysUntil === 0 && now.getHours() >= 12) daysUntil = 7;
       const target = new Date(now);
-      target.setDate(target.getDate() + daysUntilFriday);
-      target.setHours(12, 0, 0, 0); // Friday at noon WAT
+      target.setDate(target.getDate() + daysUntil);
+      target.setHours(12, 0, 0, 0);
       return target;
     }
 
@@ -393,7 +404,9 @@ function NextDrop() {
     update();
     const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [dropDay]);
+
+  const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
   return (
     <section id="drops" className="py-16 sm:py-20 bg-[#1a6b2f] relative overflow-hidden" aria-labelledby="drop-heading">
@@ -410,7 +423,7 @@ function NextDrop() {
           Coming Soon
         </span>
         <h2 id="drop-heading" className="text-4xl sm:text-5xl font-700 text-white mb-4 leading-tight">
-          Next drop drops Friday.
+          Next drop drops {dayNames[dropDay]}.
         </h2>
         <p className="text-white/80 text-lg mb-10 max-w-lg mx-auto">
           New pieces every week. Sign up and be the first in line — limited stock means fast fingers win.
