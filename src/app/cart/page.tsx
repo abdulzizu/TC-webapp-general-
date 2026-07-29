@@ -157,7 +157,7 @@ export default function CartPage() {
             {/* Return policy note */}
             <div className="p-4 bg-[#f5f0e8] rounded-2xl border border-[#1a6b2f]/10">
               <p className="text-xs text-gray-600 leading-relaxed">
-                <span className="font-semibold">Return policy:</span> Items can be returned within 7 days of delivery if they are in their original condition. Contact us via SMS or email to initiate a return.
+                <span className="font-semibold">Return policy:</span> Items can be returned within 24 hours of delivery if they are in their original condition. Contact us via WhatsApp or email to initiate a return.
               </p>
             </div>
           </div>
