@@ -41,6 +41,83 @@ function FreeShippingSettings() {
   );
 }
 
+function MarqueeSettings() {
+  const supabase = createClient();
+  const [items, setItems] = useState<string[]>([
+    "NEW DROP EVERY WEEK", "UNISEX STREETWEAR", "SUSTAINABLY THRIFTED",
+    "FREE DELIVERY OVER ₦60,000", "GOOD-AS-NEW QUALITY",
+  ]);
+  const [newItem, setNewItem] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    supabase.from("store_settings").select("value").eq("key", "marquee_items").single()
+      .then(({ data }) => {
+        if (data?.value) {
+          try {
+            const parsed = JSON.parse(data.value);
+            if (Array.isArray(parsed) && parsed.length > 0) setItems(parsed);
+          } catch {}
+        }
+      });
+  }, [supabase]);
+
+  function addItem() {
+    const text = newItem.trim().toUpperCase();
+    if (!text || items.includes(text)) return;
+    setItems([...items, text]);
+    setNewItem("");
+  }
+
+  function removeItem(index: number) {
+    setItems(items.filter((_, i) => i !== index));
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    const { error } = await supabase.from("store_settings").upsert(
+      { key: "marquee_items", value: JSON.stringify(items), updated_at: new Date().toISOString() },
+      { onConflict: "key" }
+    );
+    setSaving(false);
+    if (error) { alert("Error: " + error.message); return; }
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-100 p-5">
+      <h2 className="font-bold text-sm mb-1">Marquee Banner</h2>
+      <p className="text-xs text-gray-400 mb-4">The scrolling text at the top of the website. Edit items or add new ones.</p>
+
+      <div className="space-y-2 mb-4">
+        {items.map((item, i) => (
+          <div key={i} className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
+            <span className="text-xs font-bold uppercase flex-1">{item}</span>
+            <button onClick={() => removeItem(i)} className="text-xs text-red-400 hover:text-red-600 shrink-0">×</button>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex gap-2 mb-4">
+        <input
+          value={newItem}
+          onChange={(e) => setNewItem(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addItem())}
+          placeholder="Add new item (e.g. BACK IN STOCK)"
+          className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm uppercase focus:outline-none focus:border-[#1a6b2f]"
+        />
+        <button onClick={addItem} className="px-3 py-2 bg-gray-100 rounded-lg text-sm font-semibold hover:bg-gray-200 transition">Add</button>
+      </div>
+
+      <button onClick={handleSave} disabled={saving} className="px-4 py-2 bg-[#1a6b2f] text-white font-bold rounded-full text-sm hover:bg-[#104020] transition disabled:opacity-50">
+        {saving ? "Saving…" : saved ? "Saved ✓" : "Save Banner"}
+      </button>
+    </div>
+  );
+}
+
 export default function AdminSettingsPage() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -94,6 +171,9 @@ export default function AdminSettingsPage() {
 
       {/* Free Shipping Threshold */}
       <FreeShippingSettings />
+
+      {/* Marquee Banner */}
+      <MarqueeSettings />
 
       {/* Change Password */}
       <div className="bg-white rounded-xl border border-gray-100 p-5">
