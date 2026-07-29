@@ -134,12 +134,22 @@ function CheckoutContent() {
   const total = subtotal - discountAmount + shippingCost;
   const shippingEstimate = matchedZone?.delivery_days || (form.state ? getShippingEstimate(form.state) : null);
 
-  // Stockpile expiry = 1 month from today
-  const stockpiledUntil = new Date();
-  stockpiledUntil.setMonth(stockpiledUntil.getMonth() + 1);
-  const stockpileDeadline = stockpiledUntil.toLocaleDateString("en-NG", {
-    day: "numeric", month: "long", year: "numeric",
-  });
+  // Stockpile deadline for display
+  const stockpileDeadline = (() => {
+    if (user) {
+      const existingStockpile = user.orders?.find(
+        (o) => o.status === "stockpiled" && o.stockpiledUntil && new Date(o.stockpiledUntil) > new Date()
+      );
+      if (existingStockpile?.stockpiledUntil) {
+        return new Date(existingStockpile.stockpiledUntil).toLocaleDateString("en-NG", {
+          day: "numeric", month: "long", year: "numeric",
+        });
+      }
+    }
+    const d = new Date();
+    d.setMonth(d.getMonth() + 1);
+    return d.toLocaleDateString("en-NG", { day: "numeric", month: "long", year: "numeric" });
+  })();
 
   function setField(field: string, value: string) {
     setForm((f) => ({ ...f, [field]: value }));
@@ -178,8 +188,21 @@ function CheckoutContent() {
     try {
       const orderId = "TC-" + Math.random().toString(36).substring(2, 8).toUpperCase();
       const fullAddress = [form.address, form.city, form.state].filter(Boolean).join(", ");
-      const expiry = new Date();
-      expiry.setMonth(expiry.getMonth() + 1);
+      
+      // Check for existing active stockpile if user chose stockpile
+      let stockpileExpiry = new Date();
+      stockpileExpiry.setMonth(stockpileExpiry.getMonth() + 1);
+
+      if (deliveryChoice === "stockpile" && user) {
+        // Look for an existing stockpiled order within the last month
+        const existingStockpile = user.orders?.find(
+          (o) => o.status === "stockpiled" && o.stockpiledUntil && new Date(o.stockpiledUntil) > new Date()
+        );
+        if (existingStockpile?.stockpiledUntil) {
+          // Use the same deadline as the existing stockpile
+          stockpileExpiry = new Date(existingStockpile.stockpiledUntil);
+        }
+      }
 
       const order: Order = {
         orderId,
@@ -200,7 +223,7 @@ function CheckoutContent() {
         payMethod: "paystack",
         status: "pending",
         isStockpile: deliveryChoice === "stockpile",
-        stockpiledUntil: deliveryChoice === "stockpile" ? expiry.toISOString() : undefined,
+        stockpiledUntil: deliveryChoice === "stockpile" ? stockpileExpiry.toISOString() : undefined,
       };
 
       // Save order to Supabase first
