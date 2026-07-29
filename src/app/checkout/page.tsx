@@ -30,6 +30,8 @@ function CheckoutContent() {
 
   const cartShippingCost = subtotal >= 60000 ? 0 : Number(searchParams.get("shipping") || 3500);
   const discountPct = Number(searchParams.get("discount") || 0);
+  const discountType = searchParams.get("dtype") || "percentage";
+  const discountValue = Number(searchParams.get("dvalue") || 0);
   const discountCode = searchParams.get("code") || "";
 
   const [step, setStep] = useState<"details" | "payment">("details");
@@ -113,7 +115,11 @@ function CheckoutContent() {
   }, [user]);
 
   // Costs
-  const discountAmount = discountPct ? Math.round((subtotal * discountPct) / 100) : 0;
+  const discountAmount = discountType === "percentage"
+    ? (discountPct ? Math.round((subtotal * discountPct) / 100) : 0)
+    : discountType === "fixed"
+      ? discountValue
+      : 0;
   const shippingCost = deliveryChoice === "stockpile" ? 0 : actualShippingCost;
   const total = subtotal - discountAmount + shippingCost;
   const shippingEstimate = matchedZone?.delivery_days || (form.state ? getShippingEstimate(form.state) : null);

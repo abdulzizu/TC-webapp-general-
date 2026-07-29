@@ -1,6 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
+
+function FreeShippingSettings() {
+  const supabase = createClient();
+  const [threshold, setThreshold] = useState("60000");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    supabase.from("store_settings").select("value").eq("key", "free_shipping_threshold").single()
+      .then(({ data }) => { if (data) setThreshold(data.value); });
+  }, [supabase]);
+
+  async function handleSave() {
+    setSaving(true);
+    const { error } = await supabase.from("store_settings").upsert({ key: "free_shipping_threshold", value: threshold, updated_at: new Date().toISOString() }, { onConflict: "key" });
+    setSaving(false);
+    if (error) { alert("Error: " + error.message); return; }
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-100 p-5">
+      <h2 className="font-bold text-sm mb-1">Free Shipping Threshold</h2>
+      <p className="text-xs text-gray-400 mb-4">Orders above this amount get free delivery. Change it anytime for promotions.</p>
+      <div className="flex gap-3 items-end">
+        <div className="flex-1">
+          <label className="block text-xs font-semibold text-gray-600 mb-1">Amount (₦)</label>
+          <input type="number" value={threshold} onChange={(e) => setThreshold(e.target.value)} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a6b2f]" min={0} />
+        </div>
+        <button onClick={handleSave} disabled={saving} className="px-4 py-2 bg-[#1a6b2f] text-white font-bold rounded-full text-sm hover:bg-[#104020] transition disabled:opacity-50">
+          {saving ? "Saving…" : saved ? "Saved ✓" : "Update"}
+        </button>
+      </div>
+      <p className="text-xs text-gray-400 mt-2">Currently: Free delivery on orders above ₦{Number(threshold).toLocaleString()}</p>
+    </div>
+  );
+}
 
 export default function AdminSettingsPage() {
   const [currentPassword, setCurrentPassword] = useState("");
@@ -52,6 +91,9 @@ export default function AdminSettingsPage() {
   return (
     <div className="space-y-6 max-w-lg">
       <h1 className="text-xl font-bold text-[#1a1a1a]">Settings</h1>
+
+      {/* Free Shipping Threshold */}
+      <FreeShippingSettings />
 
       {/* Change Password */}
       <div className="bg-white rounded-xl border border-gray-100 p-5">

@@ -6,32 +6,95 @@ import Link from "next/link";
 import MarqueeBanner from "@/components/MarqueeBanner";
 import Navbar from "@/components/Navbar";
 import { useCart } from "@/lib/cart-context";
-
-const DISCOUNT_CODES: Record<string, number> = {
-  TCFIRST: 10,
-  THRIFT15: 15,
-  DROP20: 20,
-};
+import { createClient } from "@/lib/supabase/client";
 
 export default function CartPage() {
   const { items, removeItem, subtotal } = useCart();
   const [discountCode, setDiscountCode] = useState("");
-  const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; pct: number } | null>(null);
+  const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; pct: number; type: string; value: number } | null>(null);
   const [discountError, setDiscountError] = useState("");
+  const [validating, setValidating] = useState(false);
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState(60000);
 
-  const isFreeShipping = subtotal >= 60000;
-  const discountAmount = appliedDiscount ? Math.round((subtotal * appliedDiscount.pct) / 100) : 0;
+  // Load free shipping threshold from store settings
+  useState(() => {
+    const supabase = createClient();
+    supabase.from("store_settings").select("value").eq("key", "free_shipping_threshold").single()
+      .then(({ data }) => { if (data) setFreeShippingThreshold(Number(data.value)); });
+  });
+
+  const isFreeShipping = subtotal >= freeShippingThreshold;
+  const discountAmount = appliedDiscount
+    ? appliedDiscount.type === "percentage"
+      ? Math.round((subtotal * appliedDiscount.value) / 100)
+      : appliedDiscount.type === "fixed"
+        ? appliedDiscount.value
+        : 0
+    : 0;
   const total = subtotal - discountAmount;
 
-  function applyDiscount() {
+  async function applyDiscount() {
     const code = discountCode.trim().toUpperCase();
-    if (DISCOUNT_CODES[code]) {
-      setAppliedDiscount({ code, pct: DISCOUNT_CODES[code] });
-      setDiscountError("");
-    } else {
+    if (!code) return;
+    setValidating(true);
+    setDiscountError("");
+
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("discount_codes")
+      .select("*")
+      .eq("code", code)
+      .eq("active", true)
+      .single();
+
+    setValidating(false);
+
+    if (error || !data) {
       setDiscountError("Invalid discount code");
       setAppliedDiscount(null);
+      return;
     }
+
+    // Check date range
+    const now = new Date();
+    if (data.start_date && new Date(data.start_date) > now) {
+      setDiscountError("This code isn't active yet");
+      return;
+    }
+    if (data.end_date && new Date(data.end_date) < now) {
+      setDiscountError("This code has expired");
+      return;
+    }
+
+    // Check max uses
+    if (data.max_uses && data.uses_count >= data.max_uses) {
+      setDiscountError("This code has been fully redeemed");
+      return;
+    }
+
+    // Check minimum purchase
+    if (data.min_purchase > 0 && subtotal < data.min_purchase) {
+      setDiscountError(`Minimum purchase of ₦${data.min_purchase.toLocaleString()} required`);
+      return;
+    }
+
+    // Check product scope
+    if (data.product_scope === "specific" && data.product_ids?.length > 0) {
+      const cartProductIds = items.map((i) => i.product.id);
+      const hasQualifying = cartProductIds.some((id) => data.product_ids.includes(id));
+      if (!hasQualifying) {
+        setDiscountError("This code doesn't apply to items in your cart");
+        return;
+      }
+    }
+
+    setAppliedDiscount({
+      code: data.code,
+      pct: data.discount_type === "percentage" ? data.discount_value : 0,
+      type: data.discount_type,
+      value: data.discount_value,
+    });
+    setDiscountError("");
   }
 
   if (items.length === 0) {
@@ -145,7 +208,7 @@ export default function CartPage() {
                 </div>
                 {discountAmount > 0 && (
                   <div className="flex justify-between text-sm text-[#1a6b2f] font-semibold">
-                    <span>Discount ({appliedDiscount!.pct}%)</span><span>−₦{discountAmount.toLocaleString()}</span>
+                    <span>Discount ({appliedDiscount!.type === "percentage" ? `${appliedDiscount!.value}%` : `₦${appliedDiscount!.value.toLocaleString()}`})</span><span>−₦{discountAmount.toLocaleString()}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-sm text-gray-600">
@@ -157,7 +220,7 @@ export default function CartPage() {
               </div>
 
               <Link
-                href={`/checkout${appliedDiscount ? `?discount=${appliedDiscount.pct}&code=${appliedDiscount.code}` : ""}`}
+                href={`/checkout${appliedDiscount ? `?discount=${appliedDiscount.type === "percentage" ? appliedDiscount.value : 0}&code=${appliedDiscount.code}&dtype=${appliedDiscount.type}&dvalue=${appliedDiscount.value}` : ""}`}
                 className="block w-full py-4 text-center bg-[#1a6b2f] text-white font-bold rounded-full hover:bg-[#104020] transition-colors shadow-lg shadow-[#1a6b2f]/20 text-sm"
               >
                 Proceed to Checkout
