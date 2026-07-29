@@ -263,16 +263,17 @@ export default function ProfilePage() {
                       </div>
 
                       {/* Items */}
-                      <div className="flex gap-2 mb-4 flex-wrap">
+                      <div className="space-y-2 mb-4">
                         {order.items.map((item) => (
-                          <div key={item.productId} className="flex items-center gap-2 bg-gray-50 rounded-xl px-3 py-2">
-                            <div className="relative w-8 h-8 rounded-lg overflow-hidden bg-[#ede8d8] shrink-0">
-                              <Image src={item.productImage} alt={item.productName} fill className="object-cover" sizes="32px" />
+                          <div key={item.productId} className="flex items-center gap-3 bg-gray-50 rounded-xl px-3 py-2">
+                            <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-[#ede8d8] shrink-0">
+                              <Image src={item.productImage} alt={item.productName} fill className="object-cover" sizes="40px" />
                             </div>
-                            <div>
+                            <div className="flex-1 min-w-0">
                               <p className="text-xs font-semibold text-[#1a1a1a] line-clamp-1">{item.productName}</p>
-                              <p className="text-[10px] text-gray-400">Size: {item.size}</p>
+                              <p className="text-[10px] text-gray-400">Size: {item.size} · Qty: {item.quantity}</p>
                             </div>
+                            <p className="text-xs font-bold text-[#1a6b2f] shrink-0">₦{(item.price * item.quantity).toLocaleString()}</p>
                           </div>
                         ))}
                       </div>
@@ -295,12 +296,12 @@ export default function ProfilePage() {
                           <p className="font-semibold mb-0.5">📦 Stockpiled</p>
                           <p>Hold expires: <strong>{new Date(order.stockpiledUntil).toLocaleDateString("en-NG", { day: "numeric", month: "long", year: "numeric" })}</strong></p>
                           <a
-                            href={`https://wa.me/2348000000000?text=Hi! I'd like to request delivery for order ${order.orderId}`}
+                            href={`https://wa.me/2348061979299?text=Hi! I'd like to request delivery for order ${order.orderId}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-block mt-2 text-[#1a6b2f] font-semibold underline"
                           >
-                            Request delivery via SMS →
+                            Request delivery via WhatsApp →
                           </a>
                         </div>
                       )}
