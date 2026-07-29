@@ -26,7 +26,7 @@ function CheckoutContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { items, subtotal, clearCart } = useCart();
-  const { user } = useUser();
+  const { user, saveOrder } = useUser();
 
   const discountPct = Number(searchParams.get("discount") || 0);
   const discountType = searchParams.get("dtype") || "percentage";
@@ -176,8 +176,6 @@ function CheckoutContent() {
   async function handlePlaceOrder() {
     setSubmitting(true);
     try {
-      await new Promise((r) => setTimeout(r, 1500));
-
       const orderId = "TC-" + Math.random().toString(36).substring(2, 8).toUpperCase();
       const fullAddress = [form.address, form.city, form.state].filter(Boolean).join(", ");
       const expiry = new Date();
@@ -199,15 +197,19 @@ function CheckoutContent() {
         discountAmount,
         total,
         deliveryAddress: fullAddress,
-        payMethod,
-        status: deliveryChoice === "stockpile" ? "stockpiled" : "processing",
+        payMethod: "paystack",
+        status: "pending",
         isStockpile: deliveryChoice === "stockpile",
         stockpiledUntil: deliveryChoice === "stockpile" ? expiry.toISOString() : undefined,
       };
 
+      // Save order to Supabase first
       try {
         sessionStorage.setItem(`tc_pending_order_${orderId}`, JSON.stringify(order));
       } catch {}
+
+      // Save order via user context (writes to DB)
+      await saveOrder(order);
 
       // Send order confirmation email (non-blocking)
       if (form.email) {
@@ -226,13 +228,37 @@ function CheckoutContent() {
             deliveryAddress: fullAddress,
             isStockpile: deliveryChoice === "stockpile",
           }),
-        }).catch(() => {}); // Don't block checkout if email fails
+        }).catch(() => {});
       }
 
+      // Initialize Paystack payment
+      const payRes = await fetch("/api/payments/initialize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: form.email || `guest_${Date.now()}@thriftcollision.com`,
+          amount: total,
+          orderId,
+          metadata: {
+            customer_name: form.name,
+            phone: form.phone,
+            delivery_address: fullAddress,
+            is_stockpile: deliveryChoice === "stockpile",
+          },
+        }),
+      });
+
+      const payData = await payRes.json();
+
+      if (!payRes.ok || !payData.authorization_url) {
+        setSubmitting(false);
+        alert("Payment initialization failed: " + (payData.error || "Please try again"));
+        return;
+      }
+
+      // Clear cart and redirect to Paystack
       clearCart();
-      router.push(
-        `/order-confirmation?orderId=${orderId}&name=${encodeURIComponent(form.name)}&guest=${asGuest}&stockpile=${deliveryChoice === "stockpile"}`
-      );
+      window.location.href = payData.authorization_url;
     } catch {
       setSubmitting(false);
       alert("Something went wrong placing your order. Please try again.");

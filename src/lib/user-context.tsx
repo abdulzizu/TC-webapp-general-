@@ -24,6 +24,7 @@ export type OrderItem = {
 };
 
 export type OrderStatus =
+  | "pending"
   | "processing"
   | "stockpiled"
   | "shipped"
