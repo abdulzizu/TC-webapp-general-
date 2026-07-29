@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
                 <!-- Header -->
                 <div style="background: #1a1a1a; padding: 32px 24px; text-align: center;">
                   <h1 style="color: #ffffff; font-size: 22px; font-weight: 700; margin: 0; letter-spacing: -0.5px;">THRIFT COLLISION</h1>
-                  <p style="color: #9ca3af; font-size: 12px; margin: 8px 0 0 0; letter-spacing: 2px; text-transform: uppercase;">Premium Thrifted Streetwear</p>
+                  <p style="color: #9ca3af; font-size: 12px; margin: 8px 0 0 0; letter-spacing: 2px; text-transform: uppercase;">Unisex Thrifted Streetwear</p>
                 </div>
                 
                 <!-- Body -->
