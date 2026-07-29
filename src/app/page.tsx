@@ -462,13 +462,10 @@ function Sustainability() {
               Curating the best<br />in thrifted drops.
             </h2>
             <p className="text-[#4b5563] text-lg leading-relaxed mb-6">
-              Thrift Collision was born on Instagram with one goal: make premium thrifted streetwear
-              accessible, authenticated, and easy to shop. Every piece we drop is hand-picked,
-              quality-checked, and given a second life.
+              Thrift Collision started as a hobby — thrifting with friends and family. What began offline grew into a community, first on Instagram, then beyond. Now you get to be part of it. We&apos;ve become the go-to destination for style-conscious shoppers, offering the widest range of hand-picked, quality-checked pre-loved clothing.
             </p>
             <p className="text-[#4b5563] text-lg leading-relaxed mb-8">
-              The newspaper backdrop you see in our photos isn&apos;t just aesthetic — it&apos;s a statement.
-              Old stories, new fits. Sustainability woven into every drop.
+              We&apos;ve added sustainability to the mission — and we mean it. That&apos;s why we&apos;ve launched our own reworked label garments. From our logo to the newspaper backdrop in our photos, nothing is just aesthetic. It&apos;s a statement. Recycled fashion, old stories, new fits. Sustainability woven into every drop.
             </p>
             <div className="grid grid-cols-3 gap-4">
               {[
