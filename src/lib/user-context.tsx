@@ -105,11 +105,30 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   // ── Load profile from Supabase ──────────────────────────────
   const loadProfile = useCallback(async (uid: string) => {
-    const { data: profile } = await supabase
+    let { data: profile } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", uid)
       .single();
+
+    // Auto-create profile if missing (trigger may not have fired for magic link users)
+    if (!profile) {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      await supabase.from("profiles").upsert({
+        id: uid,
+        name: authUser?.user_metadata?.name || "",
+        phone: authUser?.phone || "",
+        email: authUser?.email || "",
+      }, { onConflict: "id" });
+
+      // Re-fetch
+      const { data: newProfile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", uid)
+        .single();
+      profile = newProfile;
+    }
 
     const { data: keywordRows } = await supabase
       .from("keywords")
