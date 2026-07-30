@@ -224,7 +224,7 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="lg:hidden border-t border-gray-200 bg-white px-4 py-4">
+        <div className="lg:hidden border-t border-gray-200 bg-white px-4 py-4 max-h-[80vh] overflow-y-auto">
           <form onSubmit={handleSearch} className="mb-4" role="search">
             <label htmlFor="mobile-search" className="sr-only">Search</label>
             <div className="relative">
@@ -276,10 +276,7 @@ export default function Navbar() {
                   <button onClick={() => { signOut(); setMenuOpen(false); }} className="text-sm text-left text-red-500">Sign out</button>
                 </>
               ) : (
-                <>
-                  <Link href="/auth/signin" className="text-sm font-semibold text-gray-800" onClick={() => setMenuOpen(false)}>Sign in / Register</Link>
-                  <Link href="/profile" className="text-sm font-semibold text-gray-800" onClick={() => setMenuOpen(false)}>Create Account</Link>
-                </>
+                <Link href="/auth/signin" className="text-sm font-semibold text-gray-800" onClick={() => setMenuOpen(false)}>Create Account / Sign in</Link>
               )}
             </div>
           </nav>
