@@ -79,7 +79,7 @@ export default function Navbar() {
         <div className="flex items-center gap-4 h-16">
           {/* Logo */}
           <Link href="/" aria-label="Thrift Collision home" className="shrink-0">
-            <Image src="/tc-logo.png" alt="Thrift Collision" width={48} height={48} className="object-contain" priority />
+            <Image src="/tc-logo.png" alt="Thrift Collision" width={40} height={40} className="object-contain" priority />
           </Link>
 
           {/* Desktop nav links */}
