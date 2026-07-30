@@ -59,7 +59,6 @@ export async function GET(req: NextRequest) {
           if (!item.product_id) continue;
           await supabase.from("products").update({
             tag: "SOLD OUT",
-            available: false,
           }).eq("id", item.product_id);
         }
       }

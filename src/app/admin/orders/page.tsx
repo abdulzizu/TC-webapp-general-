@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 
 type Order = {
@@ -22,7 +23,7 @@ type Order = {
   order_items: any[];
 };
 
-const STATUSES = ["processing", "stockpiled", "shipped", "delivered", "unsuccessful"];
+const STATUSES = ["pending", "processing", "stockpiled", "shipped", "delivered", "unsuccessful"];
 
 export default function AdminOrdersPage() {
   const supabase = createClient();
@@ -107,6 +108,7 @@ export default function AdminOrdersPage() {
               >
                 <div className="flex items-center gap-4 flex-wrap">
                   <span className="font-mono text-xs font-bold text-[#1a1a1a]">{order.order_id}</span>
+                  <span className="text-xs text-gray-500">{order.guest_name || "Account user"}</span>
                   <StatusBadge status={order.status} />
                   <span className="text-sm font-semibold">₦{order.total.toLocaleString()}</span>
                   {order.is_stockpile && <span className="text-xs bg-blue-50 text-blue-600 font-semibold px-2 py-0.5 rounded-full">Stockpile</span>}
@@ -128,8 +130,9 @@ export default function AdminOrdersPage() {
                   <div className="grid sm:grid-cols-2 gap-4 text-sm">
                     <div>
                       <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Customer</p>
-                      <p className="font-medium">{order.guest_name || "Registered user"}</p>
-                      <p className="text-gray-500">{order.guest_phone || order.user_id?.slice(0, 8) + "…"}</p>
+                      <p className="font-medium">{order.guest_name || "Signed-in user"}</p>
+                      <p className="text-gray-500">{order.guest_phone || ""}</p>
+                      {order.user_id && <p className="text-xs text-gray-400 mt-0.5">Account ID: {order.user_id.slice(0, 8)}…</p>}
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Delivery Address</p>
@@ -140,11 +143,19 @@ export default function AdminOrdersPage() {
                   {/* Order items */}
                   <div>
                     <p className="text-xs text-gray-500 uppercase font-semibold mb-2">Items</p>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       {(order.order_items ?? []).map((item: any, i: number) => (
-                        <div key={i} className="flex items-center justify-between text-sm bg-gray-50 rounded-lg px-3 py-2">
-                          <span>{item.product_name} <span className="text-gray-400">× {item.quantity}</span> <span className="text-xs text-gray-400">({item.size})</span></span>
-                          <span className="font-semibold">₦{(item.price * item.quantity).toLocaleString()}</span>
+                        <div key={i} className="flex items-center gap-3 text-sm bg-gray-50 rounded-lg px-3 py-2">
+                          {item.product_image && (
+                            <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-gray-200 shrink-0">
+                              <Image src={item.product_image} alt={item.product_name} fill className="object-cover" sizes="40px" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <span className="font-medium truncate block">{item.product_name}</span>
+                            <span className="text-xs text-gray-400">Size: {item.size} · Qty: {item.quantity}</span>
+                          </div>
+                          <span className="font-semibold shrink-0">₦{(item.price * item.quantity).toLocaleString()}</span>
                         </div>
                       ))}
                     </div>
@@ -210,6 +221,7 @@ function FilterTab({ label, count, active, onClick }: { label: string; count: nu
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
+    pending: "bg-gray-100 text-gray-600",
     processing: "bg-amber-100 text-amber-700",
     stockpiled: "bg-blue-100 text-blue-700",
     shipped: "bg-purple-100 text-purple-700",

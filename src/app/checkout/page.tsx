@@ -227,12 +227,60 @@ function CheckoutContent() {
       };
 
       // Save order to Supabase first
-      try {
-        sessionStorage.setItem(`tc_pending_order_${orderId}`, JSON.stringify(order));
-      } catch {}
+      // Save order to Supabase directly (works for both guests and signed-in users)
+      const { createClient: createSB } = await import("@/lib/supabase/client");
+      const sb = createSB();
 
-      // Save order via user context (writes to DB)
-      await saveOrder(order);
+      const { data: orderRow, error: orderError } = await sb.from("orders").insert({
+        order_id: orderId,
+        user_id: null, // Will be set by webhook if user is authenticated
+        guest_phone: form.phone || null,
+        guest_name: form.name || null,
+        status: "pending",
+        subtotal,
+        shipping_cost: shippingCost,
+        discount_amount: discountAmount,
+        total,
+        delivery_address: fullAddress,
+        pay_method: "paystack",
+        is_stockpile: deliveryChoice === "stockpile",
+        stockpiled_until: deliveryChoice === "stockpile" ? stockpileExpiry.toISOString() : null,
+      }).select("id").single();
+
+      if (orderError) {
+        console.error("Order save error:", orderError);
+      }
+
+      // Save order items
+      if (orderRow && order.items.length > 0) {
+        await sb.from("order_items").insert(
+          order.items.map((i) => ({
+            order_id: orderRow.id,
+            product_id: i.productId,
+            product_name: i.productName,
+            product_image: i.productImage,
+            size: i.size,
+            quantity: i.quantity,
+            price: i.price,
+          }))
+        );
+      }
+
+      // Increment discount usage if a code was applied
+      if (discountCode) {
+        await sb.from("discount_codes")
+          .update({ uses_count: sb.rpc ? undefined : undefined })
+          .eq("code", discountCode);
+        // Use raw increment via RPC or direct SQL
+        await fetch(`https://cdxuppunppsgryvrieoz.supabase.co/rest/v1/rpc/increment_discount_usage`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkeHVwcHVucHBzZ3J5dnJpZW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MTE3MDMsImV4cCI6MjA5OTE4NzcwM30.ezvcrKbUVhEHuZTCBsDsqvvSWvGns-Cua0vyaq3Ec5k",
+          },
+          body: JSON.stringify({ code_value: discountCode }),
+        }).catch(() => {});
+      }
 
       // Send order confirmation email (non-blocking)
       if (form.email) {
