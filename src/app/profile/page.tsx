@@ -87,8 +87,7 @@ export default function ProfilePage() {
   function validate() {
     const errs: Partial<Record<string, string>> = {};
     if (!personal.name.trim()) errs.name = "Name is required";
-    if (!personal.phone.trim()) errs.phone = "Phone number is required";
-    else if (!/^[\d\s+\-()+]{10,15}$/.test(personal.phone.trim())) errs.phone = "Enter a valid phone number";
+    if (personal.phone && !/^[\d\s+\-()+]{10,15}$/.test(personal.phone.trim())) errs.phone = "Enter a valid phone number";
     if (!personal.deliveryAddress.trim()) errs.deliveryAddress = "Delivery address is required";
     if (personal.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(personal.email)) errs.email = "Enter a valid email";
     setErrors(errs);
@@ -285,7 +284,7 @@ export default function ProfilePage() {
 
                       {/* Items */}
                       <div className="space-y-2 mb-4">
-                        {order.items.map((item) => (
+                        {(order.items ?? []).map((item) => (
                           <div key={item.productId} className="flex items-center gap-3 bg-gray-50 rounded-xl px-3 py-2">
                             <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-[#ede8d8] shrink-0">
                               <Image src={item.productImage} alt={item.productName} fill className="object-cover" sizes="40px" />

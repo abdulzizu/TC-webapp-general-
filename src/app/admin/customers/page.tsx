@@ -138,7 +138,7 @@ export default function AdminCustomersPage() {
                       <p className="text-sm text-gray-400">No orders yet.</p>
                     ) : (
                       <div className="space-y-1.5">
-                        {customer.orders.map((o: any) => (
+                        {(customer.orders ?? []).map((o: any) => (
                           <div key={o.order_id} className="flex items-center justify-between text-sm bg-gray-50 rounded-lg px-3 py-2">
                             <div className="flex items-center gap-3">
                               <span className="font-mono text-xs font-bold">{o.order_id}</span>
