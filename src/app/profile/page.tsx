@@ -88,6 +88,7 @@ export default function ProfilePage() {
     const errs: Partial<Record<string, string>> = {};
     if (!personal.name.trim()) errs.name = "Name is required";
     if (personal.phone && !/^[\d\s+\-()+]{10,15}$/.test(personal.phone.trim())) errs.phone = "Enter a valid phone number";
+    if (!personal.phone.trim()) errs.phone = "Phone number is required for delivery";
     if (!personal.deliveryAddress.trim()) errs.deliveryAddress = "Delivery address is required";
     if (personal.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(personal.email)) errs.email = "Enter a valid email";
     setErrors(errs);
