@@ -28,7 +28,7 @@ function VerifyContent() {
           setStatus("success");
           // Redirect to order confirmation after a brief success display
           setTimeout(() => {
-            router.push(`/order-confirmation?orderId=${reference}&name=&guest=false&stockpile=false&paid=true`);
+            router.push(`/order-confirmation?orderId=${reference}&paid=true`);
           }, 2000);
         } else {
           setStatus("failed");

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import MarqueeBanner from "@/components/MarqueeBanner";
@@ -17,12 +17,38 @@ function getEstimatedDelivery() {
 function ConfirmationContent() {
   const searchParams = useSearchParams();
   const orderId   = searchParams.get("orderId") || "TC-XXXXXX";
-  const name      = searchParams.get("name")    || "there";
-  const isGuest   = searchParams.get("guest")   === "true";
-  const isStockpile = searchParams.get("stockpile") === "true";
-  const deliveryDate = getEstimatedDelivery();
+  const paramName = searchParams.get("name") || "";
+
+  const [order, setOrder] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   const { saveOrder, isSignedIn } = useUser();
+
+  // Load order details from Supabase
+  useEffect(() => {
+    import("@/lib/supabase/client").then(({ createClient }) => {
+      const supabase = createClient();
+      supabase
+        .from("orders")
+        .select("*, order_items(*)")
+        .eq("order_id", orderId)
+        .single()
+        .then(({ data }) => {
+          if (data) setOrder(data);
+          setLoading(false);
+        });
+    });
+  }, [orderId]);
+
+  // Derive values from DB order or URL params as fallback
+  const customerName = order?.guest_name || (paramName ? decodeURIComponent(paramName) : "");
+  const firstName = customerName.split(" ")[0] || "there";
+  const isStockpile = order?.is_stockpile ?? (searchParams.get("stockpile") === "true");
+  const isGuest = !order?.user_id && (searchParams.get("guest") !== "false");
+  const hasEmail = !!(order?.guest_name && searchParams.get("paid")); // If came via Paystack, check if email was in checkout
+  const deliveryAddress = order?.delivery_address || "";
+  const isAbuja = deliveryAddress.toLowerCase().includes("abuja") || deliveryAddress.toLowerCase().includes("fct");
+  const deliveryDate = getEstimatedDelivery();
 
   // Persist the order to user profile once on mount
   useEffect(() => {
@@ -39,10 +65,22 @@ function ConfirmationContent() {
   }, [orderId, isSignedIn]);
 
   const stockpileDeadline = (() => {
+    if (order?.stockpiled_until) {
+      return new Date(order.stockpiled_until).toLocaleDateString("en-NG", { day: "numeric", month: "long", year: "numeric" });
+    }
     const d = new Date();
     d.setMonth(d.getMonth() + 1);
     return d.toLocaleDateString("en-NG", { day: "numeric", month: "long", year: "numeric" });
   })();
+
+  if (loading) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-16 text-center">
+        <div className="w-10 h-10 border-2 border-[#1a6b2f] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-sm text-gray-500">Loading order details…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-16 text-center">
@@ -55,7 +93,7 @@ function ConfirmationContent() {
 
       <h1 className="text-3xl font-bold text-[#1a1a1a] mb-2">Order confirmed!</h1>
       <p className="text-gray-500 text-lg mb-8">
-        Thanks, {decodeURIComponent(name).split(" ")[0]}.{" "}
+        Thanks, {firstName}.{" "}
         {isStockpile ? "Your items are safely stockpiled." : "Your order is on its way."}
       </p>
 
@@ -81,7 +119,7 @@ function ConfirmationContent() {
               <p className="text-sm font-semibold text-[#1a1a1a]">
                 {isStockpile
                   ? "Stockpiled — we'll hold your items until you're ready for delivery"
-                  : "Processing — we'll email you when your order ships"
+                  : "Processing — we'll send you a WhatsApp message when your order ships"
                 }
               </p>
             </div>
@@ -118,8 +156,8 @@ function ConfirmationContent() {
           <p className="font-bold text-[#1a1a1a] mb-2">🚚 What happens next?</p>
           <div className="space-y-2 text-sm text-gray-600">
             {[
-              "We pack your order within 1–2 business days.",
-              "You'll receive an email when your order ships.",
+              isAbuja ? "We pack your order within 0–1 business days." : "We pack your order within 1–2 business days.",
+              "We'll send you a WhatsApp message when your order ships.",
               "Questions? Message us with your Order ID.",
             ].map((s, i) => (
               <div key={i} className="flex items-start gap-2">
