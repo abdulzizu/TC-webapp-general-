@@ -108,7 +108,9 @@ export default function AdminOrdersPage() {
               >
                 <div className="flex items-center gap-4 flex-wrap">
                   <span className="font-mono text-xs font-bold text-[#1a1a1a]">{order.order_id}</span>
-                  <span className="text-xs text-gray-500">{order.guest_name || "Account user"}</span>
+                  <span className="text-xs text-gray-500">{order.guest_name || "Signed-in user"}</span>
+                  {order.user_id && <span className="text-[9px] bg-[#1a6b2f]/10 text-[#1a6b2f] font-semibold px-1.5 py-0.5 rounded">Signed in</span>}
+                  {!order.user_id && <span className="text-[9px] bg-gray-100 text-gray-500 font-semibold px-1.5 py-0.5 rounded">Guest</span>}
                   <StatusBadge status={order.status} />
                   <span className="text-sm font-semibold">₦{order.total.toLocaleString()}</span>
                   {order.is_stockpile && <span className="text-xs bg-blue-50 text-blue-600 font-semibold px-2 py-0.5 rounded-full">Stockpile</span>}
@@ -133,6 +135,19 @@ export default function AdminOrdersPage() {
                       <p className="font-medium">{order.guest_name || "Signed-in user"}</p>
                       <p className="text-gray-500">{order.guest_phone || ""}</p>
                       {order.user_id && <p className="text-xs text-gray-400 mt-0.5">Account ID: {order.user_id.slice(0, 8)}…</p>}
+                      {/* Possible match hint */}
+                      {(() => {
+                        const matchCount = orders.filter((o) =>
+                          o.id !== order.id &&
+                          ((order.guest_phone && o.guest_phone === order.guest_phone) ||
+                           (order.guest_name && o.guest_name === order.guest_name))
+                        ).length;
+                        return matchCount > 0 ? (
+                          <p className="text-[10px] text-amber-600 mt-1 font-semibold">
+                            🔗 {matchCount} other order{matchCount > 1 ? "s" : ""} with same {order.guest_phone ? "phone" : "name"}
+                          </p>
+                        ) : null;
+                      })()}
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Delivery Address</p>

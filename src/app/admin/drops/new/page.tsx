@@ -124,6 +124,14 @@ function NewDropContent() {
       released_at: new Date().toISOString(),
     }).eq("id", dropId);
     if (error) { alert("Error updating drop status: " + error.message); setSaving(false); return; }
+
+    // Notify users whose wishlist keywords match the new products
+    fetch("/api/drops/notify-matches", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ dropId }),
+    }).catch(() => {});
+
     setSaving(false);
     router.push("/admin/drops");
   }

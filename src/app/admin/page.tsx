@@ -17,6 +17,7 @@ type Metrics = {
 export default function AdminOverview() {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
+  const [approachingStockpiles, setApproachingStockpiles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -52,6 +53,17 @@ export default function AdminOverview() {
       });
 
       setRecentOrders(ords.slice(0, 5));
+
+      // Find stockpiled orders approaching deadline (within 5 days)
+      const fiveDaysFromNow = new Date();
+      fiveDaysFromNow.setDate(fiveDaysFromNow.getDate() + 5);
+      const approaching = ords.filter((o: any) =>
+        o.status === "stockpiled" && o.stockpiled_until &&
+        new Date(o.stockpiled_until) <= fiveDaysFromNow &&
+        new Date(o.stockpiled_until) > new Date()
+      );
+      setApproachingStockpiles(approaching);
+
       setLoading(false);
     }
 
@@ -100,6 +112,29 @@ export default function AdminOverview() {
           </div>
         ))}
       </div>
+
+      {/* Stockpile deadline alerts */}
+      {approachingStockpiles.length > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <p className="font-bold text-amber-800 text-sm mb-2">⚠️ Stockpile deadlines approaching ({approachingStockpiles.length})</p>
+          <div className="space-y-2">
+            {approachingStockpiles.map((o: any) => {
+              const daysLeft = Math.ceil((new Date(o.stockpiled_until).getTime() - Date.now()) / 86400000);
+              return (
+                <div key={o.id} className="flex items-center justify-between text-sm">
+                  <div>
+                    <span className="font-mono font-bold text-xs">{o.order_id}</span>
+                    <span className="text-gray-500 ml-2">{o.guest_name || "Signed-in user"}</span>
+                  </div>
+                  <span className={`text-xs font-semibold ${daysLeft <= 2 ? "text-red-600" : "text-amber-700"}`}>
+                    {daysLeft <= 0 ? "Expires today!" : `${daysLeft} day${daysLeft !== 1 ? "s" : ""} left`}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Recent orders */}
       <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
