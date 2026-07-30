@@ -269,17 +269,8 @@ function CheckoutContent() {
       // Increment discount usage if a code was applied
       if (discountCode) {
         await sb.from("discount_codes")
-          .update({ uses_count: sb.rpc ? undefined : undefined })
+          .update({ uses_count: 1 })
           .eq("code", discountCode);
-        // Use raw increment via RPC or direct SQL
-        await fetch(`https://cdxuppunppsgryvrieoz.supabase.co/rest/v1/rpc/increment_discount_usage`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkeHVwcHVucHBzZ3J5dnJpZW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MTE3MDMsImV4cCI6MjA5OTE4NzcwM30.ezvcrKbUVhEHuZTCBsDsqvvSWvGns-Cua0vyaq3Ec5k",
-          },
-          body: JSON.stringify({ code_value: discountCode }),
-        }).catch(() => {});
       }
 
       // Send order confirmation email (non-blocking)
