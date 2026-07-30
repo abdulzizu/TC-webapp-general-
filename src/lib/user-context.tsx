@@ -234,7 +234,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
     if (!supabaseUser) return; // guest — localStorage only
 
-    await supabase.from("profiles").upsert({
+    const payload = {
       id: supabaseUser.id,
       name: profile.name,
       phone: profile.phone,
@@ -247,7 +247,23 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       pants_length: profile.sizes.pantsLength || null,
       hip_inches: profile.sizes.hipInches || null,
       cap_inches: profile.sizes.capInches || null,
-    }, { onConflict: "id" });
+    };
+
+    // Try update first, then insert if profile doesn't exist
+    const { error: updateError } = await supabase
+      .from("profiles")
+      .update(payload)
+      .eq("id", supabaseUser.id);
+
+    if (updateError) {
+      // Profile might not exist yet — try insert
+      const { error: insertError } = await supabase
+        .from("profiles")
+        .insert(payload);
+      if (insertError) {
+        console.error("Save profile failed:", insertError.message);
+      }
+    }
   }
 
   // ── saveOrder — writes order + items to Supabase ────────────

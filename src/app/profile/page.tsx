@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -47,6 +47,27 @@ export default function ProfilePage() {
     email:           user?.email           || "",
     deliveryAddress: user?.deliveryAddress || "",
   });
+
+  // Sync form fields when user data loads from Supabase
+  useEffect(() => {
+    if (user) {
+      setSizes({
+        tshirtSize:  user.sizes?.tshirtSize  || "",
+        chestInches: user.sizes?.chestInches || "",
+        sleeveInches:user.sizes?.sleeveInches|| "",
+        pantsWaist:  user.sizes?.pantsWaist  || "",
+        pantsLength: user.sizes?.pantsLength || "",
+        hipInches:   user.sizes?.hipInches   || "",
+        capInches:   user.sizes?.capInches   || "",
+      });
+      setPersonal({
+        name:            user.name            || "",
+        phone:           user.phone           || "",
+        email:           user.email           || "",
+        deliveryAddress: user.deliveryAddress || "",
+      });
+    }
+  }, [user]);
 
   function setSize(key: keyof SizeProfile, val: string) {
     setSizes((s) => ({ ...s, [key]: val }));
