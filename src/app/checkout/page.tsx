@@ -431,7 +431,7 @@ function CheckoutContent() {
                       )}
                       {deliveryChoice === "ship" && (
                         <p className="text-xs text-[#1a6b2f] mt-2 font-semibold">
-                          📲 You&apos;ll be notified via SMS when your order ships.
+                          📲 You&apos;ll be notified via WhatsApp when your order ships.
                         </p>
                       )}
                     </div>
@@ -493,7 +493,7 @@ function CheckoutContent() {
                 <p className={deliveryChoice === "stockpile" ? "text-amber-800" : "text-[#1a6b2f]"}>
                   {deliveryChoice === "stockpile"
                     ? `Your items will be stockpiled until ${stockpileDeadline}. Shipping charged separately when you request delivery.`
-                    : `Shipping immediately to ${form.city || "your address"}${shippingEstimate ? ` — estimated ${shippingEstimate}` : ""}. You'll be notified via SMS.`
+                    : `Shipping immediately to ${form.city || "your address"}${shippingEstimate ? ` — estimated ${shippingEstimate}` : ""}. You'll be notified via WhatsApp.`
                   }
                 </p>
               </div>

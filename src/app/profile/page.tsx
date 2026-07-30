@@ -308,7 +308,7 @@ export default function ProfilePage() {
 
                       {order.status === "shipped" && (
                         <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-xl text-xs text-[#1a6b2f]">
-                          🚚 Your order is on its way! You&apos;ll receive SMS updates.
+                          🚚 Your order is on its way! You&apos;ll receive WhatsApp updates.
                         </div>
                       )}
                     </div>

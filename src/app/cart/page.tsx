@@ -195,7 +195,7 @@ export default function CartPage() {
                     <div>
                       <p className="text-sm text-gray-700">Calculated at checkout based on your delivery address.</p>
                       <p className="text-xs text-gray-400 mt-1">Abuja: same day – 1 day · Other states: 2–4 days via GUO</p>
-                      <p className="text-xs text-[#1a6b2f] font-semibold mt-1">Free delivery on orders above ₦60,000</p>
+                      <p className="text-xs text-[#1a6b2f] font-semibold mt-1">Free delivery on orders above ₦{freeShippingThreshold.toLocaleString()}</p>
                     </div>
                   )}
                 </div>

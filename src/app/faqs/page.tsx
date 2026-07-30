@@ -16,7 +16,7 @@ const FAQS = [
   },
   {
     q: "How do drops work?",
-    a: "We drop new collections just about weekly — Fridays through Mondays. Sign up for SMS notifications to be first in line. Stock sells out fast.",
+    a: "We drop new collections just about weekly — Fridays through Mondays. Sign up for email notifications to be first in line. Stock sells out fast.",
   },
   {
     q: "What if the item doesn't fit?",
@@ -40,7 +40,7 @@ const FAQS = [
   },
   {
     q: "How do I track my order?",
-    a: "Once shipped, you'll get an SMS with tracking info. You can also check your order status on the Order Tracking page or your profile.",
+    a: "Once shipped, you'll get a WhatsApp message with tracking info. You can also check your order status on the Order Tracking page or your profile.",
   },
 ];
 
