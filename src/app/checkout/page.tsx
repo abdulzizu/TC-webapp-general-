@@ -26,7 +26,7 @@ function CheckoutContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { items, subtotal, clearCart } = useCart();
-  const { user, saveOrder } = useUser();
+  const { user, saveOrder, isSignedIn, supabaseUser } = useUser();
 
   const discountPct = Number(searchParams.get("discount") || 0);
   const discountType = searchParams.get("dtype") || "percentage";
@@ -233,7 +233,7 @@ function CheckoutContent() {
 
       const { data: orderRow, error: orderError } = await sb.from("orders").insert({
         order_id: orderId,
-        user_id: null, // Will be set by webhook if user is authenticated
+        user_id: supabaseUser?.id ?? null,
         guest_phone: form.phone || null,
         guest_name: form.name || null,
         status: "pending",
