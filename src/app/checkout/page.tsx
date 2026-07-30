@@ -247,8 +247,11 @@ function CheckoutContent() {
         stockpiled_until: deliveryChoice === "stockpile" ? stockpileExpiry.toISOString() : null,
       }).select("id").single();
 
-      if (orderError) {
+      if (orderError || !orderRow) {
         console.error("Order save error:", orderError);
+        setSubmitting(false);
+        alert("We couldn't create your order. Please try again. If this keeps happening, contact us.");
+        return;
       }
 
       // Save order items
