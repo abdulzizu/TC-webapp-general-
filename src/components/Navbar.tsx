@@ -244,7 +244,7 @@ export default function Navbar() {
             </div>
           </form>
           <nav className="flex flex-col gap-1" aria-label="Mobile navigation">
-            {Object.entries(CATEGORIES).map(([cat, subs]) => (
+            {Object.entries(dynamicCategories).map(([cat, subs]) => (
               <div key={cat}>
                 <p className="text-xs font-bold uppercase tracking-widest text-[#1a6b2f] py-2">{cat}</p>
                 {subs.map((sub) => (
