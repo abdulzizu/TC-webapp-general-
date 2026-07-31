@@ -201,6 +201,12 @@ function CheckoutContent() {
   }
 
   async function handlePlaceOrder() {
+    // Re-validate before payment
+    if (!form.phone.trim()) {
+      alert("Phone number is required for delivery. Please go back and add it.");
+      setStep("details");
+      return;
+    }
     setSubmitting(true);
     try {
       // Check if any items are sold out before proceeding

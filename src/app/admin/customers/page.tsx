@@ -9,6 +9,9 @@ type Customer = {
   phone: string;
   email: string | null;
   delivery_address: string | null;
+  tshirt_size: string | null;
+  pants_waist: string | null;
+  pants_length: string | null;
   created_at: string;
   orders: any[];
 };
@@ -130,6 +133,18 @@ export default function AdminCustomersPage() {
                       </p>
                     </div>
                   </div>
+
+                  {/* Sizing */}
+                  {(customer.tshirt_size || customer.pants_waist) && (
+                    <div>
+                      <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Sizes</p>
+                      <div className="flex flex-wrap gap-2">
+                        {customer.tshirt_size && <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">Top: {customer.tshirt_size}</span>}
+                        {customer.pants_waist && <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">Waist: {customer.pants_waist}</span>}
+                        {customer.pants_length && <span className="text-xs bg-gray-100 px-2 py-1 rounded-full">Length: {customer.pants_length}</span>}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Purchase history */}
                   <div>
