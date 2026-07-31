@@ -223,8 +223,6 @@ function CheckoutContent() {
       }
 
       const orderId = "TC-" + Math.random().toString(36).substring(2, 8).toUpperCase();
-
-      const orderId = "TC-" + Math.random().toString(36).substring(2, 8).toUpperCase();
       const fullAddress = [form.address, form.city, form.state].filter(Boolean).join(", ");
       
       // Check for existing active stockpile if user chose stockpile
