@@ -42,6 +42,23 @@ function CheckoutContent() {
   const [shippingZones, setShippingZones] = useState<any[]>([]);
   const [matchedZone, setMatchedZone] = useState<any>(null);
   const [freeShippingThreshold, setFreeShippingThreshold] = useState(60000);
+  const [hasActiveStockpile, setHasActiveStockpile] = useState(false);
+  const [stockpileInfo, setStockpileInfo] = useState("");
+
+  // Auto-detect existing stockpile for signed-in users
+  useEffect(() => {
+    if (user?.orders) {
+      const active = user.orders.find(
+        (o) => o.status === "stockpiled" && o.stockpiledUntil && new Date(o.stockpiledUntil) > new Date()
+      );
+      if (active) {
+        setHasActiveStockpile(true);
+        setDeliveryChoice("stockpile");
+        const deadline = new Date(active.stockpiledUntil!).toLocaleDateString("en-NG", { day: "numeric", month: "long" });
+        setStockpileInfo(`You have items stockpiled (due ${deadline}). This order will be added to your stockpile.`);
+      }
+    }
+  }, [user]);
 
   const cartShippingCost = subtotal >= freeShippingThreshold ? 0 : Number(searchParams.get("shipping") || 3500);
 
@@ -186,6 +203,25 @@ function CheckoutContent() {
   async function handlePlaceOrder() {
     setSubmitting(true);
     try {
+      // Check if any items are sold out before proceeding
+      const { createClient: createSB } = await import("@/lib/supabase/client");
+      const sb = createSB();
+      const productIds = items.map((i) => i.product.id);
+      const { data: currentProducts } = await sb
+        .from("products")
+        .select("id, name, tag")
+        .in("id", productIds);
+
+      if (currentProducts) {
+        const soldOut = currentProducts.filter((p: any) => p.tag === "SOLD OUT");
+        if (soldOut.length > 0) {
+          const names = soldOut.map((p: any) => p.name).join(", ");
+          setSubmitting(false);
+          alert(`Sorry, the following item${soldOut.length > 1 ? "s are" : " is"} no longer available: ${names}. Please remove ${soldOut.length > 1 ? "them" : "it"} from your cart.`);
+          return;
+        }
+      }
+
       const orderId = "TC-" + Math.random().toString(36).substring(2, 8).toUpperCase();
       const fullAddress = [form.address, form.city, form.state].filter(Boolean).join(", ");
       
@@ -402,6 +438,12 @@ function CheckoutContent() {
               {/* ── Delivery choice ── */}
               <div className="border-t border-gray-100 pt-6">
                 <h2 className="font-bold text-base mb-1">Delivery Option</h2>
+
+                {hasActiveStockpile && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-3">
+                    <p className="text-xs text-blue-800 font-semibold">📦 {stockpileInfo}</p>
+                  </div>
+                )}
                 <p className="text-xs text-gray-400 mb-4">Choose how you want your items handled after payment.</p>
 
                 <div className="space-y-3" role="group" aria-label="Delivery option">
