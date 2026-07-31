@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import MarqueeBanner from "@/components/MarqueeBanner";
@@ -15,6 +15,26 @@ export default function CartPage() {
   const [discountError, setDiscountError] = useState("");
   const [validating, setValidating] = useState(false);
   const [freeShippingThreshold, setFreeShippingThreshold] = useState(60000);
+  const [soldOutItems, setSoldOutItems] = useState<string[]>([]);
+
+  // Check for sold-out items in cart
+  useEffect(() => {
+    if (items.length === 0) return;
+    import("@/lib/supabase/client").then(({ createClient }) => {
+      const supabase = createClient();
+      const ids = items.map((i) => i.product.id);
+      supabase
+        .from("products")
+        .select("id, name, tag")
+        .in("id", ids)
+        .then(({ data }) => {
+          if (data) {
+            const sold = data.filter((p: any) => p.tag === "SOLD OUT").map((p: any) => p.name);
+            setSoldOutItems(sold);
+          }
+        });
+    });
+  }, [items]);
 
   // Load free shipping threshold from store settings
   useState(() => {
@@ -118,6 +138,16 @@ export default function CartPage() {
       <Navbar />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <h1 className="text-3xl font-bold text-[#1a1a1a] mb-8">Your Cart</h1>
+
+        {soldOutItems.length > 0 && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+            <p className="text-sm font-semibold text-red-800">⚠️ Some items in your cart are no longer available:</p>
+            <ul className="mt-1 text-sm text-red-700">
+              {soldOutItems.map((name) => <li key={name}>• {name}</li>)}
+            </ul>
+            <p className="text-xs text-red-600 mt-2">Please remove them before checkout.</p>
+          </div>
+        )}
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Items */}
           <div className="lg:col-span-2 space-y-4">

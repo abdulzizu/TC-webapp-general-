@@ -38,8 +38,8 @@ export default function ProductPage() {
   const [added, setAdded] = useState(false);
   const [notifyAdded, setNotifyAdded] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
-  const [product, setProduct] = useState<Product | null | undefined>(() => getProduct(Number(id)));
-  const [loading, setLoading] = useState(!getProduct(Number(id)));
+  const [product, setProduct] = useState<Product | null | undefined>(undefined);
+  const [loading, setLoading] = useState(true);
 
   // Fetch from Supabase (always, even if in static data — DB has latest tag/availability)
   useEffect(() => {
