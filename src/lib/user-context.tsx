@@ -130,6 +130,30 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       profile = newProfile;
     }
 
+    // Link any guest orders to this account (match by phone or email)
+    if (profile?.phone || profile?.email) {
+      const conditions = [];
+      if (profile.phone) conditions.push(`guest_phone.eq.${profile.phone}`);
+      if (profile.email) conditions.push(`guest_phone.eq.${profile.email}`);
+
+      // Update guest orders that have no user_id and match this user's phone
+      if (profile.phone) {
+        await supabase
+          .from("orders")
+          .update({ user_id: uid })
+          .is("user_id", null)
+          .eq("guest_phone", profile.phone);
+      }
+      // Also match by email in guest_name field (some checkouts store email there)
+      if (profile.email) {
+        await supabase
+          .from("orders")
+          .update({ user_id: uid })
+          .is("user_id", null)
+          .eq("guest_phone", profile.email);
+      }
+    }
+
     const { data: keywordRows } = await supabase
       .from("keywords")
       .select("keyword")
