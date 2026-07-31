@@ -223,6 +223,8 @@ function CheckoutContent() {
       }
 
       const orderId = "TC-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+
+      const orderId = "TC-" + Math.random().toString(36).substring(2, 8).toUpperCase();
       const fullAddress = [form.address, form.city, form.state].filter(Boolean).join(", ");
       
       // Check for existing active stockpile if user chose stockpile
@@ -264,9 +266,6 @@ function CheckoutContent() {
 
       // Save order to Supabase first
       // Save order to Supabase directly (works for both guests and signed-in users)
-      const { createClient: createSB } = await import("@/lib/supabase/client");
-      const sb = createSB();
-
       const { data: orderRow, error: orderError } = await sb.from("orders").insert({
         order_id: orderId,
         user_id: supabaseUser?.id ?? null,
