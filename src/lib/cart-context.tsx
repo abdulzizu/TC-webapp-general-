@@ -94,7 +94,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     <CartContext.Provider
       value={{
         items: state.items,
-        addItem: (product, size) => dispatch({ type: "ADD", product, size }),
+        addItem: (product, size) => {
+          if (product.tag === "SOLD OUT") return; // Safety net — never add sold-out items
+          dispatch({ type: "ADD", product, size });
+        },
         removeItem: (id, size) => dispatch({ type: "REMOVE", id, size }),
         updateQty: (id, size, quantity) => dispatch({ type: "UPDATE_QTY", id, size, quantity }),
         clearCart: () => dispatch({ type: "CLEAR" }),

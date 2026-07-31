@@ -41,15 +41,8 @@ export default function ProductPage() {
   const [product, setProduct] = useState<Product | null | undefined>(() => getProduct(Number(id)));
   const [loading, setLoading] = useState(!getProduct(Number(id)));
 
-  // Fetch from Supabase if not in static data
+  // Fetch from Supabase (always, even if in static data — DB has latest tag/availability)
   useEffect(() => {
-    const staticProduct = getProduct(Number(id));
-    if (staticProduct) {
-      setProduct(staticProduct);
-      setLoading(false);
-      return;
-    }
-
     const supabase = createClient();
     supabase
       .from("products")
@@ -76,7 +69,8 @@ export default function ProductPage() {
             available: data.available,
             pairsWith: (data.pairs_with as Product["pairsWith"]) ?? [],
           });
-        } else {
+        } else if (!getProduct(Number(id))) {
+          // Not in DB and not in static — truly not found
           setProduct(null);
         }
         setLoading(false);
