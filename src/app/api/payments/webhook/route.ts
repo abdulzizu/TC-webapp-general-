@@ -45,13 +45,20 @@ export async function POST(req: NextRequest) {
     // Get the order
     const { data: order } = await supabase
       .from("orders")
-      .select("id, order_id, status, is_stockpile")
+      .select("id, order_id, status, is_stockpile, total")
       .eq("order_id", orderId)
       .single();
 
     if (!order) {
       console.error("Webhook: order not found for reference:", orderId);
       return NextResponse.json({ received: true });
+    }
+
+    // Verify amount matches order total (prevent underpayment attacks)
+    const paidAmount = amount / 100; // Paystack sends in kobo
+    if (Math.abs(paidAmount - order.total) > 1) {
+      console.error(`Webhook: amount mismatch for ${orderId}! Expected ₦${order.total}, got ₦${paidAmount}`);
+      return NextResponse.json({ received: true, error: "amount_mismatch" });
     }
 
     // Don't process if already processed

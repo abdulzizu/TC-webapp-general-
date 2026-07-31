@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Payment confirmed — update order in Supabase
+    // Payment confirmed — verify amount matches order
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL || "https://cdxuppunppsgryvrieoz.supabase.co",
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -40,9 +40,19 @@ export async function GET(req: NextRequest) {
 
     const { data: order } = await supabase
       .from("orders")
-      .select("id, status, is_stockpile")
+      .select("id, status, is_stockpile, total")
       .eq("order_id", reference)
       .single();
+
+    // Verify amount matches (Paystack returns amount in kobo)
+    const paidAmount = data.data.amount / 100;
+    if (order && Math.abs(paidAmount - order.total) > 1) {
+      console.error(`Amount mismatch! Order ${reference}: expected ₦${order.total}, paid ₦${paidAmount}`);
+      return NextResponse.json({
+        verified: false,
+        error: "Payment amount does not match order total. Please contact support.",
+      });
+    }
 
     if (order && order.status !== "processing" && order.status !== "shipped" && order.status !== "delivered") {
       const newStatus = order.is_stockpile ? "stockpiled" : "processing";
