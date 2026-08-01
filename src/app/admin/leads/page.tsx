@@ -69,12 +69,30 @@ export default function AdminLeadsPage() {
           <h1 className="text-xl font-bold text-[#1a1a1a]">Drop Notification Leads ({leads.length})</h1>
           <p className="text-sm text-gray-500 mt-0.5">{emailLeads.length} with email addresses (can receive notifications)</p>
         </div>
-        <button
-          onClick={() => setShowNotify(!showNotify)}
-          className="px-4 py-2 bg-[#1a6b2f] text-white font-semibold rounded-full text-sm hover:bg-[#104020] transition"
-        >
-          📢 Send Drop Alert
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              const headers = "Phone,Email,Signed Up\n";
+              const rows = leads.map((l) =>
+                `"${l.phone}","${l.email || ""}","${new Date(l.created_at).toLocaleDateString("en-GB")}"`
+              ).join("\n");
+              const blob = new Blob([headers + rows], { type: "text/csv" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url; a.download = `thriftcollision-leads-${new Date().toISOString().slice(0,10)}.csv`;
+              a.click(); URL.revokeObjectURL(url);
+            }}
+            className="px-3 py-2 border border-gray-200 rounded-full text-xs font-semibold hover:border-[#1a6b2f] transition"
+          >
+            Export CSV
+          </button>
+          <button
+            onClick={() => setShowNotify(!showNotify)}
+            className="px-4 py-2 bg-[#1a6b2f] text-white font-semibold rounded-full text-sm hover:bg-[#104020] transition"
+          >
+            📢 Send Drop Alert
+          </button>
+        </div>
       </div>
 
       {/* Notification composer */}

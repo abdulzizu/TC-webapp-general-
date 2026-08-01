@@ -71,7 +71,25 @@ export default function AdminCustomersPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold text-[#1a1a1a]">Customers ({customers.length})</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold text-[#1a1a1a]">Customers ({customers.length})</h1>
+        <button
+          onClick={() => {
+            const headers = "Name,Phone,Email,Address,T-shirt Size,Waist,Length,Joined\n";
+            const rows = customers.map((c) =>
+              `"${c.name}","${c.phone}","${c.email || ""}","${(c.delivery_address || "").replace(/"/g, '""')}","${c.tshirt_size || ""}","${c.pants_waist || ""}","${c.pants_length || ""}","${new Date(c.created_at).toLocaleDateString("en-GB")}"`
+            ).join("\n");
+            const blob = new Blob([headers + rows], { type: "text/csv" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url; a.download = `thriftcollision-customers-${new Date().toISOString().slice(0,10)}.csv`;
+            a.click(); URL.revokeObjectURL(url);
+          }}
+          className="px-4 py-2 border border-gray-200 rounded-full text-xs font-semibold hover:border-[#1a6b2f] transition"
+        >
+          Export CSV
+        </button>
+      </div>
 
       <input
         type="text"
