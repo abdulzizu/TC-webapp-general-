@@ -215,7 +215,7 @@ export default function ProfilePage() {
                 <OptField label="Chest Size (inches)" hint="Armpit to armpit · Optional" value={sizes.chestInches} onChange={(v) => setSize("chestInches", v)} placeholder='e.g. 40"' />
                 <OptField label="Sleeve Size (inches)" hint="Arm to wrist · Optional" value={sizes.sleeveInches} onChange={(v) => setSize("sleeveInches", v)} placeholder='e.g. 26"' />
                 <OptField label="Pants Waist (inches)" hint="Waist measurement" value={sizes.pantsWaist} onChange={(v) => setSize("pantsWaist", v)} placeholder='e.g. 32"' />
-                <OptField label="Pants Length (inches)" hint="Inseam length" value={sizes.pantsLength} onChange={(v) => setSize("pantsLength", v)} placeholder='e.g. 30"' />
+                <OptField label="Pants Full Length (inches)" hint="Measured from waist to ankle" value={sizes.pantsLength} onChange={(v) => setSize("pantsLength", v)} placeholder='e.g. 42"' />
                 <OptField label="Hip Size (inches)" hint="Optional" value={sizes.hipInches} onChange={(v) => setSize("hipInches", v)} placeholder='e.g. 38"' />
                 <OptField label="Cap Size (inches)" hint="Head circumference · Optional" value={sizes.capInches} onChange={(v) => setSize("capInches", v)} placeholder='e.g. 22"' />
               </div>

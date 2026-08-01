@@ -21,12 +21,12 @@ const SIZING_GUIDE = [
 ];
 
 const PANTS_SIZING_GUIDE = [
-  { waist: 'W28"', hip: '38"', inseam: 'L28–30"' },
-  { waist: 'W30"', hip: '40"', inseam: 'L28–30"' },
-  { waist: 'W32"', hip: '42"', inseam: 'L29–32"' },
-  { waist: 'W34"', hip: '44"', inseam: 'L30–32"' },
-  { waist: 'W36"', hip: '46"', inseam: 'L30–32"' },
-  { waist: 'W38"', hip: '48"', inseam: 'L30–32"' },
+  { waist: 'W28"', hip: '38"', inseam: 'L28–30"', fullLength: '38–40"' },
+  { waist: 'W30"', hip: '40"', inseam: 'L28–30"', fullLength: '39–41"' },
+  { waist: 'W32"', hip: '42"', inseam: 'L29–32"', fullLength: '40–43"' },
+  { waist: 'W34"', hip: '44"', inseam: 'L30–32"', fullLength: '41–44"' },
+  { waist: 'W36"', hip: '46"', inseam: 'L30–32"', fullLength: '41–44"' },
+  { waist: 'W38"', hip: '48"', inseam: 'L30–32"', fullLength: '41–44"' },
 ];
 
 export default function ProductPage() {
@@ -362,7 +362,7 @@ export default function ProductPage() {
                       <table className="w-full text-sm text-left">
                         <thead className="bg-white border-b border-gray-100">
                           <tr>
-                            {["Waist", "Hip", "Inseam"].map((h) => (
+                            {["Waist", "Hip", "Inseam", "Full Length"].map((h) => (
                               <th key={h} className="px-4 py-2 text-xs font-bold text-gray-500 uppercase tracking-wide">{h}</th>
                             ))}
                           </tr>
@@ -383,6 +383,7 @@ export default function ProductPage() {
                                 </td>
                                 <td className="px-4 py-2 text-gray-600">{row.hip}</td>
                                 <td className="px-4 py-2 text-gray-600">{row.inseam}</td>
+                                <td className="px-4 py-2 text-gray-600">{row.fullLength}</td>
                               </tr>
                             );
                           })}

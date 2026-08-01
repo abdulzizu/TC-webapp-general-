@@ -14,12 +14,12 @@ const TOPS = [
 ];
 
 const PANTS = [
-  { waist: 'W28"', hip: '38"', inseam: 'L28–30"' },
-  { waist: 'W30"', hip: '40"', inseam: 'L28–30"' },
-  { waist: 'W32"', hip: '42"', inseam: 'L29–32"' },
-  { waist: 'W34"', hip: '44"', inseam: 'L30–32"' },
-  { waist: 'W36"', hip: '46"', inseam: 'L30–32"' },
-  { waist: 'W38"', hip: '48"', inseam: 'L30–32"' },
+  { waist: 'W28"', hip: '38"', inseam: 'L28–30"', fullLength: '38–40"' },
+  { waist: 'W30"', hip: '40"', inseam: 'L28–30"', fullLength: '39–41"' },
+  { waist: 'W32"', hip: '42"', inseam: 'L29–32"', fullLength: '40–43"' },
+  { waist: 'W34"', hip: '44"', inseam: 'L30–32"', fullLength: '41–44"' },
+  { waist: 'W36"', hip: '46"', inseam: 'L30–32"', fullLength: '41–44"' },
+  { waist: 'W38"', hip: '48"', inseam: 'L30–32"', fullLength: '41–44"' },
 ];
 
 export default function SizingGuidePage() {
@@ -67,6 +67,7 @@ export default function SizingGuidePage() {
                 <th className="px-4 py-3">Waist</th>
                 <th className="px-4 py-3">Hip</th>
                 <th className="px-4 py-3">Inseam</th>
+                <th className="px-4 py-3">Full Length</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -75,6 +76,7 @@ export default function SizingGuidePage() {
                   <td className="px-4 py-2.5 font-bold">{r.waist}</td>
                   <td className="px-4 py-2.5 text-gray-600">{r.hip}</td>
                   <td className="px-4 py-2.5 text-gray-600">{r.inseam}</td>
+                  <td className="px-4 py-2.5 text-gray-600">{r.fullLength}</td>
                 </tr>
               ))}
             </tbody>
