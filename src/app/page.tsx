@@ -478,7 +478,7 @@ function Sustainability() {
               Thrift Collision started as a hobby — thrifting with friends and family. What began offline grew into a community, first on Instagram, then beyond. Now you get to be part of it. We&apos;ve become the go-to destination for style-conscious shoppers, offering the widest range of hand-picked, quality-checked pre-loved clothing.
             </p>
             <p className="text-[#4b5563] text-lg leading-relaxed mb-8">
-              We&apos;ve added sustainability to the mission — and we mean it. That&apos;s why we&apos;ve launched our own reworked label garments. From our logo to the newspaper backdrop in our photos, nothing is just aesthetic. It&apos;s a statement. Recycled fashion, old stories, new fits. Sustainability woven into every drop.
+              We&apos;ve added sustainability to the mission. That&apos;s why we&apos;ve launched our reworked label. From our logo to the newspaper backdrop in our photos, nothing is just aesthetic. It&apos;s a statement. Recycled fashion, old stories, new fits. Sustainability woven into every drop.
             </p>
             <div className="grid grid-cols-3 gap-4">
               {[
