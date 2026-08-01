@@ -125,7 +125,11 @@ function CheckoutContent() {
   }, [form.address, form.city, form.state, shippingZones]);
 
   // Dynamic shipping cost from matched zone
-  const dynamicShippingCost = matchedZone ? matchedZone.price_min : Number(searchParams.get("shipping") || 3500);
+  const dynamicShippingCost = matchedZone
+    ? matchedZone.price_max
+      ? Math.round((matchedZone.price_min + matchedZone.price_max) / 2)
+      : matchedZone.price_min
+    : Number(searchParams.get("shipping") || 3500);
   const actualShippingCost = subtotal >= freeShippingThreshold ? 0 : dynamicShippingCost;
 
   useEffect(() => {
