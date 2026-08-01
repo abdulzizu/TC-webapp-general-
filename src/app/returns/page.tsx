@@ -40,6 +40,13 @@ export default function ReturnsPage() {
                 <a href="https://www.instagram.com/thriftcollision/" target="_blank" rel="noopener noreferrer" className="text-[#1a6b2f] font-semibold hover:underline">@thriftcollision</a>
               </li>
             </ul>
+            <div className="mt-4 p-3 bg-gray-50 border border-gray-100 rounded-xl">
+              <p className="text-xs font-bold text-gray-700 mb-1">Evidence Required:</p>
+              <ul className="list-disc pl-5 text-xs text-gray-600 space-y-1">
+                <li>Your order number</li>
+                <li>Photographs of packaging and items (for damage claims)</li>
+              </ul>
+            </div>
             <p className="mt-3">Once confirmed, we&apos;ll provide return instructions. After we receive and inspect the item, we&apos;ll issue store credit or a refund within 3–5 business days.</p>
           </section>
 

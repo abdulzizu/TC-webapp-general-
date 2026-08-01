@@ -67,6 +67,7 @@ export default function TermsOfServicePage() {
               <li><strong>Other states:</strong> 2–4 business days via our logistics partners.</li>
               <li>Delivery estimates are not guarantees. Delays may occur due to logistics, weather, or other factors outside our control.</li>
               <li>You are responsible for providing an accurate delivery address. We are not liable for items delivered to an incorrect address provided by you.</li>
+              <li>If a parcel is returned to us due to an incorrect address, failed delivery attempts, or non-collection, we may charge for re-delivery.</li>
             </ul>
           </section>
 
