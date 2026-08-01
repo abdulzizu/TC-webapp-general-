@@ -8,6 +8,14 @@ export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
   try {
+    // Basic origin check — only allow from our own site
+    const origin = req.headers.get("origin") || req.headers.get("referer") || "";
+    const allowedOrigins = ["thriftcollision.com", "tc-webapp-general.vercel.app", "localhost"];
+    const isAllowed = allowedOrigins.some((o) => origin.includes(o));
+    if (!isAllowed && origin) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const {
       email,
       name,

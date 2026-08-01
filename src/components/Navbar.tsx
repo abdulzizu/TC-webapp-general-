@@ -261,8 +261,7 @@ export default function Navbar() {
               <Link href="/#drops" className="text-sm font-semibold text-gray-800" onClick={() => setMenuOpen(false)}>Current Drop</Link>
               <div className="pl-2 border-l-2 border-[#1a6b2f]/20 space-y-1.5">
                 <p className="text-xs font-bold text-[#1a6b2f] uppercase tracking-wide">Upcoming</p>
-                <p className="text-sm text-gray-600">🪖 Soja, not soldier — <span className="text-[#1a6b2f] text-xs font-semibold">Coming soon</span></p>
-                <p className="text-sm text-gray-600">⚽ Jersey Drop — <span className="text-[#1a6b2f] text-xs font-semibold">September</span></p>
+                <MobileDropsList />
               </div>
               <Link href="/#about" className="text-sm font-semibold text-gray-800" onClick={() => setMenuOpen(false)}>About</Link>
               {isSignedIn ? (
@@ -359,5 +358,38 @@ function DropsDropdown() {
         </div>
       )}
     </div>
+  );
+}
+
+// ── Mobile Drops List (loads from DB like desktop) ──────────
+function MobileDropsList() {
+  const [drops, setDrops] = useState([
+    { title: "Loading…", timing: "", emoji: "⏳" },
+  ]);
+
+  useEffect(() => {
+    import("@/lib/supabase/client").then(({ createClient }) => {
+      const supabase = createClient();
+      supabase
+        .from("upcoming_drops")
+        .select("title, timing, emoji")
+        .eq("active", true)
+        .order("display_order")
+        .then(({ data }) => {
+          if (data && data.length > 0) setDrops(data as any);
+          else setDrops([{ title: "No upcoming drops", timing: "", emoji: "📅" }]);
+        });
+    });
+  }, []);
+
+  return (
+    <>
+      {drops.map((drop, i) => (
+        <p key={i} className="text-sm text-gray-600">
+          {drop.emoji} {drop.title}
+          {drop.timing && <span className="text-[#1a6b2f] text-xs font-semibold"> — {drop.timing}</span>}
+        </p>
+      ))}
+    </>
   );
 }
