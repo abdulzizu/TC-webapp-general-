@@ -29,8 +29,12 @@ export default function CartPage() {
         .in("id", ids)
         .then(({ data }) => {
           if (data) {
-            const sold = data.filter((p: any) => p.tag === "SOLD OUT").map((p: any) => p.name);
-            setSoldOutItems(sold);
+            const soldItems = data.filter((p: any) => p.tag === "SOLD OUT");
+            if (soldItems.length > 0) {
+              // Auto-remove sold-out items from cart
+              soldItems.forEach((p: any) => removeItem(p.id, items.find((i) => i.product.id === p.id)?.size || ""));
+              setSoldOutItems(soldItems.map((p: any) => p.name));
+            }
           }
         });
     });
@@ -140,12 +144,11 @@ export default function CartPage() {
         <h1 className="text-3xl font-bold text-[#1a1a1a] mb-8">Your Cart</h1>
 
         {soldOutItems.length > 0 && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
-            <p className="text-sm font-semibold text-red-800">⚠️ Some items in your cart are no longer available:</p>
-            <ul className="mt-1 text-sm text-red-700">
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+            <p className="text-sm font-semibold text-amber-800">The following item{soldOutItems.length > 1 ? "s were" : " was"} removed — no longer available:</p>
+            <ul className="mt-1 text-sm text-amber-700">
               {soldOutItems.map((name) => <li key={name}>• {name}</li>)}
             </ul>
-            <p className="text-xs text-red-600 mt-2">Please remove them before checkout.</p>
           </div>
         )}
         <div className="grid lg:grid-cols-3 gap-8">
