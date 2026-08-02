@@ -10,11 +10,16 @@ export const size = {
 export const contentType = "image/png";
 
 export default async function Image() {
-  const logoData = await readFile(
-    join(process.cwd(), "public/Ftc-logo.png"),
-    "base64"
-  );
-  const logoSrc = `data:image/png;base64,${logoData}`;
+  let logoSrc: string | null = null;
+  try {
+    const logoData = await readFile(
+      join(process.cwd(), "public", "Ftc-logo.png"),
+      "base64"
+    );
+    logoSrc = `data:image/png;base64,${logoData}`;
+  } catch (e) {
+    console.error("OG image: failed to read logo", e);
+  }
 
   return new ImageResponse(
     (
@@ -31,16 +36,23 @@ export default async function Image() {
         }}
       >
         {/* Logo */}
-        <img src={logoSrc} height="280" alt="" />
+        {logoSrc && (
+          <img
+            src={logoSrc}
+            width="300"
+            height="300"
+            style={{ objectFit: "contain", borderRadius: "24px" }}
+          />
+        )}
 
         {/* Tagline */}
         <div
           style={{
-            marginTop: "40px",
-            fontSize: "32px",
+            marginTop: "30px",
+            fontSize: "36px",
             color: "#ffffff",
-            fontWeight: 400,
-            letterSpacing: "0.05em",
+            fontWeight: 600,
+            letterSpacing: "0.03em",
             textAlign: "center",
           }}
         >
@@ -50,7 +62,7 @@ export default async function Image() {
         {/* Phrase */}
         <div
           style={{
-            marginTop: "20px",
+            marginTop: "16px",
             fontSize: "22px",
             color: "#bbbbbb",
             fontStyle: "italic",
@@ -63,9 +75,9 @@ export default async function Image() {
         {/* URL */}
         <div
           style={{
-            marginTop: "16px",
-            fontSize: "20px",
-            color: "#888888",
+            marginTop: "14px",
+            fontSize: "18px",
+            color: "#666666",
             letterSpacing: "0.1em",
           }}
         >
