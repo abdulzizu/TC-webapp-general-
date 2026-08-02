@@ -46,13 +46,15 @@ export async function GET(req: NextRequest) {
 
     // Verify amount matches (allow for Paystack fees which may be added to the charge)
     const paidAmount = data.data.amount / 100;
-    const maxExpected = order.total * 1.02 + 200; // Allow up to 2% + ₦200 for Paystack fees
-    if (order && (paidAmount < order.total - 1 || paidAmount > maxExpected)) {
-      console.error(`Amount mismatch! Order ${reference}: expected ~₦${order.total}, paid ₦${paidAmount}`);
-      return NextResponse.json({
-        verified: false,
-        error: "Payment amount does not match order total. Please contact support.",
-      });
+    if (order) {
+      const maxExpected = order.total * 1.02 + 200; // Allow up to 2% + ₦200 for Paystack fees
+      if (paidAmount < order.total - 1 || paidAmount > maxExpected) {
+        console.error(`Amount mismatch! Order ${reference}: expected ~₦${order.total}, paid ₦${paidAmount}`);
+        return NextResponse.json({
+          verified: false,
+          error: "Payment amount does not match order total. Please contact support.",
+        });
+      }
     }
 
     if (order && order.status !== "processing" && order.status !== "shipped" && order.status !== "delivered") {
