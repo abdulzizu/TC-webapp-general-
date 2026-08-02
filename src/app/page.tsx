@@ -29,9 +29,12 @@ function Hero() {
               <br />
               Own the drop.
             </h1>
-            <p className="text-lg sm:text-xl text-[#4b5563] leading-relaxed mb-8 max-w-lg">
+            <p className="text-lg sm:text-xl text-[#4b5563] leading-relaxed mb-4 max-w-lg">
               Premium thrifted streetwear, curated and dropped weekly. Unisex.
               Sustainable. Built for the culture.
+            </p>
+            <p className="text-sm italic text-[#1a6b2f] font-500 mb-8">
+              Every drop hides a discovery.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link

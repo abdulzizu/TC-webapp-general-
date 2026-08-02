@@ -1,19 +1,26 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/react";
 import { CartProvider } from "@/lib/cart-context";
 import { UserProvider } from "@/lib/user-context";
 
 export const metadata: Metadata = {
-  title: "Thrift Collision — Premium Thrifted Streetwear",
+  title: "Thrift Collision — Unisex Thrifted Streetwear",
   description:
     "Curating the best in thrifted drops. Unisex streetwear. Sustainably sourced. Drop every week.",
+  metadataBase: new URL("https://thriftcollision.com"),
   openGraph: {
     title: "Thrift Collision",
-    description: "Premium thrifted streetwear drops, weekly.",
+    description: "Unisex thrifted streetwear drops, weekly.",
     url: "https://thriftcollision.com",
     siteName: "Thrift Collision",
     locale: "en_GB",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Thrift Collision",
+    description: "Unisex thrifted streetwear drops, weekly.",
   },
 };
 
@@ -42,6 +49,7 @@ export default function RootLayout({
             {children}
           </CartProvider>
         </UserProvider>
+        <Analytics />
       </body>
     </html>
   );
