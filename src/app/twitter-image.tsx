@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
-
-export const dynamic = "force-dynamic";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 
 export const alt = "Thrift Collision — Unisex Thrifted Streetwear";
 export const size = {
@@ -10,10 +10,10 @@ export const size = {
 export const contentType = "image/png";
 
 export default async function Image() {
-  const logoRes = await fetch("https://www.thriftcollision.com/Ftc-logo.png");
-  const logoBuffer = await logoRes.arrayBuffer();
-  const logoBase64 = Buffer.from(logoBuffer).toString("base64");
-  const logoSrc = `data:image/png;base64,${logoBase64}`;
+  const logoData = await readFile(
+    join(process.cwd(), "public", "Ftc-logo-og.png")
+  );
+  const logoSrc = `data:image/png;base64,${logoData.toString("base64")}`;
 
   return new ImageResponse(
     (
@@ -26,20 +26,18 @@ export default async function Image() {
           alignItems: "center",
           justifyContent: "center",
           backgroundColor: "#0a0a0a",
-          padding: "60px",
+          padding: 60,
         }}
       >
         <img
           src={logoSrc}
-          width="280"
-          height="280"
-          style={{ objectFit: "contain", borderRadius: "20px" }}
+          style={{ width: 240, height: 240, objectFit: "contain" }}
         />
 
         <div
           style={{
-            marginTop: "30px",
-            fontSize: "36px",
+            marginTop: 30,
+            fontSize: 36,
             color: "#ffffff",
             fontWeight: 600,
             letterSpacing: "0.03em",
@@ -51,8 +49,8 @@ export default async function Image() {
 
         <div
           style={{
-            marginTop: "16px",
-            fontSize: "22px",
+            marginTop: 16,
+            fontSize: 22,
             color: "#bbbbbb",
             fontStyle: "italic",
             textAlign: "center",
@@ -63,8 +61,8 @@ export default async function Image() {
 
         <div
           style={{
-            marginTop: "14px",
-            fontSize: "18px",
+            marginTop: 14,
+            fontSize: 18,
             color: "#666666",
             letterSpacing: "0.1em",
           }}
