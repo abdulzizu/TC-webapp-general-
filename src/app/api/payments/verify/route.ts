@@ -44,10 +44,11 @@ export async function GET(req: NextRequest) {
       .eq("order_id", reference)
       .single();
 
-    // Verify amount matches (Paystack returns amount in kobo)
+    // Verify amount matches (allow for Paystack fees which may be added to the charge)
     const paidAmount = data.data.amount / 100;
-    if (order && Math.abs(paidAmount - order.total) > 1) {
-      console.error(`Amount mismatch! Order ${reference}: expected ₦${order.total}, paid ₦${paidAmount}`);
+    const maxExpected = order.total * 1.02 + 200; // Allow up to 2% + ₦200 for Paystack fees
+    if (order && (paidAmount < order.total - 1 || paidAmount > maxExpected)) {
+      console.error(`Amount mismatch! Order ${reference}: expected ~₦${order.total}, paid ₦${paidAmount}`);
       return NextResponse.json({
         verified: false,
         error: "Payment amount does not match order total. Please contact support.",

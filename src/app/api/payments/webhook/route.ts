@@ -54,10 +54,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ received: true });
     }
 
-    // Verify amount matches order total (prevent underpayment attacks)
+    // Verify amount matches order total (allow for Paystack fees)
     const paidAmount = amount / 100; // Paystack sends in kobo
-    if (Math.abs(paidAmount - order.total) > 1) {
-      console.error(`Webhook: amount mismatch for ${orderId}! Expected ₦${order.total}, got ₦${paidAmount}`);
+    const maxExpected = order.total * 1.02 + 200;
+    if (paidAmount < order.total - 1 || paidAmount > maxExpected) {
+      console.error(`Webhook: amount mismatch for ${orderId}! Expected ~₦${order.total}, got ₦${paidAmount}`);
       return NextResponse.json({ received: true, error: "amount_mismatch" });
     }
 
