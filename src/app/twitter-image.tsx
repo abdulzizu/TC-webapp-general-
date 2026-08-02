@@ -10,7 +10,7 @@ export const size = {
 export const contentType = "image/png";
 
 export default async function Image() {
-  const logoRes = await fetch("https://thriftcollision.com/Ftc-logo.png");
+  const logoRes = await fetch("https://www.thriftcollision.com/Ftc-logo.png");
   const logoBuffer = await logoRes.arrayBuffer();
   const logoBase64 = Buffer.from(logoBuffer).toString("base64");
   const logoSrc = `data:image/png;base64,${logoBase64}`;

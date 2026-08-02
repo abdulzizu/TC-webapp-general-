@@ -10,8 +10,8 @@ export const size = {
 export const contentType = "image/png";
 
 export default async function Image() {
-  // Fetch logo from public URL — reliable on Vercel serverless
-  const logoRes = await fetch("https://thriftcollision.com/Ftc-logo.png");
+  // Fetch logo from public URL — use www since non-www redirects
+  const logoRes = await fetch("https://www.thriftcollision.com/Ftc-logo.png");
   const logoBuffer = await logoRes.arrayBuffer();
   const logoBase64 = Buffer.from(logoBuffer).toString("base64");
   const logoSrc = `data:image/png;base64,${logoBase64}`;
