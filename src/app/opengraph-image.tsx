@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
+
+export const dynamic = "force-dynamic";
 
 export const alt = "Thrift Collision — Unisex Thrifted Streetwear";
 export const size = {
@@ -10,16 +10,11 @@ export const size = {
 export const contentType = "image/png";
 
 export default async function Image() {
-  let logoSrc: string | null = null;
-  try {
-    const logoData = await readFile(
-      join(process.cwd(), "public", "Ftc-logo.png"),
-      "base64"
-    );
-    logoSrc = `data:image/png;base64,${logoData}`;
-  } catch (e) {
-    console.error("OG image: failed to read logo", e);
-  }
+  // Fetch logo from public URL — reliable on Vercel serverless
+  const logoRes = await fetch("https://thriftcollision.com/Ftc-logo.png");
+  const logoBuffer = await logoRes.arrayBuffer();
+  const logoBase64 = Buffer.from(logoBuffer).toString("base64");
+  const logoSrc = `data:image/png;base64,${logoBase64}`;
 
   return new ImageResponse(
     (
@@ -36,14 +31,12 @@ export default async function Image() {
         }}
       >
         {/* Logo */}
-        {logoSrc && (
-          <img
-            src={logoSrc}
-            width="300"
-            height="300"
-            style={{ objectFit: "contain", borderRadius: "24px" }}
-          />
-        )}
+        <img
+          src={logoSrc}
+          width="280"
+          height="280"
+          style={{ objectFit: "contain", borderRadius: "20px" }}
+        />
 
         {/* Tagline */}
         <div
