@@ -1,17 +1,11 @@
 import type { MetadataRoute } from "next";
 import { createAdminClient } from "@/lib/supabase/server";
 
+export const dynamic = "force-dynamic";
+
 const BASE_URL = "https://thriftcollision.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const supabase = createAdminClient();
-
-  // Fetch all visible products
-  const { data: products } = await supabase
-    .from("products")
-    .select("id, updated_at")
-    .eq("visible", true);
-
   // Static pages
   const staticPages: MetadataRoute.Sitemap = [
     {
@@ -76,17 +70,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  // Product pages
-  const productPages: MetadataRoute.Sitemap = (products || []).map(
-    (product) => ({
+  // Product pages — fetch at runtime so build doesn't fail if env vars are missing
+  let productPages: MetadataRoute.Sitemap = [];
+  try {
+    const supabase = createAdminClient();
+    const { data: products } = await supabase
+      .from("products")
+      .select("id, updated_at")
+      .eq("visible", true);
+
+    productPages = (products || []).map((product) => ({
       url: `${BASE_URL}/product/${product.id}`,
       lastModified: product.updated_at
         ? new Date(product.updated_at)
         : new Date(),
       changeFrequency: "daily" as const,
       priority: 0.8,
-    })
-  );
+    }));
+  } catch (e) {
+    console.error("Sitemap: failed to fetch products", e);
+  }
 
   return [...staticPages, ...productPages];
 }
