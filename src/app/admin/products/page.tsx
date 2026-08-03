@@ -139,7 +139,8 @@ export default function AdminProductsPage() {
   async function handleSave() {
     setSaving(true);
     const { pairs_with, ...productFields } = form;
-    const payload = { ...productFields, pairs_with };
+    // Ensure price is always a whole number
+    const payload = { ...productFields, price: Math.round(productFields.price), pairs_with };
     if (creating) {
       const maxId = products.reduce((max, p) => Math.max(max, p.id), 0);
       const { error } = await supabase.from("products").insert({ id: maxId + 1, ...payload });
@@ -579,23 +580,32 @@ export default function AdminProductsPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      // Auto-suggest from complementary categories
+                      // Auto-suggest from complementary categories (randomized)
                       const complementary: Record<string, string[]> = {
-                        "Jeans": ["T-shirts", "Jackets", "Sneakers", "Caps and hats"],
-                        "Sweatpants": ["T-shirts", "Sweatshirts", "Sneakers", "Caps and hats"],
+                        "Jeans": ["T-shirts", "Jackets", "Sneakers", "Caps and hats", "Shirts", "Hoodies"],
+                        "Sweatpants": ["T-shirts", "Sweatshirts", "Sneakers", "Caps and hats", "Hoodies"],
+                        "Trackpants": ["T-shirts", "Sweatshirts", "Sneakers", "Caps and hats", "Hoodies"],
                         "Shorts": ["T-shirts", "Shirts", "Sneakers", "Caps and hats"],
-                        "T-shirts": ["Jeans", "Jackets", "Sneakers", "Caps and hats"],
-                        "Shirts": ["Jeans", "Shorts", "Sneakers"],
-                        "Jackets": ["Jeans", "T-shirts", "Sneakers"],
+                        "T-shirts": ["Jeans", "Jackets", "Sneakers", "Caps and hats", "Shorts", "Sweatpants"],
+                        "Shirts": ["Jeans", "Shorts", "Sneakers", "Jackets"],
+                        "Jackets": ["Jeans", "T-shirts", "Sneakers", "Hoodies", "Sweatpants"],
+                        "Jerseys": ["Jeans", "Shorts", "Sneakers", "Caps and hats", "Sweatpants"],
                         "Sweatshirts": ["Jeans", "Sweatpants", "Sneakers", "Caps and hats"],
-                        "Hoodies": ["Jeans", "Sweatpants", "Sneakers", "Caps and hats"],
-                        "Sneakers": ["Jeans", "Sweatpants", "T-shirts"],
-                        "Caps and hats": ["Jeans", "T-shirts", "Jackets"],
+                        "Hoodies": ["Jeans", "Sweatpants", "Sneakers", "Caps and hats", "Shorts"],
+                        "Sneakers": ["Jeans", "Sweatpants", "T-shirts", "Shorts", "Trackpants"],
+                        "Caps and hats": ["Jeans", "T-shirts", "Jackets", "Shorts", "Jerseys"],
                         "Socks": ["Sneakers", "Shorts", "Jeans"],
                       };
                       const targetSubs = complementary[form.subcategory] ?? ["Jeans", "T-shirts", "Sneakers"];
-                      const suggestions = products
-                        .filter((p) => targetSubs.includes(p.subcategory) && p.name !== form.name && p.available)
+                      // Get all matching products and shuffle them
+                      const candidates = products
+                        .filter((p) => targetSubs.includes(p.subcategory) && p.name !== form.name && p.available);
+                      // Fisher-Yates shuffle
+                      for (let i = candidates.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+                      }
+                      const suggestions = candidates
                         .slice(0, 3)
                         .map((p) => ({ item: p.name, reason: "" }));
                       if (suggestions.length > 0) {
