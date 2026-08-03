@@ -279,6 +279,7 @@ function CheckoutContent() {
         user_id: supabaseUser?.id ?? null,
         guest_phone: form.phone || null,
         guest_name: form.name || null,
+        guest_email: form.email || null,
         status: "pending",
         subtotal,
         shipping_cost: shippingCost,
@@ -317,26 +318,6 @@ function CheckoutContent() {
         await sb.from("discount_codes")
           .update({ uses_count: 1 })
           .eq("code", discountCode);
-      }
-
-      // Send order confirmation email (non-blocking)
-      if (form.email) {
-        fetch("/api/orders/confirm", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: form.email,
-            name: form.name,
-            orderId,
-            items: order.items,
-            subtotal,
-            shippingCost,
-            discountAmount,
-            total,
-            deliveryAddress: fullAddress,
-            isStockpile: deliveryChoice === "stockpile",
-          }),
-        }).catch(() => {});
       }
 
       // Initialize Paystack payment

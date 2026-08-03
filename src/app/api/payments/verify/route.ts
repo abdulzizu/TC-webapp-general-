@@ -64,7 +64,7 @@ export async function GET(req: NextRequest) {
       // Stock tracking — mark products as sold
       const { data: orderItems } = await supabase
         .from("order_items")
-        .select("product_id")
+        .select("product_id, product_name, product_image, size, quantity, price")
         .eq("order_id", order.id);
 
       if (orderItems) {
@@ -73,6 +73,43 @@ export async function GET(req: NextRequest) {
           await supabase.from("products").update({
             tag: "SOLD OUT",
           }).eq("id", item.product_id);
+        }
+      }
+
+      // Send order confirmation email now that payment is verified
+      const { data: fullOrder } = await supabase
+        .from("orders")
+        .select("guest_email, guest_name, order_id, subtotal, shipping_cost, discount_amount, total, delivery_address, is_stockpile")
+        .eq("id", order.id)
+        .single();
+
+      if (fullOrder?.guest_email) {
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.thriftcollision.com";
+        try {
+          await fetch(`${siteUrl}/api/orders/confirm`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: fullOrder.guest_email,
+              name: fullOrder.guest_name || "Customer",
+              orderId: fullOrder.order_id,
+              items: (orderItems || []).map((i) => ({
+                productName: i.product_name,
+                productImage: i.product_image,
+                size: i.size,
+                quantity: i.quantity,
+                price: i.price,
+              })),
+              subtotal: fullOrder.subtotal,
+              shippingCost: fullOrder.shipping_cost,
+              discountAmount: fullOrder.discount_amount,
+              total: fullOrder.total,
+              deliveryAddress: fullOrder.delivery_address,
+              isStockpile: fullOrder.is_stockpile,
+            }),
+          });
+        } catch (emailErr) {
+          console.error("Failed to send confirmation email:", emailErr);
         }
       }
     }
