@@ -42,10 +42,10 @@ const EMPTY_PRODUCT: Omit<Product, "id"> & { pairs_with: Pairing[] } = {
   pairs_with: [],
 };
 
-const CATEGORIES = ["Clothing", "Accessories", "Shoes"];
+const DEFAULT_CATEGORIES = ["Clothing", "Accessories", "Shoes"];
 const TAGS = ["NEW", "2 LEFT", "1 LEFT", "SOLD OUT", "👀 HOT", "🔥 TRENDING"];
-const SUBCATEGORIES: Record<string, string[]> = {
-  Clothing: ["Jackets", "T-shirts", "Shirts", "Cargo pants", "Jeans", "Shorts", "Track suits", "Sweatpants", "Sweatshirts", "Hoodies", "Dresses"],
+const DEFAULT_SUBCATEGORIES: Record<string, string[]> = {
+  Clothing: ["Jackets", "T-shirts", "Shirts", "Jerseys", "Cargo pants", "Jeans", "Shorts", "Track suits", "Trackpants", "Sweatpants", "Sweatshirts", "Hoodies", "Dresses"],
   Accessories: ["Caps and hats", "Socks", "Ties", "Beanies", "Gloves", "Bags", "Belts", "Scarves"],
   Shoes: ["Clogs", "Slippers", "Sneakers", "Sandals", "Boots", "Loafers"],
 };
@@ -64,10 +64,35 @@ export default function AdminProductsPage() {
   const [colourInput, setColourInput] = useState("");
   const [uploading, setUploading] = useState(false);
   const [pairingSearch, setPairingSearch] = useState("");
+  const [customCatInput, setCustomCatInput] = useState("");
+  const [showCustomCat, setShowCustomCat] = useState(false);
+  const [customSubInput, setCustomSubInput] = useState("");
+  const [showCustomSub, setShowCustomSub] = useState(false);
+  const [categories, setCategories] = useState<string[]>(DEFAULT_CATEGORIES);
+  const [subcategories, setSubcategories] = useState<Record<string, string[]>>(DEFAULT_SUBCATEGORIES);
+  const [managingSubs, setManagingSubs] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
 
   const loadProducts = useCallback(async () => {
     const { data } = await supabase.from("products").select("*").order("id", { ascending: true });
-    if (data) setProducts(data as any);
+    if (data) {
+      setProducts(data as any);
+      // Build dynamic categories/subcategories from existing products
+      const cats = new Set<string>(DEFAULT_CATEGORIES);
+      const subs: Record<string, Set<string>> = {};
+      DEFAULT_CATEGORIES.forEach((c) => { subs[c] = new Set(DEFAULT_SUBCATEGORIES[c] || []); });
+      (data as any[]).forEach((p: any) => {
+        if (p.category) {
+          cats.add(p.category);
+          if (!subs[p.category]) subs[p.category] = new Set();
+          if (p.subcategory) subs[p.category].add(p.subcategory);
+        }
+      });
+      setCategories(Array.from(cats).sort());
+      const subsArr: Record<string, string[]> = {};
+      Object.entries(subs).forEach(([cat, set]) => { subsArr[cat] = Array.from(set).sort(); });
+      setSubcategories(subsArr);
+    }
     setLoading(false);
   }, [supabase]);
 
@@ -196,33 +221,163 @@ export default function AdminProductsPage() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1">Category</label>
-              <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
-                {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
+              {showCustomCat ? (
+                <div className="flex gap-2">
+                  <input
+                    value={customCatInput}
+                    onChange={(e) => setCustomCatInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        const val = customCatInput.trim();
+                        if (val) {
+                          if (!categories.includes(val)) setCategories((c) => [...c, val].sort());
+                          setForm({ ...form, category: val, subcategory: "" });
+                          setCustomCatInput("");
+                          setShowCustomCat(false);
+                        }
+                      }
+                    }}
+                    className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a6b2f]"
+                    placeholder="Type new category"
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const val = customCatInput.trim();
+                      if (val) {
+                        if (!categories.includes(val)) setCategories((c) => [...c, val].sort());
+                        setForm({ ...form, category: val, subcategory: "" });
+                      }
+                      setCustomCatInput("");
+                      setShowCustomCat(false);
+                    }}
+                    className="px-3 py-2 bg-[#1a6b2f] text-white rounded-lg text-xs font-semibold"
+                  >
+                    Add
+                  </button>
+                  <button type="button" onClick={() => setShowCustomCat(false)} className="px-2 py-2 text-xs text-gray-400 hover:text-gray-600">✕</button>
+                </div>
+              ) : (
+                <select
+                  value={form.category}
+                  onChange={(e) => {
+                    if (e.target.value === "__custom__") {
+                      setShowCustomCat(true);
+                      return;
+                    }
+                    setForm({ ...form, category: e.target.value, subcategory: "" });
+                  }}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                >
+                  {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+                  <option value="__custom__">+ Add custom category…</option>
+                </select>
+              )}
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">Subcategory</label>
-              <select
-                value={(SUBCATEGORIES[form.category] ?? []).includes(form.subcategory) ? form.subcategory : "__custom__"}
-                onChange={(e) => {
-                  if (e.target.value === "__custom__") return;
-                  setForm({ ...form, subcategory: e.target.value });
-                }}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a6b2f]"
-              >
-                <option value="">Select subcategory</option>
-                {(SUBCATEGORIES[form.category] ?? []).map((sub) => (
-                  <option key={sub} value={sub}>{sub}</option>
-                ))}
-                <option value="__custom__">+ Add custom…</option>
-              </select>
-              {(!(SUBCATEGORIES[form.category] ?? []).includes(form.subcategory) || form.subcategory === "") && (
-                <input
-                  value={(SUBCATEGORIES[form.category] ?? []).includes(form.subcategory) ? "" : form.subcategory}
-                  onChange={(e) => setForm({ ...form, subcategory: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a6b2f] mt-2"
-                  placeholder="Type custom subcategory (e.g. Hoodie)"
-                />
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-semibold text-gray-600">Subcategory</label>
+                <button
+                  type="button"
+                  onClick={() => setManagingSubs(!managingSubs)}
+                  className="text-[10px] text-gray-400 hover:text-red-500"
+                >
+                  {managingSubs ? "Done" : "Manage"}
+                </button>
+              </div>
+              {managingSubs ? (
+                <div className="border border-gray-200 rounded-lg p-2 max-h-48 overflow-y-auto space-y-1">
+                  {(subcategories[form.category] ?? []).map((sub) => (
+                    <div key={sub} className="flex items-center justify-between px-2 py-1 rounded hover:bg-gray-50">
+                      <span className="text-xs text-gray-700">{sub}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSubcategories((prev) => ({
+                            ...prev,
+                            [form.category]: (prev[form.category] ?? []).filter((s) => s !== sub),
+                          }));
+                          if (form.subcategory === sub) setForm({ ...form, subcategory: "" });
+                        }}
+                        className="text-xs text-red-400 hover:text-red-600 font-bold"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                  {(subcategories[form.category] ?? []).length === 0 && (
+                    <p className="text-xs text-gray-400 text-center py-2">No subcategories</p>
+                  )}
+                </div>
+              ) : showCustomSub ? (
+                <div className="flex gap-2">
+                  <input
+                    value={customSubInput}
+                    onChange={(e) => setCustomSubInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        const val = customSubInput.trim();
+                        if (val) {
+                          setSubcategories((prev) => ({
+                            ...prev,
+                            [form.category]: [...(prev[form.category] ?? []), val].sort(),
+                          }));
+                          setForm({ ...form, subcategory: val });
+                          setCustomSubInput("");
+                          setShowCustomSub(false);
+                        }
+                      }
+                    }}
+                    className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a6b2f]"
+                    placeholder="Type new subcategory"
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const val = customSubInput.trim();
+                      if (val) {
+                        setSubcategories((prev) => ({
+                          ...prev,
+                          [form.category]: [...(prev[form.category] ?? []), val].sort(),
+                        }));
+                        setForm({ ...form, subcategory: val });
+                      }
+                      setCustomSubInput("");
+                      setShowCustomSub(false);
+                    }}
+                    className="px-3 py-2 bg-[#1a6b2f] text-white rounded-lg text-xs font-semibold"
+                  >
+                    Add
+                  </button>
+                  <button type="button" onClick={() => setShowCustomSub(false)} className="px-2 py-2 text-xs text-gray-400 hover:text-gray-600">✕</button>
+                </div>
+              ) : (
+                <>
+                  <select
+                    value={(subcategories[form.category] ?? []).includes(form.subcategory) ? form.subcategory : ""}
+                    onChange={(e) => {
+                      if (e.target.value === "__custom__") {
+                        setShowCustomSub(true);
+                        return;
+                      }
+                      setForm({ ...form, subcategory: e.target.value });
+                    }}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a6b2f]"
+                  >
+                    <option value="">Select subcategory</option>
+                    {(subcategories[form.category] ?? []).map((sub) => (
+                      <option key={sub} value={sub}>{sub}</option>
+                    ))}
+                    <option value="__custom__">+ Add custom…</option>
+                  </select>
+                  {form.subcategory && !(subcategories[form.category] ?? []).includes(form.subcategory) && (
+                    <p className="text-[10px] text-[#1a6b2f] mt-1">Custom: &ldquo;{form.subcategory}&rdquo;</p>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -308,10 +463,57 @@ export default function AdminProductsPage() {
               </div>
             )}
             <input value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a6b2f] mb-2" placeholder="Image URL or upload below" />
-            <label className="inline-flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg text-xs font-semibold cursor-pointer hover:bg-gray-200 transition">
-              {uploading ? "Uploading…" : "Upload Image"}
-              <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, "image")} disabled={uploading} />
-            </label>
+            <div className="flex items-center gap-2">
+              <label className="inline-flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg text-xs font-semibold cursor-pointer hover:bg-gray-200 transition">
+                {uploading ? "Uploading…" : "Upload Image"}
+                <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, "image")} disabled={uploading} />
+              </label>
+              {form.image && (
+                <button
+                  type="button"
+                  disabled={aiLoading}
+                  onClick={async () => {
+                    setAiLoading(true);
+                    try {
+                      const res = await fetch("/api/admin/ai-describe", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ imageUrl: form.image }),
+                      });
+                      const data = await res.json();
+                      if (!res.ok) {
+                        alert(data.error || "AI analysis failed");
+                        return;
+                      }
+                      // Auto-populate form fields from AI response
+                      setForm((f) => ({
+                        ...f,
+                        name: data.name || f.name,
+                        category: data.category || f.category,
+                        subcategory: data.subcategory || f.subcategory,
+                        colours: data.colours?.length ? data.colours : f.colours,
+                        size: data.size || f.size,
+                        description: data.description || f.description,
+                      }));
+                      // Add subcategory to list if new
+                      if (data.subcategory && !(subcategories[data.category] ?? []).includes(data.subcategory)) {
+                        setSubcategories((prev) => ({
+                          ...prev,
+                          [data.category]: [...(prev[data.category] ?? []), data.subcategory].sort(),
+                        }));
+                      }
+                    } catch (err: any) {
+                      alert("Failed to analyze image: " + err.message);
+                    } finally {
+                      setAiLoading(false);
+                    }
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#1a6b2f] text-white rounded-lg text-xs font-semibold hover:bg-[#104020] transition disabled:opacity-50"
+                >
+                  {aiLoading ? "Analyzing…" : "✨ Auto-fill from image"}
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Additional Images */}
@@ -495,7 +697,7 @@ export default function AdminProductsPage() {
           className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1a6b2f]"
         >
           <option value="All">All Categories</option>
-          {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+          {categories.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
         <select
           value={sortBy}
