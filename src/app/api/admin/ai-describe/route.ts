@@ -19,6 +19,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No image URL provided" }, { status: 400 });
     }
 
+    // Ensure full URL — relative paths need the site origin prepended
+    let fullImageUrl = imageUrl;
+    if (imageUrl.startsWith("/")) {
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.thriftcollision.com";
+      fullImageUrl = `${siteUrl}${imageUrl}`;
+    }
+
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       max_tokens: 500,
@@ -40,7 +47,7 @@ Be concise with names. For jerseys, mention the team/player if visible. For bran
           role: "user",
           content: [
             { type: "text", text: "Describe this thrift product for our store listing:" },
-            { type: "image_url", image_url: { url: imageUrl, detail: "low" } },
+            { type: "image_url", image_url: { url: fullImageUrl, detail: "low" } },
           ],
         },
       ],
