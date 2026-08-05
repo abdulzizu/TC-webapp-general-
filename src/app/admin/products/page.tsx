@@ -659,7 +659,7 @@ export default function AdminProductsPage() {
                     placeholder="Search for a product to pair with…"
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a6b2f] mb-2"
                   />
-                  <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-72 overflow-y-auto">
                     {products
                       .filter((p) =>
                         (pairingSearch ? p.name.toLowerCase().includes(pairingSearch.toLowerCase()) : true) &&
@@ -667,7 +667,7 @@ export default function AdminProductsPage() {
                         p.name !== form.name &&
                         p.id !== editing?.id
                       )
-                      .slice(0, 9)
+                      .slice(0, 20)
                       .map((p) => (
                         <button
                           key={p.id}
