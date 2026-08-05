@@ -11,162 +11,153 @@ import { useProducts } from "@/lib/use-products";
 // ─── Hero ────────────────────────────────────────────────────────────────────
 
 function Hero() {
-  return (
-    <section
-      className="relative newspaper-bg grain-overlay overflow-hidden"
-      aria-label="Hero section"
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24 lg:py-32">
-        <div className="grid lg:grid-cols-2 gap-10 items-center">
-          {/* Text */}
-          <div>
-            <span className="inline-block text-xs font-700 tracking-widest uppercase text-[#1a6b2f] border border-[#1a6b2f] rounded-full px-3 py-1 mb-6">
-              Weekly Drop Active ✦
-            </span>
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-700 leading-[1.05] tracking-tight text-[#1a1a1a] mb-6">
-              Wear the{" "}
-              <span className="text-[#1a6b2f]">collision.</span>
-              <br />
-              Own the drop.
-            </h1>
-            <p className="text-lg sm:text-xl text-[#4b5563] leading-relaxed mb-4 max-w-lg">
-              Unisex thrifted streetwear, curated and dropped weekly.
-            </p>
-            <p className="text-sm italic text-[#1a6b2f] font-500 mb-8">
-              Every drop hides a discovery.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href="#shop"
-                className="btn-tc-primary px-7 py-3.5 text-sm rounded-full inline-flex items-center gap-2"
-              >
-                Shop the Drop
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                </svg>
-              </Link>
-              <Link
-                href="#notify"
-                className="btn-tc-outline px-7 py-3.5 text-sm rounded-full"
-              >
-                Get Early Access
-              </Link>
-            </div>
-            {/* Social proof */}
-            <div className="flex items-center gap-6 mt-10">
-              <div>
-                <p className="text-2xl font-700 text-[#1a1a1a]">5K+</p>
-                <p className="text-xs text-[#6b7280] uppercase tracking-wide">IG Followers</p>
-              </div>
-              <div className="w-px h-8 bg-[#1a1a1a]/20" />
-              <div>
-                <p className="text-2xl font-700 text-[#1a1a1a]">Weekly</p>
-                <p className="text-xs text-[#6b7280] uppercase tracking-wide">New Drops</p>
-              </div>
-              <div className="w-px h-8 bg-[#1a1a1a]/20" />
-              <div>
-                <p className="text-2xl font-700 text-[#1a1a1a]">100%</p>
-                <p className="text-xs text-[#6b7280] uppercase tracking-wide">Authenticated</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Hero visual — featured product cards from dashboard */}
-          <div className="relative hidden lg:block">
-            <FeaturedHeroCards />
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-const ROTATIONS = ["-rotate-2", "rotate-1", "rotate-2", "-rotate-1"];
-
-function FeaturedHeroCards() {
-  const [cards, setCards] = useState([
-    { label: "Liverpool FC Jersey", price: "₦12,500", size: "M", tag: "2 LEFT", image_url: "/products/liverpool 2006 jersey.jpeg" },
-    { label: "Burgundy Windbreaker", price: "₦18,000", size: "M", tag: "NEW", image_url: "/products/burgundy wind breaker jacket.jpeg" },
-    { label: "Striped T-Shirt", price: "₦7,500", size: "L", tag: "NEW", image_url: "/products/Stripe t-shirt.jpeg" },
-    { label: "Black Baggy Jeans", price: "₦15,000", size: "32", tag: "NEW", image_url: "/products/black baggy jeans.jpeg" },
-  ]);
+  const [cards, setCards] = useState<{ label: string; price: string; size: string; tag: string; image_url: string; product_id: number | null }[]>([]);
+  const [current, setCurrent] = useState(0);
 
   useEffect(() => {
     const supabase = createClient();
     supabase
       .from("featured_products")
-      .select("label, price, size, tag, image_url")
+      .select("label, price, size, tag, image_url, product_id")
       .order("display_order", { ascending: true })
-      .limit(4)
+      .limit(6)
       .then(({ data }) => {
-        if (data && data.length > 0) setCards(data);
+        if (data && data.length > 0) setCards(data as any);
       });
   }, []);
 
+  // Auto-advance every 5 seconds
+  useEffect(() => {
+    if (cards.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrent((c) => (c + 1) % cards.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [cards.length]);
+
+  function prev() { setCurrent((c) => (c - 1 + cards.length) % cards.length); }
+  function next() { setCurrent((c) => (c + 1) % cards.length); }
+
+  // Fallback while loading
+  if (cards.length === 0) {
+    return (
+      <section className="relative h-[85vh] sm:h-[90vh] bg-[#1a1a1a] flex items-center justify-center">
+        <div className="text-center px-4">
+          <h1 className="text-4xl sm:text-6xl font-700 text-white mb-4">Thrift Collision</h1>
+          <p className="text-white/60 text-lg">Unisex thrifted streetwear, curated and dropped weekly.</p>
+          <Link href="/shop" className="mt-8 inline-block btn-tc-primary px-8 py-3.5 text-sm rounded-full">
+            Shop the Drop
+          </Link>
+        </div>
+      </section>
+    );
+  }
+
+  const card = cards[current];
+
   return (
-    <div className="grid grid-cols-2 gap-3">
-      {cards.map((card, i) => (
-        <HeroCard
+    <section className="relative h-[85vh] sm:h-[90vh] overflow-hidden bg-[#1a1a1a]" aria-label="Featured products">
+      {/* Background image slides */}
+      {cards.map((c, i) => (
+        <div
           key={i}
-          label={card.label}
-          price={card.price}
-          size={card.size}
-          tag={card.tag}
-          rotate={ROTATIONS[i % ROTATIONS.length]}
-          delay={i % 2 === 1}
-          image={card.image_url}
-        />
+          className={`absolute inset-0 transition-opacity duration-700 ${i === current ? "opacity-100" : "opacity-0"}`}
+        >
+          <Image
+            src={c.image_url}
+            alt={c.label}
+            fill
+            className="object-cover"
+            sizes="100vw"
+            priority={i === 0}
+          />
+          {/* Dark overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10" />
+        </div>
       ))}
-    </div>
-  );
-}
 
-function HeroCard({
-  label,
-  price,
-  size,
-  tag,
-  rotate = "",
-  delay = false,
-  image,
-}: {
-  label: string;
-  price: string;
-  size: string;
-  tag: string;
-  rotate?: string;
-  delay?: boolean;
-  image: string;
-}) {
-  const tagColor =
-    tag === "SOLD OUT"
-      ? "bg-[#1a1a1a] text-white"
-      : tag === "NEW"
-      ? "bg-[#1a6b2f] text-white"
-      : "bg-amber-400 text-[#1a1a1a]";
-
-  return (
-    <div
-      className={`bg-white border border-[#1a1a1a]/10 rounded-xl p-3 product-card ${rotate} ${delay ? "mt-6" : ""}`}
-    >
-      <div className="relative w-full h-44 rounded-lg mb-3 overflow-hidden">
-        <Image
-          src={image}
-          alt={label}
-          fill
-          className="object-cover"
-          sizes="200px"
-        />
-        <span className={`absolute top-2 right-2 text-[10px] font-700 tracking-wider px-2 py-0.5 rounded-full ${tagColor}`}>
-          {tag}
+      {/* Content overlay */}
+      <div className="relative h-full flex flex-col items-center justify-end pb-16 sm:pb-24 px-4 text-center z-10">
+        <span className="text-xs font-700 tracking-widest uppercase text-white/60 mb-3">
+          Featured Drop
         </span>
+        <h1 className="text-3xl sm:text-5xl lg:text-6xl font-700 text-white leading-tight mb-3 max-w-2xl">
+          {card.label}
+        </h1>
+        <div className="flex items-center gap-3 mb-6">
+          <span className="text-lg sm:text-xl font-700 text-[#1a6b2f]">{card.price}</span>
+          <span className="text-sm text-white/60 border border-white/20 rounded px-2 py-0.5">{card.size}</span>
+          <span className={`text-[10px] font-700 tracking-wider px-2 py-0.5 rounded-full ${
+            card.tag === "SOLD OUT" ? "bg-white/20 text-white" : card.tag === "NEW" ? "bg-[#1a6b2f] text-white" : "bg-amber-400 text-[#1a1a1a]"
+          }`}>
+            {card.tag}
+          </span>
+        </div>
+        <div className="flex gap-3">
+          {card.product_id ? (
+            <Link
+              href={`/product/${card.product_id}`}
+              className="btn-tc-primary px-8 py-3.5 text-sm rounded-full inline-flex items-center gap-2"
+            >
+              Shop this item
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+              </svg>
+            </Link>
+          ) : (
+            <Link href="/shop" className="btn-tc-primary px-8 py-3.5 text-sm rounded-full">
+              Shop the Drop
+            </Link>
+          )}
+          <Link href="/shop" className="btn-tc-outline px-6 py-3.5 text-sm rounded-full text-white border-white/30 hover:bg-white/10">
+            See All
+          </Link>
+        </div>
+
+        {/* Tagline */}
+        <p className="text-sm italic text-white/50 mt-6">
+          Every drop hides a discovery.
+        </p>
       </div>
-      <p className="text-xs font-600 text-[#1a1a1a] uppercase tracking-wide">{label}</p>
-      <div className="flex items-center justify-between mt-1">
-        <p className="text-sm font-700 text-[#1a6b2f]">{price}</p>
-        <p className="text-[10px] text-[#6b7280] border border-[#6b7280]/40 rounded px-1.5 py-0.5">{size}</p>
-      </div>
-    </div>
+
+      {/* Side arrows */}
+      {cards.length > 1 && (
+        <>
+          <button
+            onClick={prev}
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/20 transition"
+            aria-label="Previous item"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
+          </button>
+          <button
+            onClick={next}
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/20 transition"
+            aria-label="Next item"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
+          </button>
+        </>
+      )}
+
+      {/* Dots indicator */}
+      {cards.length > 1 && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+          {cards.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrent(i)}
+              className={`w-2 h-2 rounded-full transition-all ${i === current ? "bg-white w-6" : "bg-white/40"}`}
+              aria-label={`Go to slide ${i + 1}`}
+            />
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 
