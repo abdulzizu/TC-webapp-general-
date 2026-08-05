@@ -580,24 +580,40 @@ export default function AdminProductsPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      // Auto-suggest from complementary categories (randomized)
-                      const complementary: Record<string, string[]> = {
-                        "Jeans": ["T-shirts", "Jackets", "Sneakers", "Caps and hats", "Shirts", "Hoodies"],
-                        "Sweatpants": ["T-shirts", "Sweatshirts", "Sneakers", "Caps and hats", "Hoodies"],
-                        "Trackpants": ["T-shirts", "Sweatshirts", "Sneakers", "Caps and hats", "Hoodies"],
-                        "Shorts": ["T-shirts", "Shirts", "Sneakers", "Caps and hats"],
-                        "T-shirts": ["Jeans", "Jackets", "Sneakers", "Caps and hats", "Shorts", "Sweatpants"],
-                        "Shirts": ["Jeans", "Shorts", "Sneakers", "Jackets"],
-                        "Jackets": ["Jeans", "T-shirts", "Sneakers", "Hoodies", "Sweatpants"],
-                        "Jerseys": ["Jeans", "Shorts", "Sneakers", "Caps and hats", "Sweatpants"],
-                        "Sweatshirts": ["Jeans", "Sweatpants", "Sneakers", "Caps and hats"],
-                        "Hoodies": ["Jeans", "Sweatpants", "Sneakers", "Caps and hats", "Shorts"],
-                        "Sneakers": ["Jeans", "Sweatpants", "T-shirts", "Shorts", "Trackpants"],
-                        "Caps and hats": ["Jeans", "T-shirts", "Jackets", "Shorts", "Jerseys"],
-                        "Socks": ["Sneakers", "Shorts", "Jeans"],
-                      };
-                      const targetSubs = complementary[form.subcategory] ?? ["Jeans", "T-shirts", "Sneakers"];
-                      // Get all matching products and shuffle them
+                      // Group subcategories into tops, bottoms, accessories, shoes
+                      const TOPS = ["T-shirts", "Shirts", "Jerseys", "Sweatshirts", "Hoodies", "Jackets", "Gilets"];
+                      const BOTTOMS = ["Jeans", "Sweatpants", "Trackpants", "Cargo pants", "Shorts", "Track suits"];
+                      const ACCESSORIES = ["Caps and hats", "Socks", "Ties", "Beanies", "Gloves", "Bags", "Belts", "Scarves"];
+                      const SHOES = ["Sneakers", "Clogs", "Slippers", "Sandals", "Boots", "Loafers"];
+
+                      let targetSubs: string[] = [];
+                      const sub = form.subcategory;
+
+                      if (TOPS.includes(sub)) {
+                        // Tops → suggest bottoms + accessories + shoes (layering tops like jackets can suggest other tops)
+                        targetSubs = [...BOTTOMS, ...ACCESSORIES, ...SHOES];
+                        if (["Jackets", "Gilets"].includes(sub)) {
+                          // Outerwear can also pair with inner tops
+                          targetSubs = [...targetSubs, "T-shirts", "Shirts", "Hoodies", "Sweatshirts"];
+                        }
+                      } else if (BOTTOMS.includes(sub)) {
+                        // Bottoms → suggest tops + accessories + shoes, never other bottoms
+                        targetSubs = [...TOPS, ...ACCESSORIES, ...SHOES];
+                      } else if (ACCESSORIES.includes(sub)) {
+                        // Accessories → suggest both tops and bottoms
+                        targetSubs = [...TOPS, ...BOTTOMS, ...SHOES];
+                      } else if (SHOES.includes(sub)) {
+                        // Shoes → suggest tops and bottoms
+                        targetSubs = [...TOPS, ...BOTTOMS, ...ACCESSORIES];
+                      } else {
+                        // Fallback
+                        targetSubs = [...TOPS, ...BOTTOMS, ...ACCESSORIES, ...SHOES];
+                      }
+
+                      // Remove the current item's subcategory from targets (no same-type pairing)
+                      targetSubs = targetSubs.filter((s) => s !== sub);
+
+                      // Get matching products and shuffle
                       const candidates = products
                         .filter((p) => targetSubs.includes(p.subcategory) && p.name !== form.name && p.available);
                       // Fisher-Yates shuffle
@@ -605,9 +621,25 @@ export default function AdminProductsPage() {
                         const j = Math.floor(Math.random() * (i + 1));
                         [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
                       }
-                      const suggestions = candidates
-                        .slice(0, 3)
-                        .map((p) => ({ item: p.name, reason: "" }));
+                      // Try to pick from different subcategories for variety
+                      const picked: typeof candidates = [];
+                      const usedSubs = new Set<string>();
+                      for (const c of candidates) {
+                        if (picked.length >= 3) break;
+                        if (!usedSubs.has(c.subcategory)) {
+                          picked.push(c);
+                          usedSubs.add(c.subcategory);
+                        }
+                      }
+                      // If we couldn't get 3 unique subcategories, fill from remaining
+                      if (picked.length < 3) {
+                        for (const c of candidates) {
+                          if (picked.length >= 3) break;
+                          if (!picked.includes(c)) picked.push(c);
+                        }
+                      }
+
+                      const suggestions = picked.map((p) => ({ item: p.name, reason: "" }));
                       if (suggestions.length > 0) {
                         setForm((f) => ({ ...f, pairs_with: suggestions }));
                       }
