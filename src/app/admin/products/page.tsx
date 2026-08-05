@@ -660,25 +660,40 @@ export default function AdminProductsPage() {
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a6b2f] mb-2"
                   />
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-72 overflow-y-auto">
-                    {products
-                      .filter((p) =>
-                        (pairingSearch ? p.name.toLowerCase().includes(pairingSearch.toLowerCase()) : true) &&
-                        !form.pairs_with.some((pw) => pw.item === p.name) &&
-                        p.name !== form.name &&
-                        p.id !== editing?.id
-                      )
-                      .slice(0, 20)
-                      .map((p) => (
-                        <button
-                          key={p.id}
-                          type="button"
-                          onClick={() => {
-                            setForm((f) => ({
-                              ...f,
-                              pairs_with: [...f.pairs_with, { item: p.name, reason: "" }],
-                            }));
-                            setPairingSearch("");
-                          }}
+                    {(() => {
+                      // Apply same tops/bottoms logic to manual grid
+                      const TOPS = ["T-shirts", "Shirts", "Jerseys", "Sweatshirts", "Hoodies", "Jackets", "Gilets"];
+                      const BOTTOMS = ["Jeans", "Sweatpants", "Trackpants", "Cargo pants", "Shorts", "Track suits"];
+                      const sub = form.subcategory;
+                      let excludeSubs: string[] = [];
+                      if (TOPS.includes(sub) && !["Jackets", "Gilets"].includes(sub)) {
+                        // Non-outerwear tops: exclude other tops
+                        excludeSubs = TOPS.filter((s) => s !== sub);
+                      } else if (BOTTOMS.includes(sub)) {
+                        // Bottoms: exclude other bottoms
+                        excludeSubs = BOTTOMS.filter((s) => s !== sub);
+                      }
+
+                      return products
+                        .filter((p) =>
+                          (pairingSearch ? p.name.toLowerCase().includes(pairingSearch.toLowerCase()) : true) &&
+                          !form.pairs_with.some((pw) => pw.item === p.name) &&
+                          p.name !== form.name &&
+                          p.id !== editing?.id &&
+                          !excludeSubs.includes(p.subcategory)
+                        )
+                        .slice(0, 20)
+                        .map((p) => (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => {
+                              setForm((f) => ({
+                                ...f,
+                                pairs_with: [...f.pairs_with, { item: p.name, reason: "" }],
+                              }));
+                              setPairingSearch("");
+                            }}
                           className="bg-white border border-gray-100 rounded-lg p-2 text-left hover:border-[#1a6b2f] transition group"
                         >
                           <div className="relative aspect-square rounded overflow-hidden bg-gray-100 mb-1">
@@ -689,7 +704,8 @@ export default function AdminProductsPage() {
                           </div>
                           <p className="text-[10px] font-medium truncate">{p.name}</p>
                         </button>
-                      ))}
+                      ));
+                    })()}
                   </div>
                 </div>
               </div>
