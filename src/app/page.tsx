@@ -42,8 +42,9 @@ function Hero() {
   if (cards.length === 0) {
     return (
       <section className="relative h-[85vh] sm:h-[90vh] bg-[#1a1a1a] flex items-center justify-center">
+        <h1 className="sr-only">Thrift Collision — Unisex Thrifted Streetwear in Nigeria. Curated and Dropped Weekly.</h1>
         <div className="text-center px-4">
-          <h1 className="text-4xl sm:text-6xl font-700 text-white mb-4">Thrift Collision</h1>
+          <h2 className="text-4xl sm:text-6xl font-700 text-white mb-4">Thrift Collision</h2>
           <p className="text-white/60 text-lg">Unisex thrifted streetwear, curated and dropped weekly.</p>
           <Link href="/shop" className="mt-8 inline-block btn-tc-primary px-8 py-3.5 text-sm rounded-full">
             Shop the Drop
@@ -76,14 +77,17 @@ function Hero() {
         </div>
       ))}
 
+      {/* Hidden h1 for SEO — visible to crawlers and screen readers */}
+      <h1 className="sr-only">Thrift Collision — Unisex Thrifted Streetwear in Nigeria. Curated and Dropped Weekly.</h1>
+
       {/* Content overlay */}
       <div className="relative h-full flex flex-col items-center justify-end pb-16 sm:pb-24 px-4 text-center z-10">
         <span className="text-xs font-700 tracking-widest uppercase text-white/60 mb-3">
           Featured Drop
         </span>
-        <h1 className="text-3xl sm:text-5xl lg:text-6xl font-700 text-white leading-tight mb-3 max-w-2xl">
+        <h2 className="text-3xl sm:text-5xl lg:text-6xl font-700 text-white leading-tight mb-3 max-w-2xl">
           {card.label}
-        </h1>
+        </h2>
         <div className="flex items-center gap-3 mb-6">
           <span className="text-lg sm:text-xl font-700 text-[#1a6b2f]">{card.price}</span>
           <span className="text-sm text-white/60 border border-white/20 rounded px-2 py-0.5">{card.size}</span>

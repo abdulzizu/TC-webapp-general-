@@ -7,7 +7,7 @@ import { UserProvider } from "@/lib/user-context";
 export const metadata: Metadata = {
   title: "Thrift Collision — Unisex Thrifted Streetwear",
   description:
-    "Curating the best in thrifted drops. Unisex streetwear. Sustainably sourced. Drop every week.",
+    "Unisex thrifted streetwear, curated and dropped weekly. Based in Abuja, shipping across Nigeria. Every drop hides a discovery.",
   metadataBase: new URL("https://thriftcollision.com"),
   openGraph: {
     title: "Thrift Collision",
