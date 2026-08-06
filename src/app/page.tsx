@@ -93,7 +93,7 @@ function Hero() {
           <span className="text-sm text-white/60 border border-white/20 rounded px-2 py-0.5">{card.size}</span>
           {card.tag && (
             <span className={`text-[10px] font-700 tracking-wider px-2 py-0.5 rounded-full ${
-              card.tag === "SOLD OUT" ? "bg-white/20 text-white" : card.tag === "NEW" ? "bg-[#1a6b2f] text-white" : card.tag === "ESSENTIAL" || card.tag === "STAFF PICK" ? "bg-purple-500 text-white" : "bg-amber-400 text-[#1a1a1a]"
+              card.tag === "SOLD OUT" ? "bg-red-500/80 text-white" : card.tag === "NEW" || card.tag === "STAFF PICK" ? "bg-[#1a6b2f] text-white" : card.tag === "ESSENTIAL" ? "bg-purple-500 text-white" : "bg-amber-400 text-[#1a1a1a]"
             }`}>
               {card.tag}
             </span>
@@ -318,10 +318,10 @@ function ProductCard({
   const isSoldOut = item.tag === "SOLD OUT";
   const tagColor =
     isSoldOut
-      ? "bg-[#1a1a1a] text-white"
-      : item.tag === "NEW"
+      ? "bg-red-500 text-white"
+      : item.tag === "NEW" || item.tag === "STAFF PICK"
       ? "bg-[#1a6b2f] text-white"
-      : item.tag === "ESSENTIAL" || item.tag === "STAFF PICK"
+      : item.tag === "ESSENTIAL"
       ? "bg-purple-500 text-white"
       : "bg-amber-400 text-[#1a1a1a]";
 

@@ -179,7 +179,7 @@ function ShopContent() {
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
               {filtered.map((item) => {
                 const isSoldOut = item.tag === "SOLD OUT";
-                const tagColor = isSoldOut ? "bg-[#1a1a1a] text-white" : item.tag === "NEW" ? "bg-[#1a6b2f] text-white" : item.tag === "ESSENTIAL" || item.tag === "STAFF PICK" ? "bg-purple-500 text-white" : "bg-amber-400 text-[#1a1a1a]";
+                const tagColor = isSoldOut ? "bg-red-500 text-white" : item.tag === "NEW" || item.tag === "STAFF PICK" ? "bg-[#1a6b2f] text-white" : item.tag === "ESSENTIAL" ? "bg-purple-500 text-white" : "bg-amber-400 text-[#1a1a1a]";
                 return (
                   <Link key={item.id} href={`/product/${item.id}`} className={`product-card rounded-2xl overflow-hidden border border-gray-100 bg-white group ${isSoldOut ? "opacity-60" : ""}`}>
                     <div className="relative w-full aspect-square overflow-hidden bg-[#ede8d8]">

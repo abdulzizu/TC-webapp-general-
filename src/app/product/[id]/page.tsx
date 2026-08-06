@@ -155,10 +155,10 @@ export default function ProductPage() {
 
   const isSoldOut = product.tag === "SOLD OUT";
   const tagColor = isSoldOut
-    ? "bg-[#1a1a1a] text-white"
-    : product.tag === "NEW"
+    ? "bg-red-500 text-white"
+    : product.tag === "NEW" || product.tag === "STAFF PICK"
     ? "bg-[#1a6b2f] text-white"
-    : product.tag === "ESSENTIAL" || product.tag === "STAFF PICK"
+    : product.tag === "ESSENTIAL"
     ? "bg-purple-500 text-white"
     : "bg-amber-400 text-[#1a1a1a]";
 
@@ -561,10 +561,10 @@ export default function ProductPage() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {related.map((item) => {
                   const itemTagColor = item.tag === "SOLD OUT"
-                    ? "bg-[#1a1a1a] text-white"
-                    : item.tag === "NEW"
+                    ? "bg-red-500 text-white"
+                    : item.tag === "NEW" || item.tag === "STAFF PICK"
                     ? "bg-[#1a6b2f] text-white"
-                    : item.tag === "ESSENTIAL" || item.tag === "STAFF PICK"
+                    : item.tag === "ESSENTIAL"
                     ? "bg-purple-500 text-white"
                     : "bg-amber-400 text-[#1a1a1a]";
                   return (
