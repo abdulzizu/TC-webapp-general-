@@ -158,6 +158,8 @@ export default function ProductPage() {
     ? "bg-[#1a1a1a] text-white"
     : product.tag === "NEW"
     ? "bg-[#1a6b2f] text-white"
+    : product.tag === "ESSENTIAL" || product.tag === "STAFF PICK"
+    ? "bg-purple-500 text-white"
     : "bg-amber-400 text-[#1a1a1a]";
 
   function handleAddToCart() {
@@ -221,9 +223,11 @@ export default function ProductPage() {
                       sizes="(max-width:1024px) 100vw, 50vw"
                       priority
                     />
-                    <span className={`absolute top-4 left-4 text-xs font-bold tracking-wide px-3 py-1 rounded-full ${tagColor}`}>
-                      {product.tag}
-                    </span>
+                    {product.tag && (
+                      <span className={`absolute top-4 left-4 text-xs font-bold tracking-wide px-3 py-1 rounded-full ${tagColor}`}>
+                        {product.tag}
+                      </span>
+                    )}
 
                     {/* Prev/Next arrows */}
                     {hasMultiple && (
@@ -560,6 +564,8 @@ export default function ProductPage() {
                     ? "bg-[#1a1a1a] text-white"
                     : item.tag === "NEW"
                     ? "bg-[#1a6b2f] text-white"
+                    : item.tag === "ESSENTIAL" || item.tag === "STAFF PICK"
+                    ? "bg-purple-500 text-white"
                     : "bg-amber-400 text-[#1a1a1a]";
                   return (
                     <Link
@@ -575,9 +581,11 @@ export default function ProductPage() {
                           className="object-cover"
                           sizes="25vw"
                         />
-                        <span className={`absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full ${itemTagColor}`}>
-                          {item.tag}
-                        </span>
+                        {item.tag && (
+                          <span className={`absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full ${itemTagColor}`}>
+                            {item.tag}
+                          </span>
+                        )}
                       </div>
                       <div className="p-3">
                         <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1">{item.subcategory}</p>

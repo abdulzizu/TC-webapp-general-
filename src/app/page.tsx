@@ -91,11 +91,13 @@ function Hero() {
         <div className="flex items-center gap-3 mb-6">
           <span className="text-lg sm:text-xl font-700 text-[#1a6b2f]">{card.price}</span>
           <span className="text-sm text-white/60 border border-white/20 rounded px-2 py-0.5">{card.size}</span>
-          <span className={`text-[10px] font-700 tracking-wider px-2 py-0.5 rounded-full ${
-            card.tag === "SOLD OUT" ? "bg-white/20 text-white" : card.tag === "NEW" ? "bg-[#1a6b2f] text-white" : "bg-amber-400 text-[#1a1a1a]"
-          }`}>
-            {card.tag}
-          </span>
+          {card.tag && (
+            <span className={`text-[10px] font-700 tracking-wider px-2 py-0.5 rounded-full ${
+              card.tag === "SOLD OUT" ? "bg-white/20 text-white" : card.tag === "NEW" ? "bg-[#1a6b2f] text-white" : card.tag === "ESSENTIAL" || card.tag === "STAFF PICK" ? "bg-purple-500 text-white" : "bg-amber-400 text-[#1a1a1a]"
+            }`}>
+              {card.tag}
+            </span>
+          )}
         </div>
         <div className="flex gap-3">
           {card.product_id ? (
@@ -319,6 +321,8 @@ function ProductCard({
       ? "bg-[#1a1a1a] text-white"
       : item.tag === "NEW"
       ? "bg-[#1a6b2f] text-white"
+      : item.tag === "ESSENTIAL" || item.tag === "STAFF PICK"
+      ? "bg-purple-500 text-white"
       : "bg-amber-400 text-[#1a1a1a]";
 
   return (
@@ -336,11 +340,13 @@ function ProductCard({
         ) : (
           <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400 text-xs">No image</div>
         )}
-        <span
-          className={`absolute top-2.5 left-2.5 text-[10px] font-700 tracking-wider px-2 py-0.5 rounded-full ${tagColor}`}
-        >
-          {item.tag}
-        </span>
+        {item.tag && (
+          <span
+            className={`absolute top-2.5 left-2.5 text-[10px] font-700 tracking-wider px-2 py-0.5 rounded-full ${tagColor}`}
+          >
+            {item.tag}
+          </span>
+        )}
       </div>
 
       {/* Info */}

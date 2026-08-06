@@ -43,7 +43,7 @@ const EMPTY_PRODUCT: Omit<Product, "id"> & { pairs_with: Pairing[] } = {
 };
 
 const DEFAULT_CATEGORIES = ["Clothing", "Accessories", "Shoes"];
-const TAGS = ["NEW", "2 LEFT", "1 LEFT", "SOLD OUT", "👀 HOT", "🔥 TRENDING"];
+const TAGS = ["NEW", "2 LEFT", "1 LEFT", "SOLD OUT", "ESSENTIAL", "STAFF PICK", ""];
 const DEFAULT_SUBCATEGORIES: Record<string, string[]> = {
   Clothing: ["Jackets", "T-shirts", "Shirts", "Jerseys", "Cargo pants", "Jeans", "Shorts", "Track suits", "Trackpants", "Sweatpants", "Sweatshirts", "Hoodies", "Dresses"],
   Accessories: ["Caps and hats", "Socks", "Ties", "Beanies", "Gloves", "Bags", "Belts", "Scarves"],
@@ -418,7 +418,7 @@ export default function AdminProductsPage() {
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1">Tag</label>
               <select value={form.tag} onChange={(e) => setForm({ ...form, tag: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
-                {TAGS.map((t) => <option key={t} value={t}>{t}</option>)}
+                {TAGS.map((t) => <option key={t} value={t}>{t || "— No tag —"}</option>)}
               </select>
             </div>
             <div className="flex items-end">
