@@ -667,11 +667,11 @@ export default function AdminProductsPage() {
                       const sub = form.subcategory;
                       let excludeSubs: string[] = [];
                       if (TOPS.includes(sub) && !["Jackets", "Gilets"].includes(sub)) {
-                        // Non-outerwear tops: exclude other tops
-                        excludeSubs = TOPS.filter((s) => s !== sub);
+                        // Non-outerwear tops: exclude ALL tops
+                        excludeSubs = [...TOPS];
                       } else if (BOTTOMS.includes(sub)) {
-                        // Bottoms: exclude other bottoms
-                        excludeSubs = BOTTOMS.filter((s) => s !== sub);
+                        // Bottoms: exclude ALL bottoms
+                        excludeSubs = [...BOTTOMS];
                       }
 
                       return products
