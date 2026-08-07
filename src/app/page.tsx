@@ -198,28 +198,28 @@ function HowItWorks() {
   ];
 
   return (
-    <section id="how-it-works" className="py-16 sm:py-24 bg-[#1a1a1a]" aria-labelledby="how-heading">
+    <section id="how-it-works" className="py-10 sm:py-14 bg-[#1a1a1a]" aria-labelledby="how-heading">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="text-center mb-12">
-          <span className="text-xs font-700 tracking-widest uppercase text-[#1a6b2f] mb-3 block">
+        <div className="text-center mb-8">
+          <span className="text-xs font-700 tracking-widest uppercase text-[#1a6b2f] mb-2 block">
             Simple Process
           </span>
-          <h2 id="how-heading" className="text-4xl sm:text-5xl font-700 text-white leading-tight">
+          <h2 id="how-heading" className="text-3xl sm:text-4xl font-700 text-white leading-tight">
             How it works
           </h2>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {steps.map((step) => (
             <div
               key={step.num}
-              className="relative border border-white/10 rounded-2xl p-6 hover:border-[#1a6b2f]/50 transition-colors"
+              className="relative border border-white/10 rounded-xl p-4 hover:border-[#1a6b2f]/50 transition-colors"
             >
-              <span className="text-[#1a6b2f]/30 font-700 text-5xl absolute top-4 right-5 select-none" aria-hidden="true">
+              <span className="text-[#1a6b2f]/30 font-700 text-3xl absolute top-3 right-4 select-none" aria-hidden="true">
                 {step.num}
               </span>
-              <span className="text-3xl mb-4 block" aria-hidden="true">{step.icon}</span>
-              <h3 className="text-white font-600 text-lg mb-2">{step.title}</h3>
-              <p className="text-[#9ca3af] text-sm leading-relaxed">{step.desc}</p>
+              <span className="text-2xl mb-2 block" aria-hidden="true">{step.icon}</span>
+              <h3 className="text-white font-600 text-sm mb-1">{step.title}</h3>
+              <p className="text-[#9ca3af] text-xs leading-relaxed">{step.desc}</p>
             </div>
           ))}
         </div>
@@ -239,6 +239,15 @@ function ProductGrid() {
     filter === "All" ? products
     : filter === "Available" ? products.filter((i) => i.available && i.tag !== "SOLD OUT")
     : products.filter((i) => i.category === filter);
+
+  // Homepage shows max 8 items — prioritize NEW tagged items, then most recent
+  const displayItems = [...filtered]
+    .sort((a, b) => {
+      if (a.tag === "NEW" && b.tag !== "NEW") return -1;
+      if (b.tag === "NEW" && a.tag !== "NEW") return 1;
+      return b.id - a.id; // newest first
+    })
+    .slice(0, 8);
 
   return (
     <section id="shop" className="py-16 sm:py-24 newspaper-bg" aria-labelledby="shop-heading">
@@ -291,7 +300,7 @@ function ProductGrid() {
                   </div>
                 </div>
               ))
-            : filtered.map((item) => (
+            : displayItems.map((item) => (
                 <ProductCard key={item.id} item={item} />
               ))
           }
