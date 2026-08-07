@@ -417,9 +417,6 @@ function EssentialsCarousel() {
         {/* Header */}
         <div className="flex items-end justify-between mb-6">
           <div>
-            <span className="text-xs font-700 tracking-widest uppercase text-purple-400 mb-1 block">
-              Curated Picks
-            </span>
             <h2 id="essentials-heading" className="text-2xl sm:text-3xl font-700 text-white">
               Essentials
             </h2>
