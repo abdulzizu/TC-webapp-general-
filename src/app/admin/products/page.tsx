@@ -142,7 +142,18 @@ export default function AdminProductsPage() {
     setSaving(true);
     const { pairs_with, ...productFields } = form;
     // Ensure price is always a whole number
-    const payload = { ...productFields, price: Math.round(productFields.price), pairs_with };
+    const payload: any = { ...productFields, price: Math.round(productFields.price), pairs_with };
+
+    // If marking visible for the first time (or re-enabling), update visible_at timestamp
+    if (productFields.available) {
+      if (editing && !editing.available) {
+        // Was hidden, now visible — set visible_at to now
+        payload.visible_at = new Date().toISOString();
+      } else if (creating) {
+        // New product being created as visible
+        payload.visible_at = new Date().toISOString();
+      }
+    }
     if (creating) {
       const maxId = products.reduce((max, p) => Math.max(max, p.id), 0);
       const { error } = await supabase.from("products").insert({ id: maxId + 1, ...payload });

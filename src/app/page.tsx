@@ -240,12 +240,15 @@ function ProductGrid() {
     : filter === "Available" ? products.filter((i) => i.available && i.tag !== "SOLD OUT")
     : products.filter((i) => i.category === filter);
 
-  // Homepage shows max 8 items — prioritize NEW tagged items, then most recent
+  // Homepage shows max 8 items — prioritize NEW tagged items, then most recently made visible
   const displayItems = [...filtered]
     .sort((a, b) => {
       if (a.tag === "NEW" && b.tag !== "NEW") return -1;
       if (b.tag === "NEW" && a.tag !== "NEW") return 1;
-      return b.id - a.id; // newest first
+      // Sort by visible_at if available, otherwise by id
+      const aTime = (a as any).visible_at ? new Date((a as any).visible_at).getTime() : a.id;
+      const bTime = (b as any).visible_at ? new Date((b as any).visible_at).getTime() : b.id;
+      return bTime - aTime; // newest visible first
     })
     .slice(0, 8);
 
