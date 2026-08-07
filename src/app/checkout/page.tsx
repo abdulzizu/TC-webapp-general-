@@ -36,7 +36,6 @@ function CheckoutContent() {
   const [step, setStep] = useState<"details" | "payment">("details");
   const [asGuest, setAsGuest] = useState(!user);
   const [deliveryChoice, setDeliveryChoice] = useState<"ship" | "stockpile">("ship");
-  const [payMethod, setPayMethod] = useState("card");
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [shippingZones, setShippingZones] = useState<any[]>([]);
@@ -531,42 +530,17 @@ function CheckoutContent() {
               </div>
 
               <h2 className="font-bold text-base mb-4">Payment Method</h2>
-              <div className="space-y-3 mb-6" role="group" aria-label="Choose payment method">
-                {[
-                  { id: "card", label: "Debit / Credit Card", icon: "💳" },
-                  { id: "transfer", label: "Bank Transfer", icon: "🏦" },
-                  { id: "wallet", label: "Digital Wallet (coming soon)", icon: "📱", disabled: true },
-                ].map((m) => (
-                  <label key={m.id} className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-colors ${payMethod === m.id ? "border-[#1a6b2f] bg-[#1a6b2f]/5" : "border-gray-100 hover:border-gray-200"} ${m.disabled ? "opacity-40 pointer-events-none" : ""}`}>
-                    <input type="radio" name="payment" value={m.id} checked={payMethod === m.id} onChange={() => setPayMethod(m.id)} disabled={m.disabled} className="accent-[#1a6b2f]" />
-                    <span className="text-lg" aria-hidden="true">{m.icon}</span>
-                    <span className="text-sm font-semibold text-gray-700">{m.label}</span>
-                  </label>
-                ))}
+              <div className="p-4 bg-gray-50 rounded-xl mb-6">
+                <div className="flex items-center gap-3 mb-2">
+                  <svg className="w-5 h-5 text-[#1a6b2f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                  </svg>
+                  <p className="text-sm font-semibold text-[#1a1a1a]">Secure payment via Paystack</p>
+                </div>
+                <p className="text-xs text-gray-500">
+                  You&apos;ll be redirected to Paystack&apos;s secure payment page. Pay with card, bank transfer, or USSD — all options available. We never see or store your payment details.
+                </p>
               </div>
-
-              {payMethod === "card" && (
-                <div className="p-4 bg-gray-50 rounded-xl mb-6">
-                  <div className="flex items-center gap-3 mb-2">
-                    <svg className="w-5 h-5 text-[#1a6b2f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-                    </svg>
-                    <p className="text-sm font-semibold text-[#1a1a1a]">Secure payment via Paystack</p>
-                  </div>
-                  <p className="text-xs text-gray-500">
-                    You&apos;ll be redirected to Paystack&apos;s secure payment page to enter your card details. We never see or store your card information.
-                  </p>
-                </div>
-              )}
-
-              {payMethod === "transfer" && (
-                <div className="p-4 bg-gray-50 rounded-xl mb-6 text-sm text-gray-600 space-y-1">
-                  <p className="font-semibold text-[#1a1a1a]">Transfer to:</p>
-                  <p>Bank: First Bank of Nigeria</p>
-                  <p>Account: <span className="font-bold text-[#1a1a1a]">1234567890</span> — Thrift Collision</p>
-                  <p className="text-xs text-gray-400 mt-1">Use your Order ID as reference.</p>
-                </div>
-              )}
 
               {/* Transparent totals */}
               <div className="p-4 bg-[#1a6b2f]/5 rounded-xl mb-6 border border-[#1a6b2f]/10">
