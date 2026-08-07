@@ -3,10 +3,12 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { useCart } from "@/lib/cart-context";
 
 function VerifyContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { clearCart } = useCart();
   const reference = searchParams.get("reference");
   const [status, setStatus] = useState<"verifying" | "success" | "failed">("verifying");
   const [error, setError] = useState("");
@@ -26,6 +28,7 @@ function VerifyContent() {
 
         if (data.verified) {
           setStatus("success");
+          clearCart();
           // Redirect to order confirmation after a brief success display
           setTimeout(() => {
             router.push(`/order-confirmation?orderId=${reference}&paid=true`);

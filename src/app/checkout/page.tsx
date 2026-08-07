@@ -345,8 +345,7 @@ function CheckoutContent() {
         return;
       }
 
-      // Clear cart and redirect to Paystack
-      clearCart();
+      // Redirect to Paystack — cart stays intact until payment is confirmed
       window.location.href = payData.authorization_url;
     } catch {
       setSubmitting(false);
