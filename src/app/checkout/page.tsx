@@ -547,13 +547,16 @@ function CheckoutContent() {
               </div>
 
               {payMethod === "card" && (
-                <div className="space-y-3 mb-6 p-4 bg-gray-50 rounded-xl">
-                  <p className="text-xs text-gray-500 font-semibold uppercase tracking-widest">Card Details</p>
-                  <input className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#1a6b2f]" placeholder="Card number" type="text" inputMode="numeric" aria-label="Card number" />
-                  <div className="grid grid-cols-2 gap-3">
-                    <input className="border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#1a6b2f]" placeholder="MM / YY" aria-label="Expiry date" />
-                    <input className="border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#1a6b2f]" placeholder="CVV" type="password" aria-label="CVV" />
+                <div className="p-4 bg-gray-50 rounded-xl mb-6">
+                  <div className="flex items-center gap-3 mb-2">
+                    <svg className="w-5 h-5 text-[#1a6b2f]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                    </svg>
+                    <p className="text-sm font-semibold text-[#1a1a1a]">Secure payment via Paystack</p>
                   </div>
+                  <p className="text-xs text-gray-500">
+                    You&apos;ll be redirected to Paystack&apos;s secure payment page to enter your card details. We never see or store your card information.
+                  </p>
                 </div>
               )}
 
