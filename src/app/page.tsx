@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
@@ -368,6 +368,124 @@ function ProductCard({
         </div>
       </div>
     </Link>
+  );
+}
+
+// ─── Essentials Carousel ─────────────────────────────────────────────────────
+
+function EssentialsCarousel() {
+  const [items, setItems] = useState<{ id: number; name: string; price: number; size: string; tag: string; image: string; subcategory: string }[]>([]);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from("products")
+      .select("id, name, price, size, tag, image, subcategory")
+      .eq("suggest_essential", true)
+      .eq("visible", true)
+      .order("created_at", { ascending: false })
+      .limit(8)
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          // Shuffle for variety
+          const shuffled = [...data];
+          for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+          }
+          setItems(shuffled.slice(0, 6));
+        }
+      });
+  }, []);
+
+  function scrollLeft() {
+    scrollRef.current?.scrollBy({ left: -280, behavior: "smooth" });
+  }
+  function scrollRight() {
+    scrollRef.current?.scrollBy({ left: 280, behavior: "smooth" });
+  }
+
+  if (items.length === 0) return null;
+
+  return (
+    <section className="py-10 sm:py-14 bg-[#1a1a1a]" aria-labelledby="essentials-heading">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        {/* Header */}
+        <div className="flex items-end justify-between mb-6">
+          <div>
+            <span className="text-xs font-700 tracking-widest uppercase text-purple-400 mb-1 block">
+              Curated Picks
+            </span>
+            <h2 id="essentials-heading" className="text-2xl sm:text-3xl font-700 text-white">
+              Essentials
+            </h2>
+          </div>
+          <div className="hidden sm:flex gap-2">
+            <button
+              onClick={scrollLeft}
+              className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition"
+              aria-label="Scroll left"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+              </svg>
+            </button>
+            <button
+              onClick={scrollRight}
+              className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition"
+              aria-label="Scroll right"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Scrollable row */}
+        <div
+          ref={scrollRef}
+          className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-2 -mx-4 px-4 sm:mx-0 sm:px-0"
+        >
+          {items.map((item) => {
+            const isSoldOut = item.tag === "SOLD OUT";
+            return (
+              <Link
+                key={item.id}
+                href={`/product/${item.id}`}
+                className={`shrink-0 w-[200px] sm:w-[220px] snap-start rounded-xl overflow-hidden border border-white/10 bg-[#1a1a1a] hover:border-purple-400/50 transition group ${isSoldOut ? "opacity-70" : ""}`}
+              >
+                <div className="relative aspect-square overflow-hidden">
+                  <Image
+                    src={item.image}
+                    alt={item.name}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    sizes="220px"
+                  />
+                  {item.tag && (
+                    <span className={`absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      isSoldOut ? "bg-red-500 text-white" : item.tag === "ESSENTIAL" ? "bg-purple-500 text-white" : item.tag === "NEW" || item.tag === "STAFF PICK" ? "bg-[#1a6b2f] text-white" : "bg-amber-400 text-[#1a1a1a]"
+                    }`}>
+                      {item.tag}
+                    </span>
+                  )}
+                </div>
+                <div className="p-3">
+                  <p className="text-[10px] text-white/40 uppercase tracking-widest mb-1">{item.subcategory}</p>
+                  <p className="text-sm font-semibold text-white leading-snug mb-1.5 line-clamp-2">{item.name}</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-bold text-purple-400">₦{item.price.toLocaleString()}</p>
+                    <span className="text-[10px] text-white/40 border border-white/20 rounded px-1.5 py-0.5">{item.size}</span>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -744,6 +862,7 @@ export default function Home() {
         <Hero />
         <HowItWorks />
         <ProductGrid />
+        <EssentialsCarousel />
         <NextDrop />
         <Sustainability />
         <NotifySignup />

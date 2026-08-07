@@ -20,6 +20,7 @@ type Product = {
   images: string[];
   description: string;
   available: boolean;
+  suggest_essential: boolean;
 };
 
 type Pairing = { item: string; reason: string };
@@ -39,6 +40,7 @@ const EMPTY_PRODUCT: Omit<Product, "id"> & { pairs_with: Pairing[] } = {
   images: [],
   description: "",
   available: true,
+  suggest_essential: false,
   pairs_with: [],
 };
 
@@ -413,7 +415,7 @@ export default function AdminProductsPage() {
             </div>
           </div>
 
-          {/* Tag + Available */}
+          {/* Tag + Available + Essential */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1">Tag</label>
@@ -421,13 +423,20 @@ export default function AdminProductsPage() {
                 {TAGS.map((t) => <option key={t} value={t}>{t || "— No tag —"}</option>)}
               </select>
             </div>
-            <div className="flex items-end">
+            <div className="flex flex-col justify-end gap-2">
               <div>
                 <label className="flex items-center gap-2 text-sm cursor-pointer">
                   <input type="checkbox" checked={form.available} onChange={(e) => setForm({ ...form, available: e.target.checked })} className="accent-[#1a6b2f]" />
                   Visible on store
                 </label>
-                <p className="text-[10px] text-gray-400 mt-1">Uncheck to hide from customers (e.g. for upcoming drops)</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">Uncheck to hide from customers (e.g. for upcoming drops)</p>
+              </div>
+              <div>
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <input type="checkbox" checked={form.suggest_essential} onChange={(e) => setForm({ ...form, suggest_essential: e.target.checked })} className="accent-purple-500" />
+                  Suggest for Essentials
+                </label>
+                <p className="text-[10px] text-gray-400 mt-0.5">Item appears in the Essentials carousel on the homepage</p>
               </div>
             </div>
           </div>
