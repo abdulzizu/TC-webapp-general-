@@ -386,7 +386,7 @@ function EssentialsCarousel() {
       .from("products")
       .select("id, name, price, size, tag, image, subcategory")
       .eq("suggest_essential", true)
-      .eq("visible", true)
+      .eq("available", true)
       .order("created_at", { ascending: false })
       .limit(8)
       .then(({ data }) => {
