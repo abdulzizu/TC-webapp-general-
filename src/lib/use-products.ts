@@ -25,7 +25,7 @@ export function useProducts(): UseProductsResult {
 
     supabase
       .from("products")
-      .select("*")
+      .select("id, name, category, subcategory, price, size, waist, length, elastic_waist, colours, tag, image, available, visible_at")
       .eq("available", true)
       .order("id", { ascending: true })
       .then(({ data, error: dbError }) => {
@@ -47,10 +47,11 @@ export function useProducts(): UseProductsResult {
             colours: p.colours ?? [],
             tag: p.tag as Product["tag"],
             image: p.image,
-            images: p.images ?? [],
-            description: p.description,
+            images: [],
+            description: "",
             available: p.available,
-            pairsWith: (p.pairs_with as Product["pairsWith"]) ?? [],
+            visible_at: p.visible_at,
+            pairsWith: [],
           }));
           setProducts(mapped);
         }
