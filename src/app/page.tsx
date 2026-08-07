@@ -250,7 +250,7 @@ function ProductGrid() {
       const bTime = (b as any).visible_at ? new Date((b as any).visible_at).getTime() : b.id;
       return bTime - aTime; // newest visible first
     })
-    .slice(0, 8);
+    .slice(0, 16);
 
   return (
     <section id="shop" className="py-16 sm:py-24 newspaper-bg" aria-labelledby="shop-heading">
