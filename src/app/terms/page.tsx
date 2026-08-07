@@ -54,7 +54,7 @@ export default function TermsOfServicePage() {
               <li>Delivery fees are calculated at checkout based on your delivery location and are clearly shown before you confirm your order.</li>
               <li>Payment must be made in full before your order is processed. We accept bank transfers and card payments via our payment gateway.</li>
               <li>We do not store your card details. Payment processing is handled securely by our payment partner.</li>
-              <li>Orders above ₦60,000 qualify for free delivery (excludes stockpiled orders).</li>
+              <li>Orders above ₦65,000 qualify for free delivery within Nigeria (excludes stockpiled orders). Free delivery is doorstep within Abuja and station delivery for other states.</li>
             </ul>
           </section>
 

@@ -19,7 +19,7 @@ export default function ShippingPage() {
   const [zones, setZones] = useState<Zone[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [freeThreshold, setFreeThreshold] = useState(60000);
+  const [freeThreshold, setFreeThreshold] = useState(65000);
 
   useEffect(() => {
     const supabase = createClient();
@@ -58,7 +58,7 @@ export default function ShippingPage() {
         <div className="space-y-8 text-gray-700">
           {/* Overview */}
           <div className="bg-[#1a6b2f]/5 border border-[#1a6b2f]/20 rounded-xl p-4 text-sm text-[#1a6b2f]">
-            <strong>Free delivery</strong> on single orders above ₦{freeThreshold.toLocaleString()}. Does not apply to stockpiled purchases that accumulate to this figure.
+            <strong>Free delivery</strong> on single orders above ₦{freeThreshold.toLocaleString()} within Nigeria only. Doorstep delivery within Abuja; station delivery for other states. Does not apply to stockpiled purchases that accumulate to this figure.
           </div>
 
           {/* Abuja */}

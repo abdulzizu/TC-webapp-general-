@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 
 function FreeShippingSettings() {
   const supabase = createClient();
-  const [threshold, setThreshold] = useState("60000");
+  const [threshold, setThreshold] = useState("65000");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -94,7 +94,7 @@ function MarqueeSettings() {
   const supabase = createClient();
   const [items, setItems] = useState<string[]>([
     "NEW DROP EVERY WEEK", "UNISEX STREETWEAR", "SUSTAINABLY THRIFTED",
-    "FREE DELIVERY OVER ₦60,000", "GOOD-AS-NEW QUALITY",
+    "FREE DELIVERY OVER ₦65,000", "GOOD-AS-NEW QUALITY",
   ]);
   const [newItem, setNewItem] = useState("");
   const [saving, setSaving] = useState(false);

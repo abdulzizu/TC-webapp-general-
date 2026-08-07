@@ -41,7 +41,7 @@ function CheckoutContent() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [shippingZones, setShippingZones] = useState<any[]>([]);
   const [matchedZone, setMatchedZone] = useState<any>(null);
-  const [freeShippingThreshold, setFreeShippingThreshold] = useState(60000);
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState(65000);
   const [hasActiveStockpile, setHasActiveStockpile] = useState(false);
   const [stockpileInfo, setStockpileInfo] = useState("");
 

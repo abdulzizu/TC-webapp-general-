@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 
 const DEFAULT_ITEMS = [
   "NEW DROP EVERY WEEK", "UNISEX STREETWEAR", "SUSTAINABLY THRIFTED",
-  "FREE DELIVERY OVER ₦60,000", "GOOD-AS-NEW QUALITY",
+  "FREE DELIVERY OVER ₦65,000", "GOOD-AS-NEW QUALITY",
 ];
 
 export default function MarqueeBanner() {

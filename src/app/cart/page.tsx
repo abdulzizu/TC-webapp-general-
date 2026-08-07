@@ -14,7 +14,7 @@ export default function CartPage() {
   const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; pct: number; type: string; value: number } | null>(null);
   const [discountError, setDiscountError] = useState("");
   const [validating, setValidating] = useState(false);
-  const [freeShippingThreshold, setFreeShippingThreshold] = useState(60000);
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState(65000);
   const [soldOutItems, setSoldOutItems] = useState<string[]>([]);
 
   // Check for sold-out items in cart
