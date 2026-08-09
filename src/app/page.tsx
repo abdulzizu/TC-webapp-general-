@@ -321,7 +321,7 @@ function ProductGrid() {
                 </div>
               ))
             : displayItems.map((item, idx) => (
-                <ProductCard key={item.id} item={item} eager={idx < 4} />
+                <ProductCard key={item.id} item={item} eager={true} />
               ))
           }
         </div>
@@ -401,6 +401,15 @@ function EssentialsCarousel() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Use cached data instantly if available
+    try {
+      const cached = localStorage.getItem("tc-essentials");
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed.length > 0) setItems(parsed);
+      }
+    } catch {}
+
     const supabase = createClient();
     supabase
       .from("products")
@@ -417,7 +426,9 @@ function EssentialsCarousel() {
             const j = Math.floor(Math.random() * (i + 1));
             [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
           }
-          setItems(shuffled.slice(0, 6));
+          const sliced = shuffled.slice(0, 6);
+          setItems(sliced);
+          try { localStorage.setItem("tc-essentials", JSON.stringify(sliced)); } catch {}
         }
       });
   }, []);
