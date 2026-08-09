@@ -15,14 +15,14 @@ export async function GET() {
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
 
-    // Find pending orders older than 30 minutes
-    const thirtyMinsAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+    // Find pending orders older than 10 minutes
+    const tenMinsAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
 
     const { data: expiredOrders } = await supabase
       .from("orders")
       .select("id, order_id")
       .eq("status", "pending")
-      .lt("created_at", thirtyMinsAgo);
+      .lt("created_at", tenMinsAgo);
 
     if (!expiredOrders || expiredOrders.length === 0) {
       return NextResponse.json({ message: "No expired pending orders", released: 0 });
