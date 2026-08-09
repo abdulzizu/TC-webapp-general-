@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
         pathname: "/storage/v1/object/public/**",
       },
     ],
-    minimumCacheTTL: 86400,
+    unoptimized: true,
   },
 };
 
