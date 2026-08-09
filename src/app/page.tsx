@@ -319,8 +319,8 @@ function ProductGrid() {
                   </div>
                 </div>
               ))
-            : displayItems.map((item) => (
-                <ProductCard key={item.id} item={item} />
+            : displayItems.map((item, idx) => (
+                <ProductCard key={item.id} item={item} eager={idx < 4} />
               ))
           }
         </div>
@@ -331,6 +331,7 @@ function ProductGrid() {
 
 function ProductCard({
   item,
+  eager = false,
 }: {
   item: {
     id: number;
@@ -342,6 +343,7 @@ function ProductCard({
     tag: string;
     image: string;
   };
+  eager?: boolean;
 }) {
   const isSoldOut = item.tag === "SOLD OUT";
   const tagColor =
@@ -364,7 +366,7 @@ function ProductCard({
             fill
             className="object-cover"
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            loading="eager"
+            loading={eager ? "eager" : "lazy"}
           />
         ) : (
           <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400 text-xs">No image</div>
@@ -480,7 +482,6 @@ function EssentialsCarousel() {
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                     sizes="220px"
-                    loading="eager"
                   />
                   {item.tag && (
                     <span className={`absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full ${
