@@ -179,10 +179,20 @@ export default function AdminProductsPage() {
     if (!file) return;
     setUploading(true);
 
-    const ext = file.name.split(".").pop();
+    // Compress image client-side before uploading (max 1200px wide, 80% quality)
+    let uploadFile: File | Blob = file;
+    try {
+      uploadFile = await compressImage(file, 1200, 0.8);
+    } catch {
+      // If compression fails, use original
+    }
+
+    const ext = "jpeg"; // Always save as JPEG after compression
     const path = `products/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
-    const { error } = await supabase.storage.from("product-images").upload(path, file);
+    const { error } = await supabase.storage.from("product-images").upload(path, uploadFile, {
+      contentType: "image/jpeg",
+    });
     if (error) {
       alert("Upload failed: " + error.message);
       setUploading(false);
@@ -197,6 +207,33 @@ export default function AdminProductsPage() {
       setForm((f) => ({ ...f, images: [...f.images, publicUrl] }));
     }
     setUploading(false);
+  }
+
+  function compressImage(file: File, maxWidth: number, quality: number): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let w = img.width;
+        let h = img.height;
+        if (w > maxWidth) {
+          h = (h * maxWidth) / w;
+          w = maxWidth;
+        }
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) { reject(new Error("No canvas context")); return; }
+        ctx.drawImage(img, 0, 0, w, h);
+        canvas.toBlob(
+          (blob) => { if (blob) resolve(blob); else reject(new Error("Compression failed")); },
+          "image/jpeg",
+          quality
+        );
+      };
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
   }
 
   function removeExtraImage(index: number) {
