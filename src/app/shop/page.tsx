@@ -34,6 +34,7 @@ function ShopContent() {
   const [availableOnly, setAvailableOnly] = useState(false);
   const [sort, setSort] = useState("new");
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(16);
 
   // Sync URL params
   useEffect(() => {
@@ -79,7 +80,7 @@ function ShopContent() {
   function clearFilters() {
     setQuery(""); setSelectedCategory(""); setSelectedSub("");
     setSelectedSizes([]); setSelectedColours([]); setPriceRange([0, 35000]);
-    setAvailableOnly(false); setSort("new");
+    setAvailableOnly(false); setSort("new"); setVisibleCount(16);
     router.push("/shop");
   }
 
@@ -177,30 +178,42 @@ function ShopContent() {
               <button onClick={clearFilters} className="btn-tc-primary px-6 py-2.5 text-sm rounded-full">Clear all filters</button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
-              {filtered.map((item) => {
-                const isSoldOut = item.tag === "SOLD OUT";
-                const tagColor = isSoldOut ? "bg-red-500 text-white" : item.tag === "NEW" || item.tag === "STAFF PICK" ? "bg-[#1a6b2f] text-white" : item.tag === "ESSENTIAL" ? "bg-purple-500 text-white" : "bg-amber-400 text-[#1a1a1a]";
-                return (
-                  <Link key={item.id} href={`/product/${item.id}`} className={`product-card rounded-2xl overflow-hidden border border-gray-100 bg-white group ${isSoldOut ? "opacity-60" : ""}`}>
-                    <div className="relative w-full aspect-square overflow-hidden bg-[#ede8d8]">
-                      <Image src={cloudinaryUrl(item.image, 400)} alt={item.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="(max-width:640px) 50vw,(max-width:1024px) 33vw,25vw" />
-                      {item.tag && <span className={`absolute top-2 left-2 text-[10px] font-bold tracking-wide px-2 py-0.5 rounded-full ${tagColor}`}>{item.tag}</span>}
-                    </div>
-                    <div className="p-3">
-                      <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1">{item.subcategory}</p>
-                      <p className="text-sm font-semibold text-[#1a1a1a] leading-snug mb-2 line-clamp-2">{item.name}</p>
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-bold text-[#1a6b2f]">₦{item.price.toLocaleString()}</p>
-                        <div className="flex gap-1">
-                          <span className="text-[9px] border border-gray-200 rounded px-1 py-0.5 text-gray-500">{item.size}</span>
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+                {filtered.slice(0, visibleCount).map((item) => {
+                  const isSoldOut = item.tag === "SOLD OUT";
+                  const tagColor = isSoldOut ? "bg-red-500 text-white" : item.tag === "NEW" || item.tag === "STAFF PICK" ? "bg-[#1a6b2f] text-white" : item.tag === "ESSENTIAL" ? "bg-purple-500 text-white" : "bg-amber-400 text-[#1a1a1a]";
+                  return (
+                    <Link key={item.id} href={`/product/${item.id}`} className={`product-card rounded-2xl overflow-hidden border border-gray-100 bg-white group ${isSoldOut ? "opacity-60" : ""}`}>
+                      <div className="relative w-full aspect-square overflow-hidden bg-[#ede8d8]">
+                        <Image src={cloudinaryUrl(item.image, 400)} alt={item.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="(max-width:640px) 50vw,(max-width:1024px) 33vw,25vw" />
+                        {item.tag && <span className={`absolute top-2 left-2 text-[10px] font-bold tracking-wide px-2 py-0.5 rounded-full ${tagColor}`}>{item.tag}</span>}
+                      </div>
+                      <div className="p-3">
+                        <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1">{item.subcategory}</p>
+                        <p className="text-sm font-semibold text-[#1a1a1a] leading-snug mb-2 line-clamp-2">{item.name}</p>
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-bold text-[#1a6b2f]">₦{item.price.toLocaleString()}</p>
+                          <div className="flex gap-1">
+                            <span className="text-[9px] border border-gray-200 rounded px-1 py-0.5 text-gray-500">{item.size}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
+                    </Link>
+                  );
+                })}
+              </div>
+              {visibleCount < filtered.length && (
+                <div className="text-center mt-8">
+                  <button
+                    onClick={() => setVisibleCount((c) => c + 16)}
+                    className="btn-tc-outline px-8 py-3 text-sm rounded-full"
+                  >
+                    Load more ({filtered.length - visibleCount} remaining)
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
