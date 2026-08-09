@@ -85,6 +85,7 @@ function Hero() {
             fill
             className="object-cover"
             sizes="100vw"
+            loading="eager"
             priority={i === 0}
           />
           {/* Dark overlay for text readability */}
@@ -355,7 +356,7 @@ function ProductCard({
   return (
     <Link href={`/product/${item.id}`} className={`product-card rounded-2xl overflow-hidden border border-[#1a1a1a]/10 bg-[#ede8d8] block ${isSoldOut ? "opacity-70" : ""}`}>
       {/* Product image */}
-      <div className="relative w-full aspect-square overflow-hidden">
+      <div className="relative w-full aspect-square overflow-hidden bg-[#d4cdb8]">
         {item.image ? (
           <Image
             src={item.image}
@@ -363,6 +364,7 @@ function ProductCard({
             fill
             className="object-cover"
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            loading="eager"
           />
         ) : (
           <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400 text-xs">No image</div>
@@ -478,6 +480,7 @@ function EssentialsCarousel() {
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                     sizes="220px"
+                    loading="eager"
                   />
                   {item.tag && (
                     <span className={`absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full ${
