@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { cloudinaryUrl } from "@/lib/cloudinary";
 import Navbar from "@/components/Navbar";
 import MarqueeBanner from "@/components/MarqueeBanner";
 import { createClient } from "@/lib/supabase/client";
@@ -80,7 +81,7 @@ function Hero() {
           className={`absolute inset-0 transition-opacity duration-700 ${i === current ? "opacity-100" : "opacity-0"}`}
         >
           <Image
-            src={c.image_url}
+            src={cloudinaryUrl(c.image_url, 1200)}
             alt={c.label}
             fill
             className="object-cover"
@@ -361,7 +362,7 @@ function ProductCard({
       <div className="relative w-full aspect-square overflow-hidden bg-[#d4cdb8]">
         {item.image ? (
           <Image
-            src={item.image}
+            src={cloudinaryUrl(item.image, 400)}
             alt={item.name}
             fill
             className="object-cover"
@@ -477,7 +478,7 @@ function EssentialsCarousel() {
               >
                 <div className="relative aspect-square overflow-hidden">
                   <Image
-                    src={item.image}
+                    src={cloudinaryUrl(item.image, 400)}
                     alt={item.name}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-300"

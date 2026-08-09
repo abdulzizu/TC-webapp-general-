@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
+import { cloudinaryUrl } from "@/lib/cloudinary";
 import Link from "next/link";
 import MarqueeBanner from "@/components/MarqueeBanner";
 import Navbar from "@/components/Navbar";
@@ -216,7 +217,7 @@ export default function ProductPage() {
                   {/* Main image */}
                   <div className="relative aspect-square rounded-2xl overflow-hidden bg-[#ede8d8]">
                     <Image
-                      src={allImages[activeImage]}
+                      src={cloudinaryUrl(allImages[activeImage], 800)}
                       alt={`${product.name}${hasMultiple ? ` — image ${activeImage + 1}` : ""}`}
                       fill
                       className="object-cover"
@@ -263,7 +264,7 @@ export default function ProductPage() {
                           aria-label={`View image ${i + 1}`}
                           aria-current={i === activeImage ? "true" : undefined}
                         >
-                          <Image src={img} alt="" fill className="object-cover" sizes="64px" />
+                          <Image src={cloudinaryUrl(img, 100)} alt="" fill className="object-cover" sizes="64px" />
                         </button>
                       ))}
                     </div>
@@ -524,7 +525,7 @@ export default function ProductPage() {
                       {/* Item image */}
                       <div className="relative aspect-square bg-[#ede8d8] overflow-hidden">
                         <Image
-                          src={p.image}
+                          src={cloudinaryUrl(p.image, 300)}
                           alt={p.name}
                           fill
                           className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -575,7 +576,7 @@ export default function ProductPage() {
                     >
                       <div className="relative aspect-square bg-[#ede8d8] overflow-hidden">
                         <Image
-                          src={item.image}
+                          src={cloudinaryUrl(item.image, 300)}
                           alt={item.name}
                           fill
                           className="object-cover"

@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
+import { cloudinaryUrl } from "@/lib/cloudinary";
 import Link from "next/link";
 import { Suspense } from "react";
 import MarqueeBanner from "@/components/MarqueeBanner";
@@ -183,7 +184,7 @@ function ShopContent() {
                 return (
                   <Link key={item.id} href={`/product/${item.id}`} className={`product-card rounded-2xl overflow-hidden border border-gray-100 bg-white group ${isSoldOut ? "opacity-60" : ""}`}>
                     <div className="relative w-full aspect-square overflow-hidden bg-[#ede8d8]">
-                      <Image src={item.image} alt={item.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="(max-width:640px) 50vw,(max-width:1024px) 33vw,25vw" />
+                      <Image src={cloudinaryUrl(item.image, 400)} alt={item.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="(max-width:640px) 50vw,(max-width:1024px) 33vw,25vw" />
                       {item.tag && <span className={`absolute top-2 left-2 text-[10px] font-bold tracking-wide px-2 py-0.5 rounded-full ${tagColor}`}>{item.tag}</span>}
                     </div>
                     <div className="p-3">
