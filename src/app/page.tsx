@@ -16,13 +16,27 @@ function Hero() {
 
   useEffect(() => {
     const supabase = createClient();
+
+    // Use cached data instantly if available
+    try {
+      const cached = localStorage.getItem("tc-featured");
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed.length > 0) setCards(parsed);
+      }
+    } catch {}
+
+    // Fetch fresh data in background
     supabase
       .from("featured_products")
       .select("label, price, size, tag, image_url, product_id")
       .order("display_order", { ascending: true })
       .limit(6)
       .then(({ data }) => {
-        if (data && data.length > 0) setCards(data as any);
+        if (data && data.length > 0) {
+          setCards(data as any);
+          try { localStorage.setItem("tc-featured", JSON.stringify(data)); } catch {}
+        }
       });
   }, []);
 
@@ -45,8 +59,9 @@ function Hero() {
         <h1 className="sr-only">Thrift Collision — Unisex Thrifted Streetwear in Nigeria. Curated and Dropped Weekly.</h1>
         <div className="text-center px-4">
           <h2 className="text-4xl sm:text-6xl font-700 text-white mb-4">Thrift Collision</h2>
-          <p className="text-white/60 text-lg">Unisex thrifted streetwear, curated and dropped weekly.</p>
-          <Link href="/shop" className="mt-8 inline-block btn-tc-primary px-8 py-3.5 text-sm rounded-full">
+          <p className="text-white/60 text-lg mb-2">Unisex thrifted streetwear, curated and dropped weekly.</p>
+          <p className="text-sm italic text-white/40 mb-8">Every drop hides a discovery.</p>
+          <Link href="/shop" className="inline-block btn-tc-primary px-8 py-3.5 text-sm rounded-full">
             Shop the Drop
           </Link>
         </div>
