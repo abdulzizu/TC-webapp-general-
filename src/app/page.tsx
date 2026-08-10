@@ -17,27 +17,13 @@ function Hero() {
 
   useEffect(() => {
     const supabase = createClient();
-
-    // Use cached data instantly if available
-    try {
-      const cached = localStorage.getItem("tc-featured");
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (parsed.length > 0) setCards(parsed);
-      }
-    } catch {}
-
-    // Fetch fresh data in background
     supabase
       .from("featured_products")
       .select("label, price, size, tag, image_url, product_id")
       .order("display_order", { ascending: true })
       .limit(6)
       .then(({ data }) => {
-        if (data && data.length > 0) {
-          setCards(data as any);
-          try { localStorage.setItem("tc-featured", JSON.stringify(data)); } catch {}
-        }
+        if (data && data.length > 0) setCards(data as any);
       });
   }, []);
 
@@ -401,15 +387,6 @@ function EssentialsCarousel() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Use cached data instantly if available
-    try {
-      const cached = localStorage.getItem("tc-essentials");
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (parsed.length > 0) setItems(parsed);
-      }
-    } catch {}
-
     const supabase = createClient();
     supabase
       .from("products")
@@ -426,9 +403,7 @@ function EssentialsCarousel() {
             const j = Math.floor(Math.random() * (i + 1));
             [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
           }
-          const sliced = shuffled.slice(0, 6);
-          setItems(sliced);
-          try { localStorage.setItem("tc-essentials", JSON.stringify(sliced)); } catch {}
+          setItems(shuffled.slice(0, 6));
         }
       });
   }, []);

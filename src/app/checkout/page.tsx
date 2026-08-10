@@ -310,12 +310,6 @@ function CheckoutContent() {
             price: i.price,
           }))
         );
-
-        // Reserve items immediately — prevent double-purchase
-        // Mark products as SOLD OUT now (will stay if payment succeeds, revert if abandoned)
-        for (const item of order.items) {
-          await sb.from("products").update({ tag: "SOLD OUT" }).eq("id", item.productId);
-        }
       }
 
       // Increment discount usage if a code was applied
