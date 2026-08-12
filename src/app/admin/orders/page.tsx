@@ -49,6 +49,19 @@ export default function AdminOrdersPage() {
     setUpdating(orderId);
     const { error } = await supabase.from("orders").update({ status: newStatus }).eq("id", orderId);
     if (error) { alert("Failed to update: " + error.message); setUpdating(null); return; }
+
+    // Auto-hide products from store when order is delivered
+    if (newStatus === "delivered") {
+      const order = orders.find((o) => o.id === orderId);
+      if (order?.order_items) {
+        for (const item of order.order_items) {
+          if (item.product_id) {
+            await supabase.from("products").update({ available: false }).eq("id", item.product_id);
+          }
+        }
+      }
+    }
+
     setOrders((prev) => prev.map((o) => o.id === orderId ? { ...o, status: newStatus } : o));
     setUpdating(null);
   }
