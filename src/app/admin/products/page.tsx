@@ -638,8 +638,8 @@ export default function AdminProductsPage() {
                     type="button"
                     onClick={() => {
                       // Group subcategories into tops, bottoms, accessories, shoes
-                      const TOPS = ["T-shirts", "Shirts", "Jerseys", "Sweatshirts", "Hoodies", "Jackets", "Gilets"];
-                      const BOTTOMS = ["Jeans", "Sweatpants", "Trackpants", "Cargo pants", "Shorts", "Track suits"];
+                      const TOPS = ["T-shirts", "Shirts", "Polo shirt", "Jerseys", "Sweatshirts", "Hoodies", "Jackets", "Gilets"];
+                      const BOTTOMS = ["Jeans", "Sweatpants", "Trackpants", "Cargo pants", "Cargo shorts", "Shorts", "Track suits"];
                       const ACCESSORIES = ["Caps and hats", "Socks", "Ties", "Beanies", "Gloves", "Bags", "Belts", "Scarves"];
                       const SHOES = ["Sneakers", "Clogs", "Slippers", "Sandals", "Boots", "Loafers"];
 
@@ -647,11 +647,11 @@ export default function AdminProductsPage() {
                       const sub = form.subcategory;
 
                       if (TOPS.includes(sub)) {
-                        // Tops → suggest bottoms + accessories + shoes (layering tops like jackets can suggest other tops)
+                        // Tops → suggest bottoms + accessories + shoes
                         targetSubs = [...BOTTOMS, ...ACCESSORIES, ...SHOES];
                         if (["Jackets", "Gilets"].includes(sub)) {
                           // Outerwear can also pair with inner tops
-                          targetSubs = [...targetSubs, "T-shirts", "Shirts", "Hoodies", "Sweatshirts"];
+                          targetSubs = [...targetSubs, "T-shirts", "Shirts", "Polo shirt", "Hoodies", "Sweatshirts"];
                         }
                       } else if (BOTTOMS.includes(sub)) {
                         // Bottoms → suggest tops + accessories + shoes, never other bottoms
@@ -663,7 +663,7 @@ export default function AdminProductsPage() {
                         // Shoes → suggest tops and bottoms
                         targetSubs = [...TOPS, ...BOTTOMS, ...ACCESSORIES];
                       } else {
-                        // Fallback
+                        // Unknown subcategory — show everything except same subcategory
                         targetSubs = [...TOPS, ...BOTTOMS, ...ACCESSORIES, ...SHOES];
                       }
 
@@ -719,8 +719,8 @@ export default function AdminProductsPage() {
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-72 overflow-y-auto">
                     {(() => {
                       // Apply same tops/bottoms logic to manual grid
-                      const TOPS = ["T-shirts", "Shirts", "Jerseys", "Sweatshirts", "Hoodies", "Jackets", "Gilets"];
-                      const BOTTOMS = ["Jeans", "Sweatpants", "Trackpants", "Cargo pants", "Shorts", "Track suits"];
+                      const TOPS = ["T-shirts", "Shirts", "Polo shirt", "Jerseys", "Sweatshirts", "Hoodies", "Jackets", "Gilets"];
+                      const BOTTOMS = ["Jeans", "Sweatpants", "Trackpants", "Cargo pants", "Cargo shorts", "Shorts", "Track suits"];
                       const sub = form.subcategory;
                       let excludeSubs: string[] = [];
                       if (TOPS.includes(sub) && !["Jackets", "Gilets"].includes(sub)) {
