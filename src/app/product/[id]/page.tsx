@@ -7,7 +7,7 @@ import { cloudinaryUrl } from "@/lib/cloudinary";
 import Link from "next/link";
 import MarqueeBanner from "@/components/MarqueeBanner";
 import Navbar from "@/components/Navbar";
-import { getProduct, getProductByName, PRODUCTS, type Product } from "@/lib/products";
+import { getProduct, PRODUCTS, type Product } from "@/lib/products";
 import { createClient } from "@/lib/supabase/client";
 import { useCart } from "@/lib/cart-context";
 import { useUser } from "@/lib/user-context";
@@ -180,10 +180,40 @@ export default function ProductPage() {
     setNotifyAdded(true);
   }
 
-  // Style guide: resolve pairing items from product catalogue
-  const pairingProducts = (product.pairsWith ?? [])
-    .map((p) => ({ ...p, product: getProductByName(p.item) }))
-    .filter((p) => p.product !== undefined);
+  // Style guide: resolve pairing items from Supabase (only available products)
+  const [pairingProducts, setPairingProducts] = useState<{ item: string; reason: string; product: Product }[]>([]);
+
+  useEffect(() => {
+    if (!product || !product.pairsWith || product.pairsWith.length === 0) return;
+    const names = product.pairsWith.map((p) => p.item);
+    const supabase = createClient();
+    supabase
+      .from("products")
+      .select("*")
+      .eq("available", true)
+      .in("name", names)
+      .then(({ data }) => {
+        if (data) {
+          const resolved = product.pairsWith
+            .map((pw) => {
+              const match = data.find((d: any) => d.name === pw.item);
+              if (!match) return null;
+              return {
+                item: pw.item,
+                reason: pw.reason,
+                product: {
+                  id: match.id, name: match.name, category: match.category, subcategory: match.subcategory,
+                  price: match.price, size: match.size, colours: match.colours ?? [], tag: match.tag,
+                  image: match.image, images: match.images ?? [], description: match.description,
+                  available: match.available, pairsWith: [],
+                } as Product,
+              };
+            })
+            .filter(Boolean) as { item: string; reason: string; product: Product }[];
+          setPairingProducts(resolved);
+        }
+      });
+  }, [product]);
 
   return (
     <>
