@@ -87,6 +87,8 @@ export default function ProductPage() {
 
   // "You may also like" — fetch from Supabase, fallback to static
   const [related, setRelated] = useState<Product[]>([]);
+  // Style guide: resolve pairing items from Supabase (only available products)
+  const [pairingProducts, setPairingProducts] = useState<{ item: string; reason: string; product: Product }[]>([]);
 
   useEffect(() => {
     if (!product) return;
@@ -124,6 +126,39 @@ export default function ProductPage() {
             return bScore - aScore;
           });
           setRelated(sorted.slice(0, 4));
+        }
+      });
+  }, [product]);
+
+  // Style guide: resolve pairing items from Supabase
+  useEffect(() => {
+    if (!product || !product.pairsWith || product.pairsWith.length === 0) { setPairingProducts([]); return; }
+    const names = product.pairsWith.map((p) => p.item);
+    const supabase = createClient();
+    supabase
+      .from("products")
+      .select("*")
+      .eq("available", true)
+      .in("name", names)
+      .then(({ data }) => {
+        if (data) {
+          const resolved = product.pairsWith
+            .map((pw) => {
+              const match = data.find((d: any) => d.name === pw.item);
+              if (!match) return null;
+              return {
+                item: pw.item,
+                reason: pw.reason,
+                product: {
+                  id: match.id, name: match.name, category: match.category, subcategory: match.subcategory,
+                  price: match.price, size: match.size, colours: match.colours ?? [], tag: match.tag,
+                  image: match.image, images: match.images ?? [], description: match.description,
+                  available: match.available, pairsWith: [],
+                } as Product,
+              };
+            })
+            .filter(Boolean) as { item: string; reason: string; product: Product }[];
+          setPairingProducts(resolved);
         }
       });
   }, [product]);
@@ -179,41 +214,6 @@ export default function ProductPage() {
     addKeyword(keyword);
     setNotifyAdded(true);
   }
-
-  // Style guide: resolve pairing items from Supabase (only available products)
-  const [pairingProducts, setPairingProducts] = useState<{ item: string; reason: string; product: Product }[]>([]);
-
-  useEffect(() => {
-    if (!product || !product.pairsWith || product.pairsWith.length === 0) return;
-    const names = product.pairsWith.map((p) => p.item);
-    const supabase = createClient();
-    supabase
-      .from("products")
-      .select("*")
-      .eq("available", true)
-      .in("name", names)
-      .then(({ data }) => {
-        if (data) {
-          const resolved = product.pairsWith
-            .map((pw) => {
-              const match = data.find((d: any) => d.name === pw.item);
-              if (!match) return null;
-              return {
-                item: pw.item,
-                reason: pw.reason,
-                product: {
-                  id: match.id, name: match.name, category: match.category, subcategory: match.subcategory,
-                  price: match.price, size: match.size, colours: match.colours ?? [], tag: match.tag,
-                  image: match.image, images: match.images ?? [], description: match.description,
-                  available: match.available, pairsWith: [],
-                } as Product,
-              };
-            })
-            .filter(Boolean) as { item: string; reason: string; product: Product }[];
-          setPairingProducts(resolved);
-        }
-      });
-  }, [product]);
 
   return (
     <>
