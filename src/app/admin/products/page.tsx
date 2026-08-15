@@ -133,6 +133,20 @@ export default function AdminProductsPage() {
     setPairingSearch("");
   }
 
+  function duplicateProduct(p: Product) {
+    setForm({
+      ...p,
+      name: p.name + " (copy)",
+      available: false,
+      suggest_essential: false,
+      tag: "NEW",
+      pairs_with: (p as any).pairs_with ?? [],
+    });
+    setCreating(true);
+    setEditing(null);
+    setPairingSearch("");
+  }
+
   function cancelForm() {
     setEditing(null);
     setCreating(false);
@@ -866,6 +880,7 @@ export default function AdminProductsPage() {
                     </td>
                     <td className="px-4 py-2 text-right space-x-2">
                       <button onClick={() => startEdit(p)} className="text-xs text-[#1a6b2f] hover:underline font-semibold">Edit</button>
+                      <button onClick={() => duplicateProduct(p)} className="text-xs text-blue-500 hover:underline font-semibold">Duplicate</button>
                       <button onClick={() => handleDelete(p.id)} className="text-xs text-red-400 hover:text-red-600 font-semibold">Delete</button>
                     </td>
                   </tr>

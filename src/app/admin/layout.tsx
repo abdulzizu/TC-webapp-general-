@@ -7,6 +7,7 @@ import Link from "next/link";
 const NAV_ITEMS = [
   { href: "/admin", label: "Overview", icon: "📊" },
   { href: "/admin/products", label: "Products", icon: "👕" },
+  { href: "/admin/stock", label: "Stock", icon: "📈" },
   { href: "/admin/orders", label: "Orders", icon: "📦" },
   { href: "/admin/customers", label: "Customers", icon: "👥" },
   { href: "/admin/demand", label: "Demand", icon: "🎯" },

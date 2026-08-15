@@ -500,14 +500,20 @@ function EssentialsCarousel() {
 function NextDrop() {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
   const [dropDay, setDropDay] = useState(5); // 0=Sun, 1=Mon, ... 5=Fri
+  const [dropHour, setDropHour] = useState(12); // 0-23
 
-  // Load drop day from settings
+  // Load drop day and time from settings
   useEffect(() => {
     import("@/lib/supabase/client").then(({ createClient }) => {
       const supabase = createClient();
-      supabase.from("store_settings").select("value").eq("key", "drop_day").single()
+      supabase.from("store_settings").select("key, value").in("key", ["drop_day", "drop_time"])
         .then(({ data }) => {
-          if (data?.value) setDropDay(Number(data.value));
+          if (data) {
+            data.forEach((row: any) => {
+              if (row.key === "drop_day") setDropDay(Number(row.value));
+              if (row.key === "drop_time") setDropHour(Number(row.value));
+            });
+          }
         });
     });
   }, []);
@@ -517,10 +523,10 @@ function NextDrop() {
       const now = new Date();
       const day = now.getDay();
       let daysUntil = (dropDay - day + 7) % 7;
-      if (daysUntil === 0 && now.getHours() >= 12) daysUntil = 7;
+      if (daysUntil === 0 && now.getHours() >= dropHour) daysUntil = 7;
       const target = new Date(now);
       target.setDate(target.getDate() + daysUntil);
-      target.setHours(12, 0, 0, 0);
+      target.setHours(dropHour, 0, 0, 0);
       return target;
     }
 
@@ -540,7 +546,7 @@ function NextDrop() {
     update();
     const interval = setInterval(update, 1000);
     return () => clearInterval(interval);
-  }, [dropDay]);
+  }, [dropDay, dropHour]);
 
   const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 

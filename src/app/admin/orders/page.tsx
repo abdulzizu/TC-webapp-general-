@@ -33,6 +33,8 @@ export default function AdminOrdersPage() {
   const [search, setSearch] = useState("");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const perPage = 15;
 
   const loadOrders = useCallback(async () => {
     const { data } = await supabase
@@ -80,6 +82,9 @@ export default function AdminOrdersPage() {
     return true;
   });
 
+  const totalPages = Math.ceil(filtered.length / perPage);
+  const paginatedOrders = filtered.slice((page - 1) * perPage, page * perPage);
+
   const statusCounts = STATUSES.reduce((acc, s) => {
     acc[s] = orders.filter((o) => o.status === s).length;
     return acc;
@@ -91,9 +96,9 @@ export default function AdminOrdersPage() {
 
       {/* Status filter tabs */}
       <div className="flex flex-wrap gap-2">
-        <FilterTab label="All" count={orders.length} active={filter === "all"} onClick={() => setFilter("all")} />
+        <FilterTab label="All" count={orders.length} active={filter === "all"} onClick={() => { setFilter("all"); setPage(1); }} />
         {STATUSES.map((s) => (
-          <FilterTab key={s} label={s} count={statusCounts[s] ?? 0} active={filter === s} onClick={() => setFilter(s)} />
+          <FilterTab key={s} label={s} count={statusCounts[s] ?? 0} active={filter === s} onClick={() => { setFilter(s); setPage(1); }} />
         ))}
       </div>
 
@@ -101,7 +106,7 @@ export default function AdminOrdersPage() {
       <input
         type="text"
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={(e) => { setSearch(e.target.value); setPage(1); }}
         placeholder="Search by order ID, name, phone, or address…"
         className="w-full sm:w-80 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[#1a6b2f]"
       />
@@ -112,7 +117,7 @@ export default function AdminOrdersPage() {
         <p className="text-sm text-gray-400">No orders found.</p>
       ) : (
         <div className="space-y-3">
-          {filtered.map((order) => (
+          {paginatedOrders.map((order) => (
             <div key={order.id} className="bg-white rounded-xl border border-gray-100 overflow-hidden">
               {/* Order header */}
               <button
@@ -130,7 +135,7 @@ export default function AdminOrdersPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-xs text-gray-400 hidden sm:block">
-                    {new Date(order.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                    {new Date(order.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })} · {new Date(order.created_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
                   </span>
                   <svg className={`w-4 h-4 text-gray-400 transition-transform ${expanded === order.id ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
@@ -229,6 +234,40 @@ export default function AdminOrdersPage() {
             </div>
           ))}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between pt-4">
+            <p className="text-xs text-gray-400">
+              Showing {(page - 1) * perPage + 1}–{Math.min(page * perPage, filtered.length)} of {filtered.length}
+            </p>
+            <div className="flex gap-1">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-gray-200 hover:border-[#1a6b2f] disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                ← Prev
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setPage(p)}
+                  className={`w-8 h-8 text-xs font-semibold rounded-lg border ${page === p ? "bg-[#1a6b2f] border-[#1a6b2f] text-white" : "border-gray-200 hover:border-[#1a6b2f]"}`}
+                >
+                  {p}
+                </button>
+              ))}
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-gray-200 hover:border-[#1a6b2f] disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                Next →
+              </button>
+            </div>
+          </div>
+        )}
       )}
     </div>
   );

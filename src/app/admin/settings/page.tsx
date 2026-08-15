@@ -44,6 +44,7 @@ function FreeShippingSettings() {
 function DropDaySettings() {
   const supabase = createClient();
   const [day, setDay] = useState("5"); // Default Friday
+  const [hour, setHour] = useState("12"); // Default 12:00
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -57,35 +58,58 @@ function DropDaySettings() {
     { value: "6", label: "Saturday" },
   ];
 
+  const hours = Array.from({ length: 24 }, (_, i) => ({
+    value: String(i),
+    label: i === 0 ? "12:00 AM" : i < 12 ? `${i}:00 AM` : i === 12 ? "12:00 PM" : `${i - 12}:00 PM`,
+  }));
+
   useEffect(() => {
-    supabase.from("store_settings").select("value").eq("key", "drop_day").single()
-      .then(({ data }) => { if (data) setDay(data.value); });
+    supabase.from("store_settings").select("key, value").in("key", ["drop_day", "drop_time"])
+      .then(({ data }) => {
+        if (data) {
+          data.forEach((row: any) => {
+            if (row.key === "drop_day") setDay(row.value);
+            if (row.key === "drop_time") setHour(row.value);
+          });
+        }
+      });
   }, [supabase]);
 
   async function handleSave() {
     setSaving(true);
-    const { error } = await supabase.from("store_settings").upsert({ key: "drop_day", value: day, updated_at: new Date().toISOString() }, { onConflict: "key" });
+    await supabase.from("store_settings").upsert({ key: "drop_day", value: day, updated_at: new Date().toISOString() }, { onConflict: "key" });
+    const { error } = await supabase.from("store_settings").upsert({ key: "drop_time", value: hour, updated_at: new Date().toISOString() }, { onConflict: "key" });
     setSaving(false);
     if (error) { alert("Error: " + error.message); return; }
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }
 
+  const selectedDay = days.find((d) => d.value === day)?.label || "Friday";
+  const selectedTime = hours.find((h) => h.value === hour)?.label || "12:00 PM";
+
   return (
     <div className="bg-white rounded-xl border border-gray-100 p-5">
-      <h2 className="font-bold text-sm mb-1">Drop Day</h2>
-      <p className="text-xs text-gray-400 mb-4">The countdown timer on the homepage targets this day at noon. Change it when your drop schedule shifts.</p>
-      <div className="flex gap-3 items-end">
-        <div className="flex-1">
+      <h2 className="font-bold text-sm mb-1">Drop Day & Time</h2>
+      <p className="text-xs text-gray-400 mb-4">The countdown timer on the homepage targets this day and time. Users see exactly when to expect the drop.</p>
+      <div className="flex gap-3 items-end flex-wrap">
+        <div className="flex-1 min-w-[140px]">
           <label className="block text-xs font-semibold text-gray-600 mb-1">Day of Week</label>
           <select value={day} onChange={(e) => setDay(e.target.value)} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a6b2f]">
             {days.map((d) => <option key={d.value} value={d.value}>{d.label}</option>)}
+          </select>
+        </div>
+        <div className="flex-1 min-w-[140px]">
+          <label className="block text-xs font-semibold text-gray-600 mb-1">Time</label>
+          <select value={hour} onChange={(e) => setHour(e.target.value)} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a6b2f]">
+            {hours.map((h) => <option key={h.value} value={h.value}>{h.label}</option>)}
           </select>
         </div>
         <button onClick={handleSave} disabled={saving} className="px-4 py-2 bg-[#1a6b2f] text-white font-bold rounded-full text-sm hover:bg-[#104020] transition disabled:opacity-50">
           {saving ? "Saving…" : saved ? "Saved ✓" : "Update"}
         </button>
       </div>
+      <p className="text-xs text-gray-400 mt-2">Next drop: {selectedDay} at {selectedTime}</p>
     </div>
   );
 }
