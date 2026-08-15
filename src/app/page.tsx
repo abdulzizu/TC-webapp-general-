@@ -611,7 +611,7 @@ function Sustainability() {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div>
             <span className="text-xs font-700 tracking-widest uppercase text-[#1a6b2f] mb-4 block">
-              Our Mission
+              The Why
             </span>
             <h2 id="sustain-heading" className="text-4xl sm:text-5xl font-700 text-[#1a1a1a] leading-tight mb-6">
               Curating the best<br />in thrifted drops.
@@ -620,7 +620,7 @@ function Sustainability() {
               Thrift Collision started as a hobby, then grew into a community. Now you get to be part of it. We&apos;ve become the go-to destination for style-conscious shoppers, offering the widest range of selected thrifted streetwear.
             </p>
             <p className="text-[#4b5563] text-lg leading-relaxed mb-8">
-              We&apos;ve added sustainability to the mission. That&apos;s why we&apos;ve launched our reworked label. From our logo to the newspaper backdrop in our photos, nothing is just aesthetic. It&apos;s a statement. Recycled fashion, old stories, new fits. Sustainability woven into every drop.
+              We&apos;ve added sustainability to the mission. Our reworked label means new ideas made from thrifted garments. From our logo to the newspaper backdrop in our photos, nothing is just aesthetic. It&apos;s a statement. Recycled fashion, old stories, new fits.
             </p>
             <div className="grid grid-cols-3 gap-4">
               {[
