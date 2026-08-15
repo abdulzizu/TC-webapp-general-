@@ -116,6 +116,7 @@ export default function AdminOrdersPage() {
       ) : filtered.length === 0 ? (
         <p className="text-sm text-gray-400">No orders found.</p>
       ) : (
+        <>
         <div className="space-y-3">
           {paginatedOrders.map((order) => (
             <div key={order.id} className="bg-white rounded-xl border border-gray-100 overflow-hidden">
@@ -268,6 +269,7 @@ export default function AdminOrdersPage() {
             </div>
           </div>
         )}
+      </>
       )}
     </div>
   );
