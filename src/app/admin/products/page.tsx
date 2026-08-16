@@ -566,6 +566,10 @@ export default function AdminProductsPage() {
                         colours: data.colours?.length ? data.colours : f.colours,
                         size: data.size || f.size,
                         description: data.description || f.description,
+                        pairs_with: f.pairs_with.length > 0
+                          ? f.pairs_with.map((pw) => ({ ...pw, reason: pw.reason || data.style_reason || "" }))
+                          : f.pairs_with,
+                      }));
                       }));
                       // Add subcategory to list if new
                       if (data.subcategory && !(subcategories[data.category] ?? []).includes(data.subcategory)) {
