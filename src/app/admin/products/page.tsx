@@ -570,7 +570,6 @@ export default function AdminProductsPage() {
                           ? f.pairs_with.map((pw) => ({ ...pw, reason: pw.reason || data.style_reason || "" }))
                           : f.pairs_with,
                       }));
-                      }));
                       // Add subcategory to list if new
                       if (data.subcategory && !(subcategories[data.category] ?? []).includes(data.subcategory)) {
                         setSubcategories((prev) => ({
