@@ -169,8 +169,10 @@ export default function AdminProductsPage() {
       }
     }
     if (creating) {
-      const maxId = products.reduce((max, p) => Math.max(max, p.id), 0);
-      const { error } = await supabase.from("products").insert({ id: maxId + 1, ...payload });
+      // Get actual max ID from database to avoid conflicts
+      const { data: maxRow } = await supabase.from("products").select("id").order("id", { ascending: false }).limit(1).single();
+      const nextId = (maxRow?.id ?? 0) + 1;
+      const { error } = await supabase.from("products").insert({ id: nextId, ...payload });
       if (error) { alert("Error: " + error.message); setSaving(false); return; }
     } else if (editing) {
       const { error } = await supabase.from("products").update(payload).eq("id", editing.id);
