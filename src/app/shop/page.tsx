@@ -179,7 +179,7 @@ function ShopContent() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 pb-16 lg:pb-0">
                 {filtered.slice(0, visibleCount).map((item) => {
                   const isSoldOut = item.tag === "SOLD OUT";
                   const tagColor = isSoldOut ? "bg-red-500 text-white" : item.tag === "NEW" || item.tag === "STAFF PICK" ? "bg-[#1a6b2f] text-white" : item.tag === "ESSENTIAL" ? "bg-purple-500 text-white" : "bg-amber-400 text-[#1a1a1a]";
@@ -204,14 +204,25 @@ function ShopContent() {
                 })}
               </div>
               {visibleCount < filtered.length && (
-                <div className="text-center mt-8">
-                  <button
-                    onClick={() => setVisibleCount((c) => c + 16)}
-                    className="btn-tc-outline px-8 py-3 text-sm rounded-full"
-                  >
-                    Load more ({filtered.length - visibleCount} remaining)
-                  </button>
-                </div>
+                <>
+                  <div className="text-center mt-8">
+                    <button
+                      onClick={() => setVisibleCount((c) => c + 16)}
+                      className="btn-tc-outline px-8 py-3 text-sm rounded-full"
+                    >
+                      Load more ({filtered.length - visibleCount} remaining)
+                    </button>
+                  </div>
+                  {/* Sticky mobile prompt */}
+                  <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 px-4 py-3 lg:hidden shadow-[0_-4px_12px_rgba(0,0,0,0.08)]">
+                    <button
+                      onClick={() => setVisibleCount((c) => c + 16)}
+                      className="w-full py-3 rounded-full bg-[#1a6b2f] text-white font-bold text-sm"
+                    >
+                      See {filtered.length - visibleCount} more items ↓
+                    </button>
+                  </div>
+                </>
               )}
             </>
           )}
