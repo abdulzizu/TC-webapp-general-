@@ -1,7 +1,8 @@
 "use client";
 
-import { createContext, useContext, useEffect, useReducer } from "react";
+import { createContext, useContext, useEffect, useReducer, useState } from "react";
 import type { Product } from "./products";
+import Link from "next/link";
 
 export type CartItem = {
   product: Product;
@@ -68,6 +69,7 @@ const STORAGE_KEY = "tc_cart";
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, { items: [] });
+  const [toast, setToast] = useState<{ name: string; image: string } | null>(null);
 
   // Hydrate from localStorage on mount (persistent cart)
   useEffect(() => {
@@ -95,8 +97,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       value={{
         items: state.items,
         addItem: (product, size) => {
-          if (product.tag === "SOLD OUT") return; // Safety net — never add sold-out items
+          if (product.tag === "SOLD OUT") return;
           dispatch({ type: "ADD", product, size });
+          setToast({ name: product.name, image: product.image });
+          setTimeout(() => setToast(null), 3000);
         },
         removeItem: (id, size) => dispatch({ type: "REMOVE", id, size }),
         updateQty: (id, size, quantity) => dispatch({ type: "UPDATE_QTY", id, size, quantity }),
@@ -105,6 +109,23 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         subtotal,
       }}
     >
+      {/* Cart toast notification */}
+      {toast && (
+        <div className="fixed top-20 right-4 z-[60] animate-[slideIn_0.3s_ease] bg-white border border-gray-200 rounded-2xl shadow-xl p-4 flex items-center gap-3 max-w-xs">
+          {toast.image && (
+            <div className="w-12 h-12 rounded-lg overflow-hidden bg-[#ede8d8] shrink-0">
+              <img src={toast.image} alt="" className="w-full h-full object-cover" />
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold text-[#1a6b2f] mb-0.5">Added to cart ✓</p>
+            <p className="text-xs text-gray-600 truncate">{toast.name}</p>
+          </div>
+          <Link href="/cart" className="text-xs font-bold text-[#1a6b2f] hover:underline shrink-0">
+            View
+          </Link>
+        </div>
+      )}
       {children}
     </CartContext.Provider>
   );

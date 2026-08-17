@@ -220,7 +220,7 @@ export default function ProductPage() {
       <MarqueeBanner />
       <Navbar />
       <main>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 pb-24 lg:pb-8">
 
           {/* Breadcrumb */}
           <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 text-sm text-gray-400 flex-wrap">
@@ -635,6 +635,30 @@ export default function ProductPage() {
 
         </div>
       </main>
+
+      {/* Sticky mobile CTA bar */}
+      {!isSoldOut && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 px-4 py-3 flex items-center gap-3 lg:hidden shadow-[0_-4px_12px_rgba(0,0,0,0.08)]">
+          <div className="shrink-0">
+            <p className="text-lg font-bold text-[#1a6b2f]">₦{product.price.toLocaleString()}</p>
+            <p className="text-[10px] text-gray-400">Size: {product.size}</p>
+          </div>
+          <button
+            onClick={handleAddToCart}
+            className={`flex-1 py-3 rounded-full border-2 font-bold text-sm transition-all ${
+              added ? "border-[#1a6b2f] bg-[#1a6b2f]/10 text-[#1a6b2f]" : "border-[#1a6b2f] text-[#1a6b2f]"
+            }`}
+          >
+            {added ? "✓ Added" : "Add to Cart"}
+          </button>
+          <button
+            onClick={handleBuyNow}
+            className="flex-1 py-3 rounded-full bg-[#1a6b2f] text-white font-bold text-sm shadow-lg shadow-[#1a6b2f]/20"
+          >
+            Buy Now
+          </button>
+        </div>
+      )}
     </>
   );
 }
