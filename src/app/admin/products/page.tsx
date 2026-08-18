@@ -169,7 +169,8 @@ export default function AdminProductsPage() {
       }
     }
     if (creating) {
-      const { error } = await supabase.from("products").insert(payload);
+      const { id: _id, ...insertPayload } = payload;
+      const { error } = await supabase.from("products").insert(insertPayload);
       if (error) { alert("Error: " + error.message); setSaving(false); return; }
     } else if (editing) {
       const { error } = await supabase.from("products").update(payload).eq("id", editing.id);
