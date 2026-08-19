@@ -34,8 +34,9 @@ function NewDropContent() {
   const loadProducts = useCallback(async () => {
     const { data } = await supabase
       .from("products")
-      .select("id, name, image, price, available, drop_id")
+      .select("id, name, image, price, available, drop_id, tag")
       .eq("available", false)
+      .neq("tag", "SOLD")
       .order("id", { ascending: false });
     if (data) setAllProducts(data as any);
   }, [supabase]);
