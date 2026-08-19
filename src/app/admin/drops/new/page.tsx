@@ -62,9 +62,9 @@ function NewDropContent() {
 
   useEffect(() => { loadProducts(); loadDrop(); }, [loadProducts, loadDrop]);
 
-  // Products available to add: hidden AND (no drop OR this drop)
+  // Products available to add: hidden, not sold, and not already in THIS drop's list
   const unassignedProducts = allProducts.filter(
-    (p) => !products.find((dp) => dp.id === p.id) && (p.drop_id === null || p.drop_id === dropId)
+    (p) => !products.find((dp) => dp.id === p.id)
   );
 
   async function handleCreateDrop() {
