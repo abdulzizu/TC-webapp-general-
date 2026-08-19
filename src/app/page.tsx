@@ -96,7 +96,7 @@ function Hero() {
           <span className="text-sm text-white/60 border border-white/20 rounded px-2 py-0.5">{card.size}</span>
           {card.tag && (
             <span className={`text-[10px] font-700 tracking-wider px-2 py-0.5 rounded-full ${
-              card.tag === "SOLD OUT" ? "bg-red-500/80 text-white" : card.tag === "NEW" || card.tag === "STAFF PICK" ? "bg-[#1a6b2f] text-white" : card.tag === "ESSENTIAL" ? "bg-purple-500 text-white" : "bg-amber-400 text-[#1a1a1a]"
+              card.tag === "SOLD" ? "bg-red-500/80 text-white" : card.tag === "NEW" || card.tag === "STAFF PICK" ? "bg-[#1a6b2f] text-white" : card.tag === "ESSENTIAL" ? "bg-purple-500 text-white" : "bg-amber-400 text-[#1a1a1a]"
             }`}>
               {card.tag}
             </span>
@@ -240,7 +240,7 @@ function ProductGrid() {
 
   const filtered =
     filter === "All" ? products
-    : filter === "Available" ? products.filter((i) => i.available && i.tag !== "SOLD OUT")
+    : filter === "Available" ? products.filter((i) => i.available && i.tag !== "SOLD")
     : products.filter((i) => i.category === filter);
 
   // Homepage shows max 8 items — prioritize NEW tagged items, then most recently made visible
@@ -332,7 +332,7 @@ function ProductCard({
   };
   eager?: boolean;
 }) {
-  const isSoldOut = item.tag === "SOLD OUT";
+  const isSoldOut = item.tag === "SOLD";
   const tagColor =
     isSoldOut
       ? "bg-red-500 text-white"
@@ -455,7 +455,7 @@ function EssentialsCarousel() {
           className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-2 -mx-4 px-4 sm:mx-0 sm:px-0"
         >
           {items.map((item) => {
-            const isSoldOut = item.tag === "SOLD OUT";
+            const isSoldOut = item.tag === "SOLD";
             return (
               <Link
                 key={item.id}

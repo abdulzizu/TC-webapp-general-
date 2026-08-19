@@ -31,7 +31,7 @@ export interface Database {
           length: string | null;
           elastic_waist: boolean;
           colours: string[];
-          tag: "NEW" | "2 LEFT" | "1 LEFT" | "SOLD OUT";
+          tag: "NEW" | "2 LEFT" | "1 LEFT" | "SOLD";
           image: string;
           description: string;
           available: boolean;

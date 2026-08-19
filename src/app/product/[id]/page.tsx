@@ -189,7 +189,7 @@ export default function ProductPage() {
     );
   }
 
-  const isSoldOut = product.tag === "SOLD OUT";
+  const isSoldOut = product.tag === "SOLD";
   const tagColor = isSoldOut
     ? "bg-red-500 text-white"
     : product.tag === "NEW" || product.tag === "STAFF PICK"
@@ -591,7 +591,7 @@ export default function ProductPage() {
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {related.map((item) => {
-                  const itemTagColor = item.tag === "SOLD OUT"
+                  const itemTagColor = item.tag === "SOLD"
                     ? "bg-red-500 text-white"
                     : item.tag === "NEW" || item.tag === "STAFF PICK"
                     ? "bg-[#1a6b2f] text-white"

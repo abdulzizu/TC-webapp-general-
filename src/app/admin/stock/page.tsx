@@ -28,7 +28,7 @@ export default function AdminStockPage() {
       if (!map.has(sub)) map.set(sub, { available: 0, unreleased: 0, soldOut: 0, total: 0 });
       const row = map.get(sub)!;
       row.total++;
-      if (p.tag === "SOLD OUT") {
+      if (p.tag === "SOLD") {
         row.soldOut++;
       } else if (p.available) {
         row.available++;
@@ -72,7 +72,7 @@ export default function AdminStockPage() {
         </div>
         <div className="bg-white rounded-xl border border-gray-100 p-4 text-center">
           <p className="text-2xl font-bold text-red-500">{totals.soldOut}</p>
-          <p className="text-xs text-gray-500 mt-1">Sold Out</p>
+          <p className="text-xs text-gray-500 mt-1">Sold</p>
         </div>
         <div className="bg-white rounded-xl border border-gray-100 p-4 text-center">
           <p className="text-2xl font-bold text-[#1a1a1a]">{totals.total}</p>
@@ -92,7 +92,7 @@ export default function AdminStockPage() {
                   <th className="px-4 py-2.5 text-left">Subcategory</th>
                   <th className="px-4 py-2.5 text-center">Available</th>
                   <th className="px-4 py-2.5 text-center">Unreleased</th>
-                  <th className="px-4 py-2.5 text-center">Sold Out</th>
+                  <th className="px-4 py-2.5 text-center">Sold</th>
                   <th className="px-4 py-2.5 text-center">Total</th>
                 </tr>
               </thead>

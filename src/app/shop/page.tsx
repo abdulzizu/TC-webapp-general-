@@ -67,12 +67,12 @@ function ShopContent() {
     if (selectedSizes.length > 0) result = result.filter((p) => selectedSizes.includes(p.size));
     if (selectedColours.length > 0) result = result.filter((p) => (p.colours ?? []).some((c) => selectedColours.includes(c)));
     result = result.filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1]);
-    if (availableOnly) result = result.filter((p) => p.available && p.tag !== "SOLD OUT");
+    if (availableOnly) result = result.filter((p) => p.available && p.tag !== "SOLD");
 
     switch (sort) {
       case "price-asc": return result.sort((a, b) => a.price - b.price);
       case "price-desc": return result.sort((a, b) => b.price - a.price);
-      case "availability": return result.sort((a, b) => (a.tag === "SOLD OUT" ? 1 : 0) - (b.tag === "SOLD OUT" ? 1 : 0));
+      case "availability": return result.sort((a, b) => (a.tag === "SOLD" ? 1 : 0) - (b.tag === "SOLD" ? 1 : 0));
       default: return result.sort((a, b) => b.id - a.id);
     }
   }, [products, query, selectedCategory, selectedSub, selectedSizes, selectedColours, priceRange, availableOnly, sort]);
@@ -181,7 +181,7 @@ function ShopContent() {
             <>
               <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 pb-16 lg:pb-0">
                 {filtered.slice(0, visibleCount).map((item) => {
-                  const isSoldOut = item.tag === "SOLD OUT";
+                  const isSoldOut = item.tag === "SOLD";
                   const tagColor = isSoldOut ? "bg-red-500 text-white" : item.tag === "NEW" || item.tag === "STAFF PICK" ? "bg-[#1a6b2f] text-white" : item.tag === "ESSENTIAL" ? "bg-purple-500 text-white" : "bg-amber-400 text-[#1a1a1a]";
                   return (
                     <Link key={item.id} href={`/product/${item.id}`} className={`product-card rounded-2xl overflow-hidden border border-gray-100 bg-white group ${isSoldOut ? "opacity-60" : ""}`}>

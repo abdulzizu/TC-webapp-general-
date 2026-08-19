@@ -52,7 +52,7 @@ export default function AdminDiscountsPage() {
   }, [supabase]);
 
   const loadProducts = useCallback(async () => {
-    const { data } = await supabase.from("products").select("id, name").eq("available", true).neq("tag", "SOLD OUT").order("name");
+    const { data } = await supabase.from("products").select("id, name").eq("available", true).neq("tag", "SOLD").order("name");
     if (data) setProducts(data as any);
   }, [supabase]);
 

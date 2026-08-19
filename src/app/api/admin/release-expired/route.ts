@@ -68,12 +68,12 @@ export async function GET() {
         if (items) {
           for (const item of items) {
             if (!item.product_id) continue;
-            // Only release if still marked SOLD OUT
+            // Only release if still marked SOLD
             await supabase
               .from("products")
               .update({ tag: "NEW" })
               .eq("id", item.product_id)
-              .eq("tag", "SOLD OUT");
+              .eq("tag", "SOLD");
           }
         }
 

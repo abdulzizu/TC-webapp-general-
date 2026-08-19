@@ -84,9 +84,9 @@ export async function POST(req: NextRequest) {
       for (const item of orderItems) {
         if (!item.product_id) continue;
 
-        // Since items are one-of-one, mark as SOLD OUT but keep visible
+        // Since items are one-of-one, mark as SOLD but keep visible
         await supabase.from("products").update({
-          tag: "SOLD OUT",
+          tag: "SOLD",
         }).eq("id", item.product_id);
       }
     }

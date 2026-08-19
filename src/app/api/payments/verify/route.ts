@@ -71,7 +71,7 @@ export async function GET(req: NextRequest) {
         for (const item of orderItems) {
           if (!item.product_id) continue;
           await supabase.from("products").update({
-            tag: "SOLD OUT",
+            tag: "SOLD",
           }).eq("id", item.product_id);
         }
       }

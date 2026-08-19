@@ -45,7 +45,7 @@ const EMPTY_PRODUCT: Omit<Product, "id"> & { pairs_with: Pairing[] } = {
 };
 
 const DEFAULT_CATEGORIES = ["Clothing", "Accessories", "Shoes"];
-const TAGS = ["NEW", "2 LEFT", "1 LEFT", "SOLD OUT", "ESSENTIAL", "STAFF PICK", ""];
+const TAGS = ["NEW", "2 LEFT", "1 LEFT", "SOLD", "ESSENTIAL", "STAFF PICK", ""];
 const DEFAULT_SUBCATEGORIES: Record<string, string[]> = {
   Clothing: ["Jackets", "T-shirts", "Shirts", "Jerseys", "Cargo pants", "Jeans", "Shorts", "Track suits", "Trackpants", "Sweatpants", "Sweatshirts", "Hoodies", "Dresses"],
   Accessories: ["Caps and hats", "Socks", "Ties", "Beanies", "Gloves", "Bags", "Belts", "Scarves"],
@@ -58,6 +58,10 @@ export default function AdminProductsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
+  const [sizeFilter, setSizeFilter] = useState("");
+  const [tagFilter, setTagFilter] = useState("");
+  const [visibilityFilter, setVisibilityFilter] = useState<"all" | "visible" | "hidden">("all");
+  const [essentialFilter, setEssentialFilter] = useState<"all" | "yes" | "no">("all");
   const [sortBy, setSortBy] = useState<"name" | "price-asc" | "price-desc" | "newest">("newest");
   const [editing, setEditing] = useState<Product | null>(null);
   const [creating, setCreating] = useState(false);
@@ -103,6 +107,12 @@ export default function AdminProductsPage() {
   const filtered = products
     .filter((p) => {
       if (categoryFilter !== "All" && p.category !== categoryFilter) return false;
+      if (sizeFilter && p.size !== sizeFilter) return false;
+      if (tagFilter && p.tag !== tagFilter) return false;
+      if (visibilityFilter === "visible" && !p.available) return false;
+      if (visibilityFilter === "hidden" && p.available) return false;
+      if (essentialFilter === "yes" && !(p as any).suggest_essential) return false;
+      if (essentialFilter === "no" && (p as any).suggest_essential) return false;
       if (!search) return true;
       return (
         p.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -838,6 +848,45 @@ export default function AdminProductsPage() {
           {categories.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
         <select
+          value={sizeFilter}
+          onChange={(e) => setSizeFilter(e.target.value)}
+          className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1a6b2f]"
+        >
+          <option value="">All Sizes</option>
+          {[...new Set(products.map((p) => p.size))].sort().map((s) => <option key={s} value={s}>{s}</option>)}
+        </select>
+        <select
+          value={tagFilter}
+          onChange={(e) => setTagFilter(e.target.value)}
+          className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1a6b2f]"
+        >
+          <option value="">All Tags</option>
+          <option value="NEW">NEW</option>
+          <option value="SOLD">SOLD</option>
+          <option value="ESSENTIAL">ESSENTIAL</option>
+          <option value="STAFF PICK">STAFF PICK</option>
+          <option value="2 LEFT">2 LEFT</option>
+          <option value="1 LEFT">1 LEFT</option>
+        </select>
+        <select
+          value={visibilityFilter}
+          onChange={(e) => setVisibilityFilter(e.target.value as any)}
+          className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1a6b2f]"
+        >
+          <option value="all">All Visibility</option>
+          <option value="visible">Visible on store</option>
+          <option value="hidden">Hidden</option>
+        </select>
+        <select
+          value={essentialFilter}
+          onChange={(e) => setEssentialFilter(e.target.value as any)}
+          className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1a6b2f]"
+        >
+          <option value="all">All</option>
+          <option value="yes">Essentials only</option>
+          <option value="no">Non-essentials</option>
+        </select>
+        <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as any)}
           className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#1a6b2f]"
@@ -848,6 +897,9 @@ export default function AdminProductsPage() {
           <option value="price-desc">Price: High → Low</option>
         </select>
       </div>
+
+      {/* Results count */}
+      <p className="text-xs text-gray-400">{filtered.length} of {products.length} products</p>
 
       {loading ? (
         <div className="text-sm text-gray-400">Loading…</div>
@@ -879,7 +931,7 @@ export default function AdminProductsPage() {
                     <td className="px-4 py-2 text-right font-semibold">₦{p.price.toLocaleString()}</td>
                     <td className="px-4 py-2 text-center">
                       <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                        p.tag === "SOLD OUT" ? "bg-red-100 text-red-600" :
+                        p.tag === "SOLD" ? "bg-red-100 text-red-600" :
                         p.tag === "NEW" ? "bg-green-100 text-green-700" :
                         "bg-amber-100 text-amber-700"
                       }`}>{p.tag}</span>

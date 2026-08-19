@@ -212,7 +212,7 @@ function CheckoutContent() {
     }
     setSubmitting(true);
     try {
-      // Check if any items are sold out before proceeding
+      // Check if any items are sold before proceeding
       const { createClient: createSB } = await import("@/lib/supabase/client");
       const sb = createSB();
       const productIds = items.map((i) => i.product.id);
@@ -222,7 +222,7 @@ function CheckoutContent() {
         .in("id", productIds);
 
       if (currentProducts) {
-        const soldOut = currentProducts.filter((p: any) => p.tag === "SOLD OUT");
+        const soldOut = currentProducts.filter((p: any) => p.tag === "SOLD");
         if (soldOut.length > 0) {
           const names = soldOut.map((p: any) => p.name).join(", ");
           setSubmitting(false);

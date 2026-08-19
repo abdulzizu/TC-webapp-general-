@@ -124,7 +124,7 @@ export default function AdminFeaturedPage() {
                 <option value="NEW">NEW</option>
                 <option value="2 LEFT">2 LEFT</option>
                 <option value="1 LEFT">1 LEFT</option>
-                <option value="SOLD OUT">SOLD OUT</option>
+                <option value="SOLD">SOLD</option>
               </select>
             </div>
             <div>
@@ -170,7 +170,7 @@ export default function AdminFeaturedPage() {
               <div className="relative aspect-square bg-gray-100">
                 {item.image_url && <Image src={item.image_url} alt={item.label} fill className="object-cover" sizes="200px" />}
                 <span className={`absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                  item.tag === "NEW" || item.tag === "STAFF PICK" ? "bg-[#1a6b2f] text-white" : item.tag === "SOLD OUT" ? "bg-red-500 text-white" : item.tag === "ESSENTIAL" ? "bg-purple-500 text-white" : "bg-amber-400 text-black"
+                  item.tag === "NEW" || item.tag === "STAFF PICK" ? "bg-[#1a6b2f] text-white" : item.tag === "SOLD" ? "bg-red-500 text-white" : item.tag === "ESSENTIAL" ? "bg-purple-500 text-white" : "bg-amber-400 text-black"
                 }`}>{item.tag}</span>
               </div>
               <div className="p-3">

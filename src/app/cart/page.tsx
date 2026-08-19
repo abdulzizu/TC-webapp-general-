@@ -29,7 +29,7 @@ export default function CartPage() {
         .in("id", ids)
         .then(({ data }) => {
           if (data) {
-            const soldItems = data.filter((p: any) => p.tag === "SOLD OUT");
+            const soldItems = data.filter((p: any) => p.tag === "SOLD");
             if (soldItems.length > 0) {
               // Auto-remove sold-out items from cart
               soldItems.forEach((p: any) => removeItem(p.id, items.find((i) => i.product.id === p.id)?.size || ""));

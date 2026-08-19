@@ -97,7 +97,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       value={{
         items: state.items,
         addItem: (product, size) => {
-          if (product.tag === "SOLD OUT") return;
+          if (product.tag === "SOLD") return;
           dispatch({ type: "ADD", product, size });
           setToast({ name: product.name, image: product.image });
           setTimeout(() => setToast(null), 3000);

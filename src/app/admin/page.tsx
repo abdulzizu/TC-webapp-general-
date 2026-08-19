@@ -41,8 +41,8 @@ export default function AdminOverview() {
 
       setMetrics({
         totalProducts: prods.length,
-        availableProducts: prods.filter((p: any) => p.available && p.tag !== "SOLD OUT").length,
-        soldOutProducts: prods.filter((p: any) => p.tag === "SOLD OUT").length,
+        availableProducts: prods.filter((p: any) => p.available && p.tag !== "SOLD").length,
+        soldOutProducts: prods.filter((p: any) => p.tag === "SOLD").length,
         totalOrders: ords.length,
         processingOrders: ords.filter((o: any) => o.status === "processing").length,
         totalCustomers: (profiles ?? []).length,
@@ -91,7 +91,7 @@ export default function AdminOverview() {
   const cards = [
     { label: "Total Products", value: m.totalProducts, color: "text-[#1a1a1a]" },
     { label: "Available", value: m.availableProducts, color: "text-[#1a6b2f]" },
-    { label: "Sold Out", value: m.soldOutProducts, color: "text-red-500" },
+    { label: "Sold", value: m.soldOutProducts, color: "text-red-500" },
     { label: "Total Orders", value: m.totalOrders, color: "text-[#1a1a1a]" },
     { label: "Processing", value: m.processingOrders, color: "text-amber-600" },
     { label: "Customers", value: m.totalCustomers, color: "text-[#1a1a1a]" },
