@@ -311,6 +311,19 @@ function ProductGrid() {
               ))
           }
         </div>
+
+        {/* See all products button below grid */}
+        <div className="text-center mt-10">
+          <Link
+            href="/shop"
+            className="btn-tc-primary px-8 py-3.5 text-sm rounded-full inline-flex items-center gap-2"
+          >
+            See all products
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+            </svg>
+          </Link>
+        </div>
       </div>
     </section>
   );
