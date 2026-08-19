@@ -536,7 +536,7 @@ export default function AdminProductsPage() {
             )}
             <input value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a6b2f] mb-2" placeholder="Image URL or upload below" />
             <div className="flex items-center gap-2">
-              <label className="inline-flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg text-xs font-semibold cursor-pointer hover:bg-gray-200 transition">
+              <label className={`inline-flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg text-xs font-semibold transition ${uploading ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-gray-200"}`}>
                 {uploading ? "Uploading…" : "Upload Image"}
                 <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, "image")} disabled={uploading} />
               </label>
