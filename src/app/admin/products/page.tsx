@@ -193,34 +193,40 @@ export default function AdminProductsPage() {
     if (!file) return;
     setUploading(true);
 
-    // Compress image client-side before uploading (max 1200px wide, 80% quality)
-    let uploadFile: File | Blob = file;
     try {
-      uploadFile = await compressImage(file, 1200, 0.8);
-    } catch {
-      // If compression fails, use original
-    }
+      // Compress image client-side before uploading (max 1200px wide, 80% quality)
+      let uploadFile: File | Blob = file;
+      try {
+        uploadFile = await compressImage(file, 1200, 0.8);
+      } catch {
+        // If compression fails, use original
+      }
 
-    const ext = "jpeg"; // Always save as JPEG after compression
-    const path = `products/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const ext = "jpeg"; // Always save as JPEG after compression
+      const path = `products/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
-    const { error } = await supabase.storage.from("product-images").upload(path, uploadFile, {
-      contentType: "image/jpeg",
-    });
-    if (error) {
-      alert("Upload failed: " + error.message);
+      const { error } = await supabase.storage.from("product-images").upload(path, uploadFile, {
+        contentType: "image/jpeg",
+      });
+      if (error) {
+        alert("Upload failed: " + error.message);
+        return;
+      }
+
+      const { data: { publicUrl } } = supabase.storage.from("product-images").getPublicUrl(path);
+
+      if (field === "image") {
+        setForm((f) => ({ ...f, image: publicUrl }));
+      } else {
+        setForm((f) => ({ ...f, images: [...f.images, publicUrl] }));
+      }
+    } catch (err: any) {
+      alert("Upload error: " + (err.message || "Something went wrong"));
+    } finally {
       setUploading(false);
-      return;
+      // Reset the input so same file can be re-selected
+      e.target.value = "";
     }
-
-    const { data: { publicUrl } } = supabase.storage.from("product-images").getPublicUrl(path);
-
-    if (field === "image") {
-      setForm((f) => ({ ...f, image: publicUrl }));
-    } else {
-      setForm((f) => ({ ...f, images: [...f.images, publicUrl] }));
-    }
-    setUploading(false);
   }
 
   function compressImage(file: File, maxWidth: number, quality: number): Promise<Blob> {
