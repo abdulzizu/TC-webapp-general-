@@ -772,6 +772,12 @@ export default function AdminProductsPage() {
                           p.id !== editing?.id &&
                           !excludeSubs.includes(p.subcategory)
                         )
+                        .sort((a, b) => {
+                          // Available items first, sold items last
+                          const aScore = a.available && a.tag !== "SOLD" ? 0 : a.tag === "SOLD" ? 2 : 1;
+                          const bScore = b.available && b.tag !== "SOLD" ? 0 : b.tag === "SOLD" ? 2 : 1;
+                          return aScore - bScore;
+                        })
                         .slice(0, 20)
                         .map((p) => (
                           <button
