@@ -36,12 +36,30 @@ function ShopContent() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(16);
 
-  // Sync URL params
+  // Sync URL params — read on mount
   useEffect(() => {
     setQuery(searchParams.get("q") || "");
     setSelectedCategory(searchParams.get("category") || "");
     setSelectedSub(searchParams.get("sub") || "");
+    if (searchParams.get("sizes")) setSelectedSizes(searchParams.get("sizes")!.split(","));
+    if (searchParams.get("colours")) setSelectedColours(searchParams.get("colours")!.split(","));
+    if (searchParams.get("sort")) setSort(searchParams.get("sort")!);
+    if (searchParams.get("available") === "1") setAvailableOnly(true);
   }, [searchParams]);
+
+  // Write filters to URL (so back button preserves them)
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    if (selectedCategory) params.set("category", selectedCategory);
+    if (selectedSub) params.set("sub", selectedSub);
+    if (selectedSizes.length) params.set("sizes", selectedSizes.join(","));
+    if (selectedColours.length) params.set("colours", selectedColours.join(","));
+    if (sort !== "new") params.set("sort", sort);
+    if (availableOnly) params.set("available", "1");
+    const url = params.toString() ? `/shop?${params.toString()}` : "/shop";
+    window.history.replaceState(null, "", url);
+  }, [query, selectedCategory, selectedSub, selectedSizes, selectedColours, sort, availableOnly]);
 
   function toggleSize(s: string) {
     setSelectedSizes((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]);
