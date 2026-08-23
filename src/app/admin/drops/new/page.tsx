@@ -118,7 +118,7 @@ function NewDropContent() {
   async function releaseDrop() {
     if (!dropId) return;
     setSaving(true);
-    const { error: prodError } = await supabase.from("products").update({ available: true, tag: "NEW", visible_at: new Date().toISOString() }).eq("drop_id", dropId);
+    const { error: prodError } = await supabase.from("products").update({ available: true, tag: "NEW", visible_at: new Date().toISOString(), drop_id: null }).eq("drop_id", dropId);
     if (prodError) { alert("Error releasing products: " + prodError.message); setSaving(false); return; }
     const { error } = await supabase.from("drops").update({
       status: "live",
