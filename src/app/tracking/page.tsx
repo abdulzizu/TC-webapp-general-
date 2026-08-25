@@ -22,7 +22,7 @@ export default function TrackingPage() {
     const supabase = createClient();
     const { data, error: dbError } = await supabase
       .from("orders")
-      .select("order_id, status, created_at, delivery_address, is_stockpile, stockpiled_until")
+      .select("order_id, status, created_at, delivery_address, is_stockpile, stockpiled_until, order_items(product_name, product_image, size, quantity, price)")
       .eq("order_id", orderId.trim().toUpperCase())
       .single();
 
@@ -98,6 +98,29 @@ export default function TrackingPage() {
                 <p className="text-blue-600">Stockpiled until {new Date(order.stockpiled_until).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</p>
               )}
             </div>
+
+            {/* Order items */}
+            {order.order_items && order.order_items.length > 0 && (
+              <div className="pt-4 border-t border-gray-100">
+                <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Items</p>
+                <div className="space-y-3">
+                  {order.order_items.map((item: any, i: number) => (
+                    <div key={i} className="flex items-center gap-3">
+                      {item.product_image && (
+                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-[#ede8d8] shrink-0">
+                          <img src={item.product_image} alt={item.product_name} className="w-full h-full object-cover" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-[#1a1a1a] truncate">{item.product_name}</p>
+                        <p className="text-xs text-gray-400">Size: {item.size} · Qty: {item.quantity}</p>
+                      </div>
+                      <p className="text-sm font-semibold text-[#1a6b2f] shrink-0">₦{(item.price * item.quantity).toLocaleString()}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </main>
