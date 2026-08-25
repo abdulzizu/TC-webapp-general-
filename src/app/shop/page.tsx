@@ -47,6 +47,12 @@ function ShopContent() {
     if (searchParams.get("available") === "1") setAvailableOnly(true);
   }, [searchParams]);
 
+  // Group mappings (for footer links like "Bottoms")
+  const GROUP_MAP: Record<string, string[]> = {
+    bottoms: ["Jeans", "Shorts", "Sweatpants", "Trackpants", "Cargo pants", "Cargo shorts", "Track suits"],
+  };
+  const activeGroup = searchParams.get("group") || "";
+
   // Write filters to URL (so back button preserves them)
   useEffect(() => {
     const params = new URLSearchParams();
@@ -70,6 +76,10 @@ function ShopContent() {
 
   const filtered = useMemo(() => {
     let result = [...products];
+    // Group filter (e.g. "bottoms" = multiple subcategories)
+    if (activeGroup && GROUP_MAP[activeGroup]) {
+      result = result.filter((p) => GROUP_MAP[activeGroup].includes(p.subcategory));
+    }
     if (query) {
       const q = query.toLowerCase();
       result = result.filter((p) =>
@@ -93,7 +103,7 @@ function ShopContent() {
       case "availability": return result.sort((a, b) => (a.tag === "SOLD" ? 1 : 0) - (b.tag === "SOLD" ? 1 : 0));
       default: return result.sort((a, b) => b.id - a.id);
     }
-  }, [products, query, selectedCategory, selectedSub, selectedSizes, selectedColours, priceRange, availableOnly, sort]);
+  }, [products, query, selectedCategory, selectedSub, selectedSizes, selectedColours, priceRange, availableOnly, sort, activeGroup]);
 
   function clearFilters() {
     setQuery(""); setSelectedCategory(""); setSelectedSub("");
@@ -109,7 +119,7 @@ function ShopContent() {
       {/* Page header */}
       <div className="mb-6">
         <h1 className="text-3xl sm:text-4xl font-bold text-[#1a1a1a]">
-          {query ? `Results for "${query}"` : selectedSub || selectedCategory || "All Products"}
+          {query ? `Results for "${query}"` : activeGroup ? activeGroup.charAt(0).toUpperCase() + activeGroup.slice(1) : selectedSub || selectedCategory || "All Products"}
         </h1>
         <p className="text-gray-500 mt-1">{filtered.length} item{filtered.length !== 1 ? "s" : ""}</p>
       </div>

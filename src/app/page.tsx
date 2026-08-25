@@ -841,8 +841,7 @@ function Footer() {
                 { label: "T-Shirts & Polos", href: "/shop?sub=T-shirts" },
                 { label: "Jackets", href: "/shop?sub=Jackets" },
                 { label: "Jerseys", href: "/shop?sub=Jerseys" },
-                { label: "Jeans & Pants", href: "/shop?sub=Jeans" },
-                { label: "Sweatpants", href: "/shop?sub=Sweatpants" },
+                { label: "Bottoms", href: "/shop?group=bottoms" },
                 { label: "Caps & Hats", href: "/shop?sub=Caps+and+hats" },
               ].map((l) => (
                 <li key={l.label}>
