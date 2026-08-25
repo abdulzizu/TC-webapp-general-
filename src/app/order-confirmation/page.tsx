@@ -169,6 +169,11 @@ function ConfirmationContent() {
         </div>
       )}
 
+      {/* Wishlist nudge for signed-in users */}
+      {isSignedIn && (
+        <WishlistNudge />
+      )}
+
       {/* Account hook for guests */}
       {isGuest && (
         <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-6 text-left shadow-sm">
@@ -195,6 +200,55 @@ function ConfirmationContent() {
       <Link href="/shop" className="btn-tc-primary px-8 py-3.5 text-sm rounded-full inline-block">
         Keep Shopping
       </Link>
+    </div>
+  );
+}
+
+function WishlistNudge() {
+  const { addKeyword } = useUser();
+  const [input, setInput] = useState("");
+  const [added, setAdded] = useState<string[]>([]);
+
+  function handleAdd() {
+    const keyword = input.trim().toLowerCase();
+    if (!keyword || added.includes(keyword)) return;
+    addKeyword(keyword);
+    setAdded((prev) => [...prev, keyword]);
+    setInput("");
+  }
+
+  return (
+    <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-6 text-left shadow-sm">
+      <p className="font-bold text-[#1a1a1a] mb-1">🔔 What should we source next?</p>
+      <p className="text-sm text-gray-500 mb-4">
+        Tell us what you&apos;re looking for — we&apos;ll email you when something matching drops.
+      </p>
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAdd())}
+          placeholder="e.g. bomber jacket, size L trackpants, rugby polo"
+          className="flex-1 border border-gray-200 rounded-full px-4 py-2.5 text-sm focus:outline-none focus:border-[#1a6b2f]"
+        />
+        <button
+          onClick={handleAdd}
+          disabled={!input.trim()}
+          className="px-4 py-2.5 bg-[#1a6b2f] text-white font-bold text-sm rounded-full hover:bg-[#104020] transition disabled:opacity-40"
+        >
+          Add
+        </button>
+      </div>
+      {added.length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-3">
+          {added.map((kw) => (
+            <span key={kw} className="text-xs bg-[#1a6b2f]/10 text-[#1a6b2f] font-semibold px-3 py-1 rounded-full">
+              ✓ {kw}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
