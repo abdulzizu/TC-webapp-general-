@@ -56,6 +56,7 @@ function ShopContent() {
   // Write filters to URL (so back button preserves them)
   useEffect(() => {
     const params = new URLSearchParams();
+    if (activeGroup) params.set("group", activeGroup);
     if (query) params.set("q", query);
     if (selectedCategory) params.set("category", selectedCategory);
     if (selectedSub) params.set("sub", selectedSub);
@@ -65,7 +66,7 @@ function ShopContent() {
     if (availableOnly) params.set("available", "1");
     const url = params.toString() ? `/shop?${params.toString()}` : "/shop";
     window.history.replaceState(null, "", url);
-  }, [query, selectedCategory, selectedSub, selectedSizes, selectedColours, sort, availableOnly]);
+  }, [query, selectedCategory, selectedSub, selectedSizes, selectedColours, sort, availableOnly, activeGroup]);
 
   function toggleSize(s: string) {
     setSelectedSizes((prev) => prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]);
