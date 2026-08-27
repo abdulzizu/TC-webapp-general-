@@ -88,13 +88,15 @@ body {
   color: var(--tc-white);
 }
 
-/* Product card hover */
+/* Product card hover — desktop only */
 .product-card {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-.product-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(26, 107, 47, 0.15);
+@media (hover: hover) {
+  .product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(26, 107, 47, 0.15);
+  }
 }
 
 /* Marquee */
