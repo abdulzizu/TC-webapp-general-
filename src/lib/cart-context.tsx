@@ -25,10 +25,9 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       const exists = state.items.findIndex(
         (i) => i.product.id === action.product.id && i.size === action.size
       );
+      // One-of-one items — never exceed quantity 1. If already in cart, no change.
       if (exists >= 0) {
-        const items = [...state.items];
-        items[exists] = { ...items[exists], quantity: items[exists].quantity + 1 };
-        return { items };
+        return state;
       }
       return { items: [...state.items, { product: action.product, size: action.size, quantity: 1 }] };
     }
