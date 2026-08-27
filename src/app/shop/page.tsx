@@ -53,19 +53,22 @@ function ShopContent() {
   };
   const activeGroup = searchParams.get("group") || "";
 
-  // Write filters to URL (so back button preserves them)
+  // Write filters to URL (debounced, so back button preserves them without breaking Link navigation)
   useEffect(() => {
-    const params = new URLSearchParams();
-    if (activeGroup) params.set("group", activeGroup);
-    if (query) params.set("q", query);
-    if (selectedCategory) params.set("category", selectedCategory);
-    if (selectedSub) params.set("sub", selectedSub);
-    if (selectedSizes.length) params.set("sizes", selectedSizes.join(","));
-    if (selectedColours.length) params.set("colours", selectedColours.join(","));
-    if (sort !== "new") params.set("sort", sort);
-    if (availableOnly) params.set("available", "1");
-    const url = params.toString() ? `/shop?${params.toString()}` : "/shop";
-    window.history.replaceState(null, "", url);
+    const timeout = setTimeout(() => {
+      const params = new URLSearchParams();
+      if (activeGroup) params.set("group", activeGroup);
+      if (query) params.set("q", query);
+      if (selectedCategory) params.set("category", selectedCategory);
+      if (selectedSub) params.set("sub", selectedSub);
+      if (selectedSizes.length) params.set("sizes", selectedSizes.join(","));
+      if (selectedColours.length) params.set("colours", selectedColours.join(","));
+      if (sort !== "new") params.set("sort", sort);
+      if (availableOnly) params.set("available", "1");
+      const url = params.toString() ? `/shop?${params.toString()}` : "/shop";
+      window.history.replaceState(null, "", url);
+    }, 500);
+    return () => clearTimeout(timeout);
   }, [query, selectedCategory, selectedSub, selectedSizes, selectedColours, sort, availableOnly, activeGroup]);
 
   function toggleSize(s: string) {
