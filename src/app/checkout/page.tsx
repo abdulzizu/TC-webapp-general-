@@ -47,7 +47,8 @@ function CheckoutContent() {
   const [heldWarning, setHeldWarning] = useState("");
   // When payment is blocked because item(s) are being checked out by someone
   // else, we hold the details here to render an inline "continue with the rest" card.
-  const [heldBlock, setHeldBlock] = useState<{ names: string[]; message: string } | null>(null);
+  // `permanent` = item is gone for good (SOLD); otherwise it's a temporary hold that may free up.
+  const [heldBlock, setHeldBlock] = useState<{ names: string[]; message: string; permanent?: boolean } | null>(null);
 
   // Auto-detect existing stockpile for signed-in users
   useEffect(() => {
@@ -277,9 +278,20 @@ function CheckoutContent() {
       if (currentProducts) {
         const soldOut = currentProducts.filter((p: any) => p.tag === "SOLD");
         if (soldOut.length > 0) {
-          const names = soldOut.map((p: any) => p.name).join(", ");
+          const soldNames: string[] = soldOut.map((p: any) => p.name);
+          const names = soldNames.join(", ");
+          const multiple = soldNames.length > 1;
+          const remaining = orderItemsList.length - soldNames.length;
           setSubmitting(false);
-          alert(`Sorry, the following item${soldOut.length > 1 ? "s are" : " is"} no longer available: ${names}. Please remove ${soldOut.length > 1 ? "them" : "it"} from your cart.`);
+          // Same one-tap card as the held-item case, so the experience is consistent.
+          setHeldBlock({
+            names: soldNames,
+            permanent: true,
+            message: `${names} ${multiple ? "have" : "has"} just been snapped up — ${multiple ? "they're" : "it's"} one-of-one, so ${multiple ? "they're" : "it's"} gone.` +
+              (remaining > 0
+                ? ` Don't lose the rest of your cart — check out the ${remaining > 1 ? "items" : "item"} still available.`
+                : ""),
+          });
           return;
         }
       }
@@ -477,30 +489,35 @@ function CheckoutContent() {
         </div>
       )}
 
-      {heldBlock && (
-        <div className="mb-6 p-5 bg-amber-50 border-2 border-amber-300 rounded-2xl" role="alert">
-          <div className="flex items-start gap-2.5 mb-4">
-            <span className="text-xl shrink-0" aria-hidden="true">⏳</span>
-            <p className="text-sm text-amber-900 leading-relaxed font-medium">{heldBlock.message}</p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2.5">
-            {items.length - heldBlock.names.length > 0 && (
+      {heldBlock && (() => {
+        const remaining = items.length - heldBlock.names.length;
+        return (
+          <div className="mb-6 p-5 bg-amber-50 border-2 border-amber-300 rounded-2xl" role="alert">
+            <div className="flex items-start gap-2.5 mb-4">
+              <span className="text-xl shrink-0" aria-hidden="true">{heldBlock.permanent ? "🏷️" : "⏳"}</span>
+              <p className="text-sm text-amber-900 leading-relaxed font-medium">{heldBlock.message}</p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2.5">
+              {remaining > 0 && (
+                <button
+                  onClick={continueWithoutHeld}
+                  className="flex-1 py-3 bg-[#1a6b2f] text-white font-bold rounded-full text-sm hover:bg-[#104020] transition-colors"
+                >
+                  Continue with available {remaining > 1 ? "items" : "item"}
+                </button>
+              )}
               <button
-                onClick={continueWithoutHeld}
-                className="flex-1 py-3 bg-[#1a6b2f] text-white font-bold rounded-full text-sm hover:bg-[#104020] transition-colors"
+                onClick={() => setHeldBlock(null)}
+                className="flex-1 py-3 border-2 border-amber-300 text-amber-800 font-bold rounded-full text-sm hover:bg-amber-100 transition-colors"
               >
-                Continue with available {items.length - heldBlock.names.length > 1 ? "items" : "item"}
+                {heldBlock.permanent
+                  ? (remaining > 0 ? "Not now" : "Back to my cart")
+                  : (remaining > 0 ? "Wait & keep everything" : "OK, I'll wait")}
               </button>
-            )}
-            <button
-              onClick={() => setHeldBlock(null)}
-              className="flex-1 py-3 border-2 border-amber-300 text-amber-800 font-bold rounded-full text-sm hover:bg-amber-100 transition-colors"
-            >
-              {items.length - heldBlock.names.length > 0 ? "Wait & keep everything" : "OK, I'll wait"}
-            </button>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       <div className="grid lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-4">
