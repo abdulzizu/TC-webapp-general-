@@ -72,11 +72,12 @@ export async function POST(req: NextRequest) {
           .eq("held_by_order", orderId);
 
         const names = conflicts.join(", ");
+        const multiple = conflicts.length > 1;
         return NextResponse.json(
           {
             error: "item_held",
             heldItems: conflicts,
-            message: `Someone's currently checking out ${names}. Since ${conflicts.length > 1 ? "these are" : "it's"} one-of-one, we've paused ${conflicts.length > 1 ? "them" : "it"} for a few minutes. If they don't complete payment, ${conflicts.length > 1 ? "they'll" : "it'll"} free up — check back shortly.`,
+            message: `Someone's currently checking out ${names}. Since ${multiple ? "these are" : "it's"} one-of-one, we've paused ${multiple ? "them" : "it"} for a few minutes. If they don't complete payment, ${multiple ? "they'll" : "it'll"} free up — check back shortly, or remove ${multiple ? "them" : "it"} and check out the rest of your cart now so you don't miss those too.`,
           },
           { status: 409 }
         );
