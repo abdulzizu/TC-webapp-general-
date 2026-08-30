@@ -67,7 +67,7 @@ Create a `.env.local` in the project root. None of these are committed.
 | `TERMII_SENDER_ID` | no | Termii sender ID |
 | `TERMII_OTP_CHANNEL` | no | `whatsapp` or `generic` (SMS) |
 | `OPENAI_API_KEY` | no | OpenAI key — AI-generated product descriptions in the admin |
-| `CRON_SECRET` | no | Optional shared secret for triggering `clear-new-tags` / `release-expired` from an external cron. If unset, those routes require an admin session. |
+| `CRON_SECRET` | no | Optional shared secret for triggering `clear-new-tags` from an external cron. If unset, the route requires an admin session. |
 
 > `NEXT_PUBLIC_*` variables are exposed to the browser. Everything else must stay server-side only.
 
@@ -131,7 +131,6 @@ src/
 - `POST /api/admin/ai-describe` — OpenAI product description from an image
 - `POST /api/admin/notify` — notify customers (e.g. drop alerts)
 - `POST /api/admin/clear-new-tags` — bulk-clear "NEW" tags
-- `POST /api/admin/release-expired` — release expired stockpiled orders
 - `POST /api/admin/fix-pending` — maintenance for stuck pending orders
 
 **Drops**
@@ -192,7 +191,6 @@ Two maintenance endpoints are designed to run on a schedule. Both require authen
 | Endpoint | What it does | Suggested schedule |
 |----------|--------------|--------------------|
 | `GET /api/admin/clear-new-tags` | Removes the `NEW` tag from products older than 2 weeks | Daily |
-| `GET /api/admin/release-expired` | Releases items from abandoned pending orders (>10 min unpaid) back to the store, or confirms them if payment actually went through | Every 10–15 min |
 
 Currently scheduled via an external service (cron-job.org). When configuring a job, the URL **must** include the token, e.g.:
 ```
@@ -200,7 +198,7 @@ https://www.thriftcollision.com/api/admin/clear-new-tags?token=<CRON_SECRET>
 ```
 Set `CRON_SECRET` in both `.env.local` and the Vercel project environment (same value).
 
-> `release-expired` currently has no scheduled job. Without it, items from abandoned checkouts can stay marked `SOLD`. Consider scheduling it.
+> Abandoned checkouts don't need a cleanup job: items are only reserved via a short lazy-expiry hold at payment time (see the checkout hold flow in `ARCHITECTURE.md`), and stale holds are ignored automatically on read — nothing runs in the background.
 
 ## Conventions
 

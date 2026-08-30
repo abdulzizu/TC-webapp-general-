@@ -9,6 +9,7 @@ import Navbar from "@/components/Navbar";
 import { useCart } from "@/lib/cart-context";
 import { useUser } from "@/lib/user-context";
 import type { Order } from "@/lib/user-context";
+import { createClient } from "@/lib/supabase/client";
 
 type FormErrors = Partial<Record<string, string>>;
 
@@ -43,6 +44,7 @@ function CheckoutContent() {
   const [freeShippingThreshold, setFreeShippingThreshold] = useState(65000);
   const [hasActiveStockpile, setHasActiveStockpile] = useState(false);
   const [stockpileInfo, setStockpileInfo] = useState("");
+  const [heldWarning, setHeldWarning] = useState("");
 
   // Auto-detect existing stockpile for signed-in users
   useEffect(() => {
@@ -58,6 +60,34 @@ function CheckoutContent() {
       }
     }
   }, [user]);
+
+  // Soft heads-up: if any cart item is currently being checked out by someone
+  // else (a fresh hold), warn the customer before they fill in their details.
+  useEffect(() => {
+    const productIds = items.map((i) => i.product.id).filter(Boolean);
+    if (productIds.length === 0) { setHeldWarning(""); return; }
+
+    const supabase = createClient();
+    supabase
+      .from("products")
+      .select("name, held_until")
+      .in("id", productIds)
+      .then(({ data }) => {
+        const now = Date.now();
+        const held = (data ?? []).filter(
+          (p: any) => p.held_until && new Date(p.held_until).getTime() > now
+        );
+        if (held.length > 0) {
+          const names = held.map((p: any) => p.name).join(", ");
+          setHeldWarning(
+            `Heads up — ${names} ${held.length > 1 ? "are" : "is"} currently being checked out by someone else. ` +
+            `${held.length > 1 ? "They're" : "It's"} one-of-one, so if they complete payment it'll be gone. You can still try — it may free up.`
+          );
+        } else {
+          setHeldWarning("");
+        }
+      });
+  }, [items]);
 
   const cartShippingCost = subtotal >= freeShippingThreshold ? 0 : Number(searchParams.get("shipping") || 3500);
 
@@ -338,6 +368,13 @@ function CheckoutContent() {
 
       const payData = await payRes.json();
 
+      // An item in the cart is currently being checked out by someone else.
+      if (payRes.status === 409 && payData.error === "item_held") {
+        setSubmitting(false);
+        alert(payData.message || "One of your items is currently being checked out by someone else. Please try again shortly.");
+        return;
+      }
+
       if (!payRes.ok || !payData.authorization_url) {
         setSubmitting(false);
         alert("Payment initialization failed: " + (payData.error || "Please try again"));
@@ -386,6 +423,13 @@ function CheckoutContent() {
           );
         })}
       </div>
+
+      {heldWarning && (
+        <div className="mb-6 flex items-start gap-2.5 p-4 bg-amber-50 border border-amber-200 rounded-xl" role="status">
+          <span className="text-lg shrink-0" aria-hidden="true">👀</span>
+          <p className="text-sm text-amber-800 leading-relaxed">{heldWarning}</p>
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-4">
@@ -577,6 +621,13 @@ function CheckoutContent() {
                     <span>₦{total.toLocaleString()}</span>
                   </div>
                 </div>
+              </div>
+
+              <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-100 rounded-xl mb-3">
+                <span className="text-base shrink-0" aria-hidden="true">⏳</span>
+                <p className="text-xs text-amber-800 leading-relaxed">
+                  Every piece is one-of-one. Once you continue, your {items.length > 1 ? "items are" : "item is"} held just for you for 5 minutes to complete payment.
+                </p>
               </div>
 
               <button

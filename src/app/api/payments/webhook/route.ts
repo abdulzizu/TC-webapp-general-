@@ -84,9 +84,11 @@ export async function POST(req: NextRequest) {
       for (const item of orderItems) {
         if (!item.product_id) continue;
 
-        // Since items are one-of-one, mark as SOLD but keep visible
+        // Since items are one-of-one, mark as SOLD (kept visible) and clear the hold.
         await supabase.from("products").update({
           tag: "SOLD",
+          held_until: null,
+          held_by_order: null,
         }).eq("id", item.product_id);
       }
     }

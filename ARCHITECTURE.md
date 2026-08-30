@@ -78,7 +78,6 @@ Customers can choose to **stockpile** (pay now, hold items, ship later — usefu
 - Order gets `is_stockpile: true` and a `stockpiled_until` deadline (default 1 month out).
 - If a signed-in user already has an active stockpile, new stockpile orders reuse that existing deadline (so everything ships together).
 - The admin **Overview** surfaces stockpiles within 5 days of their deadline (red at ≤2 days).
-- `POST /api/admin/release-expired` handles releasing expired stockpiles.
 
 ---
 
@@ -150,9 +149,9 @@ Both do a basic origin check (must come from a known host) and require `RESEND_A
 
 **Server-side route protection.** There is no `middleware.ts`; the client layout redirect is UX only and provides no real security. Every admin API route authenticates itself via `src/lib/admin-auth.ts`:
 - `verifyAdmin(req)` — validates the `tc_admin` cookie's HMAC signature (constant-time) and 24h age, returning `{ adminId, role }` or `null`. This is the single source of truth; never trust the cookie's mere presence or its raw contents.
-- `verifyAdminOrCron(req)` — for endpoints also triggered by external cron (`clear-new-tags`, `release-expired`). Accepts a valid admin session, or a `CRON_SECRET` supplied as `Authorization: Bearer <secret>` or `?token=<secret>`.
+- `verifyAdminOrCron(req)` — for the `clear-new-tags` endpoint, which is also triggered by external cron. Accepts a valid admin session, or a `CRON_SECRET` supplied as `Authorization: Bearer <secret>` or `?token=<secret>`.
 
-> Set `CRON_SECRET` in the environment if you schedule `clear-new-tags` / `release-expired` via an external cron. Without it, those routes accept admin sessions only.
+> Set `CRON_SECRET` in the environment if you schedule `clear-new-tags` via an external cron. Without it, the route accepts admin sessions only.
 
 ---
 

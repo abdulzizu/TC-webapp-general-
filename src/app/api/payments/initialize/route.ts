@@ -7,12 +7,80 @@ export const runtime = "nodejs";
 // Body: { email, amount, orderId, metadata }
 // Returns: { authorization_url, reference }
 
+// How long an item is held for a customer to complete payment.
+const HOLD_MINUTES = 5;
+
 export async function POST(req: NextRequest) {
   try {
     const { email, amount, orderId, metadata } = await req.json();
 
     if (!email || !amount || !orderId) {
       return NextResponse.json({ error: "email, amount, and orderId are required" }, { status: 400 });
+    }
+
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || "https://cdxuppunppsgryvrieoz.supabase.co",
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { autoRefreshToken: false, persistSession: false } }
+    );
+
+    // ── Reserve the items (one-of-one hold) ─────────────────────────────
+    // Look up this order's product IDs, then try to place a short hold on each.
+    // The hold is race-safe: a conditional update only succeeds if the item
+    // isn't already freshly held by a *different* order and isn't already sold.
+    const { data: orderRow } = await supabase
+      .from("orders")
+      .select("id")
+      .eq("order_id", orderId)
+      .single();
+
+    if (orderRow) {
+      const { data: items } = await supabase
+        .from("order_items")
+        .select("product_id, product_name")
+        .eq("order_id", orderRow.id);
+
+      const nowIso = new Date().toISOString();
+      const holdUntilIso = new Date(Date.now() + HOLD_MINUTES * 60 * 1000).toISOString();
+      const conflicts: string[] = [];
+
+      for (const item of items ?? []) {
+        if (!item.product_id) continue;
+
+        // Atomic claim: set the hold only if the row is currently claimable —
+        // i.e. not sold, and either never held, hold expired, or held by us.
+        const { data: claimed } = await supabase
+          .from("products")
+          .update({ held_until: holdUntilIso, held_by_order: orderId })
+          .eq("id", item.product_id)
+          .neq("tag", "SOLD")
+          .or(`held_until.is.null,held_until.lt.${nowIso},held_by_order.eq.${orderId}`)
+          .select("id");
+
+        // No row updated → someone else holds it (or it's already sold).
+        if (!claimed || claimed.length === 0) {
+          conflicts.push(item.product_name || "an item");
+        }
+      }
+
+      if (conflicts.length > 0) {
+        // Roll back any holds we just placed for this order so we don't
+        // strand items we can't actually sell together.
+        await supabase
+          .from("products")
+          .update({ held_until: null, held_by_order: null })
+          .eq("held_by_order", orderId);
+
+        const names = conflicts.join(", ");
+        return NextResponse.json(
+          {
+            error: "item_held",
+            heldItems: conflicts,
+            message: `Someone's currently checking out ${names}. Since ${conflicts.length > 1 ? "these are" : "it's"} one-of-one, we've paused ${conflicts.length > 1 ? "them" : "it"} for a few minutes. If they don't complete payment, ${conflicts.length > 1 ? "they'll" : "it'll"} free up — check back shortly.`,
+          },
+          { status: 409 }
+        );
+      }
     }
 
     // Initialize transaction with Paystack
@@ -42,12 +110,6 @@ export async function POST(req: NextRequest) {
     }
 
     // Update order with payment reference in Supabase
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || "https://cdxuppunppsgryvrieoz.supabase.co",
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      { auth: { autoRefreshToken: false, persistSession: false } }
-    );
-
     await supabase.from("orders").update({
       pay_method: "paystack",
       status: "pending",

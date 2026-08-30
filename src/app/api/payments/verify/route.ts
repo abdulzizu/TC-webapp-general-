@@ -70,8 +70,11 @@ export async function GET(req: NextRequest) {
       if (orderItems) {
         for (const item of orderItems) {
           if (!item.product_id) continue;
+          // Mark sold and clear any hold — the sale is final now.
           await supabase.from("products").update({
             tag: "SOLD",
+            held_until: null,
+            held_by_order: null,
           }).eq("id", item.product_id);
         }
       }
