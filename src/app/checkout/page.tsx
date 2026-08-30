@@ -26,7 +26,7 @@ function getShippingEstimate(state: string): string {
 function CheckoutContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { items, subtotal, clearCart } = useCart();
+  const { items, subtotal, clearCart, removeItem } = useCart();
   const { user, saveOrder, isSignedIn, supabaseUser } = useUser();
 
   const discountPct = Number(searchParams.get("discount") || 0);
@@ -45,6 +45,9 @@ function CheckoutContent() {
   const [hasActiveStockpile, setHasActiveStockpile] = useState(false);
   const [stockpileInfo, setStockpileInfo] = useState("");
   const [heldWarning, setHeldWarning] = useState("");
+  // When payment is blocked because item(s) are being checked out by someone
+  // else, we hold the details here to render an inline "continue with the rest" card.
+  const [heldBlock, setHeldBlock] = useState<{ names: string[]; message: string } | null>(null);
 
   // Auto-detect existing stockpile for signed-in users
   useEffect(() => {
@@ -233,19 +236,39 @@ function CheckoutContent() {
     return Object.keys(newErrors).length === 0;
   }
 
-  async function handlePlaceOrder() {
+  async function handlePlaceOrder(excludeIds: number[] = []) {
     // Re-validate before payment
     if (!form.phone.trim()) {
       alert("Phone number is required for delivery. Please go back and add it.");
       setStep("details");
       return;
     }
+
+    // Items to actually order — minus any the customer chose to drop (held by others).
+    const orderItemsList = items.filter((i) => !excludeIds.includes(i.product.id));
+    if (orderItemsList.length === 0) {
+      alert("There's nothing left to check out. Head back to the shop to keep browsing.");
+      return;
+    }
+
+    // Recompute money on just the items being ordered (mirrors the outer cost formula).
+    const isFullCart = orderItemsList.length === items.length;
+    const orderSubtotal = isFullCart ? subtotal : orderItemsList.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
+    const orderDiscountAmount = discountType === "percentage"
+      ? (discountPct ? Math.round((orderSubtotal * discountPct) / 100) : 0)
+      : discountType === "fixed"
+        ? Math.min(discountValue, orderSubtotal)
+        : 0;
+    const orderShippingCost = deliveryChoice === "stockpile" ? 0 : actualShippingCost;
+    const orderTotal = orderSubtotal - orderDiscountAmount + orderShippingCost;
+
     setSubmitting(true);
+    setHeldBlock(null);
     try {
       // Check if any items are sold before proceeding
       const { createClient: createSB } = await import("@/lib/supabase/client");
       const sb = createSB();
-      const productIds = items.map((i) => i.product.id);
+      const productIds = orderItemsList.map((i) => i.product.id);
       const { data: currentProducts } = await sb
         .from("products")
         .select("id, name, tag")
@@ -282,7 +305,7 @@ function CheckoutContent() {
       const order: Order = {
         orderId,
         date: new Date().toISOString(),
-        items: items.map((i) => ({
+        items: orderItemsList.map((i) => ({
           productId: i.product.id,
           productName: i.product.name,
           productImage: i.product.image,
@@ -290,10 +313,10 @@ function CheckoutContent() {
           quantity: i.quantity,
           price: i.product.price,
         })),
-        subtotal,
-        shippingCost,
-        discountAmount,
-        total,
+        subtotal: orderSubtotal,
+        shippingCost: orderShippingCost,
+        discountAmount: orderDiscountAmount,
+        total: orderTotal,
         deliveryAddress: fullAddress,
         payMethod: "paystack",
         status: "pending",
@@ -310,10 +333,10 @@ function CheckoutContent() {
         guest_name: form.name || null,
         guest_email: form.email || null,
         status: "pending",
-        subtotal,
-        shipping_cost: shippingCost,
-        discount_amount: discountAmount,
-        total,
+        subtotal: orderSubtotal,
+        shipping_cost: orderShippingCost,
+        discount_amount: orderDiscountAmount,
+        total: orderTotal,
         delivery_address: fullAddress,
         pay_method: "paystack",
         is_stockpile: deliveryChoice === "stockpile",
@@ -355,7 +378,7 @@ function CheckoutContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: form.email || `guest_${Date.now()}@thriftcollision.com`,
-          amount: total,
+          amount: orderTotal,
           orderId,
           metadata: {
             customer_name: form.name,
@@ -368,10 +391,14 @@ function CheckoutContent() {
 
       const payData = await payRes.json();
 
-      // An item in the cart is currently being checked out by someone else.
+      // One or more items are currently being checked out by someone else.
+      // Surface an inline card so the customer can drop them and grab the rest fast.
       if (payRes.status === 409 && payData.error === "item_held") {
         setSubmitting(false);
-        alert(payData.message || "One of your items is currently being checked out by someone else. Please try again shortly.");
+        setHeldBlock({
+          names: Array.isArray(payData.heldItems) ? payData.heldItems : [],
+          message: payData.message || "One of your items is currently being checked out by someone else.",
+        });
         return;
       }
 
@@ -387,6 +414,25 @@ function CheckoutContent() {
       setSubmitting(false);
       alert("Something went wrong placing your order. Please try again.");
     }
+  }
+
+  // "Continue with available items" — drop the held item(s) from the cart and
+  // immediately re-run checkout on whatever's left, so the customer doesn't lose
+  // the rest of their cart to another buyer while they hesitate.
+  function continueWithoutHeld() {
+    if (!heldBlock) return;
+    const heldNames = new Set(heldBlock.names);
+    const heldItems = items.filter((i) => heldNames.has(i.product.name));
+    const excludeIds = heldItems.map((i) => i.product.id);
+
+    // Remove the held items from the cart.
+    heldItems.forEach((i) => removeItem(i.product.id, i.size));
+
+    setHeldBlock(null);
+
+    // Re-run checkout excluding the held items. Pass the IDs explicitly since
+    // the cart state update above hasn't flushed yet.
+    handlePlaceOrder(excludeIds);
   }
 
   if (items.length === 0) {
@@ -424,10 +470,35 @@ function CheckoutContent() {
         })}
       </div>
 
-      {heldWarning && (
+      {heldWarning && !heldBlock && (
         <div className="mb-6 flex items-start gap-2.5 p-4 bg-amber-50 border border-amber-200 rounded-xl" role="status">
           <span className="text-lg shrink-0" aria-hidden="true">👀</span>
           <p className="text-sm text-amber-800 leading-relaxed">{heldWarning}</p>
+        </div>
+      )}
+
+      {heldBlock && (
+        <div className="mb-6 p-5 bg-amber-50 border-2 border-amber-300 rounded-2xl" role="alert">
+          <div className="flex items-start gap-2.5 mb-4">
+            <span className="text-xl shrink-0" aria-hidden="true">⏳</span>
+            <p className="text-sm text-amber-900 leading-relaxed font-medium">{heldBlock.message}</p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2.5">
+            {items.length - heldBlock.names.length > 0 && (
+              <button
+                onClick={continueWithoutHeld}
+                className="flex-1 py-3 bg-[#1a6b2f] text-white font-bold rounded-full text-sm hover:bg-[#104020] transition-colors"
+              >
+                Continue with available {items.length - heldBlock.names.length > 1 ? "items" : "item"}
+              </button>
+            )}
+            <button
+              onClick={() => setHeldBlock(null)}
+              className="flex-1 py-3 border-2 border-amber-300 text-amber-800 font-bold rounded-full text-sm hover:bg-amber-100 transition-colors"
+            >
+              {items.length - heldBlock.names.length > 0 ? "Wait & keep everything" : "OK, I'll wait"}
+            </button>
+          </div>
         </div>
       )}
 
@@ -631,7 +702,7 @@ function CheckoutContent() {
               </div>
 
               <button
-                onClick={handlePlaceOrder}
+                onClick={() => handlePlaceOrder()}
                 disabled={submitting}
                 className="w-full py-4 bg-[#1a6b2f] text-white font-bold rounded-full hover:bg-[#104020] transition-colors shadow-lg shadow-[#1a6b2f]/20 disabled:opacity-70 disabled:cursor-not-allowed text-base"
               >
