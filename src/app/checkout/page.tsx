@@ -413,7 +413,18 @@ function CheckoutContent() {
               <div className="space-y-4 mb-6">
                 <Field id="name" label="Full Name *" value={form.name} onChange={(v) => setField("name", v)} error={errors.name} placeholder="e.g. Abubakar Zizu" autoComplete="name" />
                 <Field id="phone" label="Phone Number *" type="tel" value={form.phone} onChange={(v) => setField("phone", v)} error={errors.phone} placeholder="e.g. 08012345678" autoComplete="tel" />
-                <Field id="email" label="Email (optional)" type="email" value={form.email} onChange={(v) => setField("email", v)} error={errors.email} placeholder="For order updates" autoComplete="email" />
+                <Field
+                  id="email"
+                  label={isSignedIn ? "Email" : "Email (optional)"}
+                  type="email"
+                  value={form.email}
+                  onChange={(v) => setField("email", v)}
+                  error={errors.email}
+                  placeholder="For order updates"
+                  autoComplete="email"
+                  readOnly={isSignedIn && !!form.email}
+                  hint={isSignedIn && !!form.email ? "Linked to your account" : undefined}
+                />
                 <Field id="address" label="Delivery Address *" value={form.address} onChange={(v) => setField("address", v)} error={errors.address} placeholder="Street address" autoComplete="street-address" />
                 <div className="grid grid-cols-2 gap-4">
                   <Field id="city" label="City *" value={form.city} onChange={(v) => setField("city", v)} error={errors.city} placeholder="e.g. Abuja" autoComplete="address-level2" />
@@ -620,10 +631,11 @@ function CheckoutContent() {
   );
 }
 
-function Field({ id, label, value, onChange, error, placeholder, type = "text", autoComplete }: {
+function Field({ id, label, value, onChange, error, placeholder, type = "text", autoComplete, readOnly, hint }: {
   id: string; label: string; value: string;
   onChange: (v: string) => void; error?: string;
   placeholder?: string; type?: string; autoComplete?: string;
+  readOnly?: boolean; hint?: string;
 }) {
   return (
     <div>
@@ -632,10 +644,19 @@ function Field({ id, label, value, onChange, error, placeholder, type = "text", 
         id={id} type={type} value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder} autoComplete={autoComplete}
-        className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none transition ${error ? "border-red-400 focus:border-red-400 bg-red-50" : "border-gray-200 focus:border-[#1a6b2f] focus:ring-1 focus:ring-[#1a6b2f]/20"}`}
-        aria-describedby={error ? `${id}-error` : undefined}
+        readOnly={readOnly}
+        aria-readonly={readOnly || undefined}
+        className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none transition ${
+          readOnly
+            ? "border-gray-200 bg-gray-50 text-gray-500 cursor-not-allowed"
+            : error
+            ? "border-red-400 focus:border-red-400 bg-red-50"
+            : "border-gray-200 focus:border-[#1a6b2f] focus:ring-1 focus:ring-[#1a6b2f]/20"
+        }`}
+        aria-describedby={error ? `${id}-error` : hint ? `${id}-hint` : undefined}
         aria-invalid={!!error}
       />
+      {hint && !error && <p id={`${id}-hint`} className="text-gray-400 text-xs mt-1">{hint}</p>}
       {error && <p id={`${id}-error`} className="text-red-500 text-xs mt-1" role="alert">{error}</p>}
     </div>
   );
