@@ -45,6 +45,14 @@ export default function AdminDiscountsPage() {
   const [saving, setSaving] = useState(false);
   const [products, setProducts] = useState<{ id: number; name: string }[]>([]);
 
+  // Send-to-customers panel
+  const [sendingFor, setSendingFor] = useState<Discount | null>(null);
+  const [sendEmails, setSendEmails] = useState("");
+  const [sendNote, setSendNote] = useState("");
+  const [sendBusy, setSendBusy] = useState(false);
+  const [sendResult, setSendResult] = useState("");
+  const [customers, setCustomers] = useState<{ email: string; name: string }[]>([]);
+
   const loadDiscounts = useCallback(async () => {
     const { data } = await supabase.from("discount_codes").select("*").order("created_at", { ascending: false });
     if (data) setDiscounts(data as any);
@@ -56,7 +64,64 @@ export default function AdminDiscountsPage() {
     if (data) setProducts(data as any);
   }, [supabase]);
 
-  useEffect(() => { loadDiscounts(); loadProducts(); }, [loadDiscounts, loadProducts]);
+  const loadCustomers = useCallback(async () => {
+    const { data } = await supabase.from("profiles").select("email, name").not("email", "is", null);
+    if (data) {
+      const seen = new Set<string>();
+      const list: { email: string; name: string }[] = [];
+      for (const c of data as any[]) {
+        const email = (c.email || "").toLowerCase();
+        if (email && email.includes("@") && !seen.has(email)) {
+          seen.add(email);
+          list.push({ email, name: c.name || "" });
+        }
+      }
+      setCustomers(list);
+    }
+  }, [supabase]);
+
+  useEffect(() => { loadDiscounts(); loadProducts(); loadCustomers(); }, [loadDiscounts, loadProducts, loadCustomers]);
+
+  function openSend(d: Discount) {
+    setSendingFor(d);
+    setSendEmails("");
+    setSendNote("");
+    setSendResult("");
+  }
+
+  function addCustomerEmail(email: string) {
+    const existing = sendEmails.split(/[\s,]+/).map((e) => e.trim().toLowerCase()).filter(Boolean);
+    if (existing.includes(email.toLowerCase())) return;
+    setSendEmails((prev) => (prev.trim() ? `${prev.trim()}, ${email}` : email));
+  }
+
+  async function handleSend() {
+    if (!sendingFor) return;
+    const emails = sendEmails.split(/[\s,]+/).map((e) => e.trim()).filter(Boolean);
+    if (emails.length === 0) { setSendResult("Add at least one email address."); return; }
+
+    setSendBusy(true);
+    setSendResult("");
+    try {
+      const res = await fetch("/api/admin/discounts/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: sendingFor.code, emails, note: sendNote }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setSendResult(data.error || "Failed to send.");
+      } else {
+        setSendResult(`✓ Sent to ${data.sent} customer${data.sent !== 1 ? "s" : ""}.` + (data.inactive ? " Note: this code is currently inactive — recipients won't be able to use it until you activate it." : ""));
+        setSendEmails("");
+        setSendNote("");
+      }
+    } catch {
+      setSendResult("Something went wrong. Please try again.");
+    } finally {
+      setSendBusy(false);
+    }
+  }
 
   function startCreate() {
     setForm(EMPTY_FORM);
@@ -289,6 +354,7 @@ export default function AdminDiscountsPage() {
                     <button onClick={() => toggleActive(d)} className={`text-xs px-2 py-1 rounded-full border ${d.active ? "border-green-200 text-green-700" : "border-gray-200 text-gray-400"}`}>
                       {d.active ? "Active" : "Inactive"}
                     </button>
+                    <button onClick={() => openSend(d)} className="text-xs text-[#1a6b2f] hover:underline font-semibold">✉️ Send</button>
                     <button onClick={() => startEdit(d)} className="text-xs text-[#1a6b2f] hover:underline font-semibold">Edit</button>
                     <button onClick={() => handleDelete(d.id)} className="text-xs text-red-400 hover:text-red-600 font-semibold">Delete</button>
                   </div>
@@ -296,6 +362,81 @@ export default function AdminDiscountsPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Send-to-customers modal */}
+      {sendingFor && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setSendingFor(null)}>
+          <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-5" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-lg font-bold text-[#1a1a1a]">Send code to customers</h2>
+                <span className="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded mt-1 inline-block">{sendingFor.code}</span>
+              </div>
+              <button onClick={() => setSendingFor(null)} className="text-gray-400 hover:text-gray-700 text-sm">Close ✕</button>
+            </div>
+
+            {!sendingFor.active && (
+              <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4">
+                Heads up: this code is currently <strong>inactive</strong>. Customers won&apos;t be able to redeem it until you activate it.
+              </p>
+            )}
+
+            {/* Emails */}
+            <label className="block text-xs font-semibold text-gray-600 mb-1">Recipient emails</label>
+            <textarea
+              value={sendEmails}
+              onChange={(e) => setSendEmails(e.target.value)}
+              rows={2}
+              placeholder="Separate with commas or new lines"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a6b2f] resize-none mb-2"
+            />
+
+            {/* Quick-pick from customers */}
+            {customers.length > 0 && (
+              <div className="mb-4">
+                <p className="text-[11px] text-gray-400 mb-1">Tap to add a customer:</p>
+                <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
+                  {customers.slice(0, 40).map((c) => (
+                    <button
+                      key={c.email}
+                      onClick={() => addCustomerEmail(c.email)}
+                      className="text-[11px] border border-gray-200 rounded-full px-2.5 py-1 hover:border-[#1a6b2f] hover:text-[#1a6b2f] transition"
+                      title={c.email}
+                    >
+                      {c.name ? c.name.split(" ")[0] : c.email}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Optional note */}
+            <label className="block text-xs font-semibold text-gray-600 mb-1">Personal note (optional)</label>
+            <textarea
+              value={sendNote}
+              onChange={(e) => setSendNote(e.target.value)}
+              rows={3}
+              placeholder="e.g. Thanks for being a loyal customer — here's 15% off your next find."
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a6b2f] resize-none mb-4"
+            />
+
+            {sendResult && (
+              <p className={`text-xs mb-3 ${sendResult.startsWith("✓") ? "text-green-600" : "text-red-500"}`}>{sendResult}</p>
+            )}
+
+            <div className="flex gap-2">
+              <button
+                onClick={handleSend}
+                disabled={sendBusy || !sendEmails.trim()}
+                className="flex-1 py-2.5 bg-[#1a6b2f] text-white font-bold rounded-full text-sm hover:bg-[#104020] transition disabled:opacity-50"
+              >
+                {sendBusy ? "Sending…" : "Send code"}
+              </button>
+              <button onClick={() => setSendingFor(null)} className="px-5 py-2.5 border border-gray-200 rounded-full text-sm font-semibold hover:border-gray-300 transition">Done</button>
+            </div>
+          </div>
         </div>
       )}
     </div>
