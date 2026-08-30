@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { verifyAdmin } from "@/lib/admin-auth";
 
 // POST /api/admin/notify
 // Body: { subject: string, message: string }
 // Sends an email to all leads via Resend
 
 export async function POST(req: NextRequest) {
-  // Verify admin cookie
-  const cookie = req.cookies.get("tc_admin")?.value;
-  if (!cookie) {
+  // Verify admin session
+  if (!verifyAdmin(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

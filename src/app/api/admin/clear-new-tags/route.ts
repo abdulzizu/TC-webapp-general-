@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { verifyAdminOrCron } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
 
 // GET /api/admin/clear-new-tags
 // Removes the "NEW" tag from products older than 2 weeks
-// Can be called manually or via external cron (cron-job.org)
+// Callable by a logged-in admin, or via external cron with the CRON_SECRET token
 
 export async function GET(req: NextRequest) {
+  if (!verifyAdminOrCron(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,

@@ -67,6 +67,7 @@ Create a `.env.local` in the project root. None of these are committed.
 | `TERMII_SENDER_ID` | no | Termii sender ID |
 | `TERMII_OTP_CHANNEL` | no | `whatsapp` or `generic` (SMS) |
 | `OPENAI_API_KEY` | no | OpenAI key — AI-generated product descriptions in the admin |
+| `CRON_SECRET` | no | Optional shared secret for triggering `clear-new-tags` / `release-expired` from an external cron. If unset, those routes require an admin session. |
 
 > `NEXT_PUBLIC_*` variables are exposed to the browser. Everything else must stay server-side only.
 

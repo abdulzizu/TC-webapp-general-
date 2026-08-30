@@ -1,24 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import bcrypt from "bcryptjs";
+import { verifyAdmin } from "@/lib/admin-auth";
 
 export const runtime = "nodejs";
 
 // POST /api/admin/change-password
 // Body: { currentPassword: string, newPassword: string }
-// Requires admin cookie
+// Requires a valid admin session
 
 export async function POST(req: NextRequest) {
-  const cookie = req.cookies.get("tc_admin")?.value;
-  if (!cookie) {
+  const session = verifyAdmin(req);
+  if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-
-  // Extract admin ID from cookie
-  const [adminId] = cookie.split(":");
-  if (!adminId) {
-    return NextResponse.json({ error: "Invalid session" }, { status: 401 });
-  }
+  const adminId = session.adminId;
 
   const { currentPassword, newPassword } = await req.json();
 

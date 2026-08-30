@@ -1,13 +1,18 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { verifyAdminOrCron } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
 
 // GET /api/admin/release-expired
 // Releases items from pending orders older than 10 minutes (payment abandoned)
 // Verifies with Paystack first — if payment was actually made, updates order to processing instead
+// Callable by a logged-in admin, or via external cron with the CRON_SECRET token
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  if (!verifyAdminOrCron(req)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL || "https://cdxuppunppsgryvrieoz.supabase.co",

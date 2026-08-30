@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { verifyAdmin } from "@/lib/admin-auth";
 
 // DELETE /api/admin/customers?id=<user_id>
 // Deletes a user from auth.users (cascades to profiles via FK)
 export async function DELETE(req: NextRequest) {
-  // Verify admin cookie
-  const cookie = req.cookies.get("tc_admin")?.value;
-  if (!cookie) {
+  // Verify admin session
+  if (!verifyAdmin(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

@@ -148,7 +148,11 @@ Both do a basic origin check (must come from a known host) and require `RESEND_A
 - `/api/admin/check` re-verifies signature + age. The `/admin` client layout calls it on mount and redirects to `/admin/login` if invalid.
 - Login is rate-limited: 5 attempts / 15 min per IP (in-memory map).
 
-> No `middleware.ts`. Protection is layout + check-route based, not edge middleware. Admin API routes should each validate the `tc_admin` cookie server-side rather than trusting the client redirect.
+**Server-side route protection.** There is no `middleware.ts`; the client layout redirect is UX only and provides no real security. Every admin API route authenticates itself via `src/lib/admin-auth.ts`:
+- `verifyAdmin(req)` — validates the `tc_admin` cookie's HMAC signature (constant-time) and 24h age, returning `{ adminId, role }` or `null`. This is the single source of truth; never trust the cookie's mere presence or its raw contents.
+- `verifyAdminOrCron(req)` — for endpoints also triggered by external cron (`clear-new-tags`, `release-expired`). Accepts a valid admin session, or a `CRON_SECRET` supplied as `Authorization: Bearer <secret>` or `?token=<secret>`.
+
+> Set `CRON_SECRET` in the environment if you schedule `clear-new-tags` / `release-expired` via an external cron. Without it, those routes accept admin sessions only.
 
 ---
 

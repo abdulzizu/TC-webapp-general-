@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { verifyAdmin } from "@/lib/admin-auth";
 
 export const runtime = "nodejs";
 
 // GET /api/admin/fix-pending
 // One-time fix: checks all pending orders with Paystack and updates paid ones to processing
-// Protected by admin cookie
+// Requires a valid admin session
 
 export async function GET(req: NextRequest) {
-  // Verify admin cookie
-  const cookie = req.cookies.get("tc_admin")?.value;
-  if (!cookie) {
+  // Verify admin session
+  if (!verifyAdmin(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
