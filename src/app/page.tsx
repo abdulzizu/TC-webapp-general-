@@ -615,6 +615,73 @@ function NextDrop() {
   );
 }
 
+// ─── Reviews Section ─────────────────────────────────────────────────────────
+
+function ReviewsSection() {
+  const [reviews, setReviews] = useState<{ id: string; first_name: string; comment: string; photo: string | null }[]>([]);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from("reviews")
+      .select("id, first_name, comment, photo")
+      .eq("status", "approved")
+      .eq("featured", true)
+      .order("created_at", { ascending: false })
+      .limit(4)
+      .then(({ data }) => {
+        if (data && data.length > 0) setReviews(data as any);
+      });
+  }, []);
+
+  // Hidden when no featured reviews
+  if (reviews.length === 0) return null;
+
+  return (
+    <section className="py-16 sm:py-20 bg-[#1a1a1a]" aria-labelledby="reviews-heading">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6">
+        <div className="text-center mb-10">
+          <span className="text-xs font-700 tracking-widest uppercase text-[#1a6b2f] mb-2 block">
+            From the community
+          </span>
+          <h2 id="reviews-heading" className="text-3xl sm:text-4xl font-700 text-white">
+            What people are saying
+          </h2>
+        </div>
+
+        <div className="grid sm:grid-cols-2 gap-4">
+          {reviews.map((r) => (
+            <div key={r.id} className="bg-white/5 border border-white/10 rounded-2xl p-5">
+              <div className="flex items-center gap-3 mb-3">
+                {r.photo ? (
+                  <div className="w-11 h-11 rounded-full overflow-hidden bg-white/10 shrink-0">
+                    <img src={r.photo} alt="" className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <div className="w-11 h-11 rounded-full bg-[#1a6b2f]/20 flex items-center justify-center text-[#1a6b2f] font-bold shrink-0">
+                    {r.first_name[0]?.toUpperCase()}
+                  </div>
+                )}
+                <div>
+                  <p className="font-semibold text-white text-sm">{r.first_name}</p>
+                  <p className="text-[10px] text-[#1a6b2f] font-semibold">✓ Verified purchase</p>
+                </div>
+              </div>
+              <p className="text-sm text-white/70 leading-relaxed">&ldquo;{r.comment}&rdquo;</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="text-center mt-8">
+          <Link href="/reviews" className="text-sm text-white/60 hover:text-white transition-colors underline underline-offset-4">
+            Read all reviews →
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ─── Sustainability Section ──────────────────────────────────────────────────
 
 function Sustainability() {
@@ -860,6 +927,7 @@ function Footer() {
                 { label: "Shipping Info", href: "/shipping" },
                 { label: "Returns Policy", href: "/returns" },
                 { label: "Order Tracking", href: "/tracking" },
+                { label: "Reviews", href: "/reviews" },
                 { label: "Contact Us", href: "/contact" },
                 { label: "FAQs", href: "/faqs" },
               ].map((l) => (
@@ -897,6 +965,7 @@ export default function Home() {
         <EssentialsCarousel />
         <NextDrop />
         <Sustainability />
+        <ReviewsSection />
         <NotifySignup />
       </main>
       <Footer />
