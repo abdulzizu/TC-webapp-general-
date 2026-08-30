@@ -185,6 +185,23 @@ Images: `next.config.ts` allows the Supabase storage host and the Cloudinary hos
 
 ---
 
+## Automated jobs (cron)
+
+Two maintenance endpoints are designed to run on a schedule. Both require authentication: a logged-in admin session, or a `CRON_SECRET` token passed as `?token=<secret>` or `Authorization: Bearer <secret>`.
+
+| Endpoint | What it does | Suggested schedule |
+|----------|--------------|--------------------|
+| `GET /api/admin/clear-new-tags` | Removes the `NEW` tag from products older than 2 weeks | Daily |
+| `GET /api/admin/release-expired` | Releases items from abandoned pending orders (>10 min unpaid) back to the store, or confirms them if payment actually went through | Every 10–15 min |
+
+Currently scheduled via an external service (cron-job.org). When configuring a job, the URL **must** include the token, e.g.:
+```
+https://www.thriftcollision.com/api/admin/clear-new-tags?token=<CRON_SECRET>
+```
+Set `CRON_SECRET` in both `.env.local` and the Vercel project environment (same value).
+
+> `release-expired` currently has no scheduled job. Without it, items from abandoned checkouts can stay marked `SOLD`. Consider scheduling it.
+
 ## Conventions
 
 - Brand green is `#1a6b2f`; near-black is `#1a1a1a`.
