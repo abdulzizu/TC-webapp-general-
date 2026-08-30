@@ -10,6 +10,7 @@ type Order = {
   user_id: string | null;
   guest_phone: string | null;
   guest_name: string | null;
+  guest_email: string | null;
   status: string;
   subtotal: number;
   shipping_cost: number;
@@ -60,6 +61,23 @@ export default function AdminOrdersPage() {
           if (item.product_id) {
             await supabase.from("products").update({ available: false }).eq("id", item.product_id);
           }
+        }
+      }
+
+      // Send a review-request email to the customer (if we have their email)
+      if (order?.guest_email) {
+        try {
+          await fetch("/api/reviews/request", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: order.guest_email,
+              name: order.guest_name || "there",
+              orderId: order.order_id,
+            }),
+          });
+        } catch (emailErr) {
+          console.error("Failed to send review request email:", emailErr);
         }
       }
     }
