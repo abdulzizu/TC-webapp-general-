@@ -66,13 +66,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-[#1a1a1a] text-white transform transition-transform lg:translate-x-0 lg:static lg:inset-auto ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
-        <div className="p-5 border-b border-white/10">
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-[#1a1a1a] text-white flex flex-col transform transition-transform lg:translate-x-0 lg:static lg:inset-auto ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
+        {/* Header — fixed */}
+        <div className="p-5 border-b border-white/10 shrink-0">
           <h1 className="font-bold text-lg">Thrift Collision</h1>
           <p className="text-xs text-gray-400 mt-0.5">Admin Dashboard</p>
         </div>
 
-        <nav className="p-3 space-y-1">
+        {/* Nav — scrolls independently if it runs long */}
+        <nav className="flex-1 overflow-y-auto p-3 space-y-1">
           {NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href));
             return (
@@ -93,16 +95,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           })}
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10">
+        {/* Footer — fixed at bottom, clearly separated from the nav */}
+        <div className="shrink-0 p-3 border-t border-white/10 space-y-1">
+          <Link
+            href="/"
+            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
+          >
+            <span className="text-base">🏬</span>
+            Back to store
+          </Link>
           <button
             onClick={handleLogout}
-            className="w-full text-left text-sm text-gray-400 hover:text-red-400 transition-colors px-4 py-2"
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-colors"
           >
+            <span className="text-base">🚪</span>
             Sign out
           </button>
-          <Link href="/" className="block text-xs text-gray-500 hover:text-gray-300 px-4 mt-1 transition-colors">
-            ← Back to store
-          </Link>
         </div>
       </aside>
 
