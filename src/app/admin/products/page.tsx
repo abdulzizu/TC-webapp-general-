@@ -21,9 +21,14 @@ type Product = {
   description: string;
   available: boolean;
   suggest_essential: boolean;
+  sold_at: string | null;
+  sold_channel: string | null;
 };
 
 type Pairing = { item: string; reason: string };
+
+// How an item was sold when it wasn't through the website checkout.
+const SOLD_CHANNELS = ["Website", "Instagram", "WhatsApp", "In person", "Other"];
 
 const EMPTY_PRODUCT: Omit<Product, "id"> & { pairs_with: Pairing[] } = {
   name: "",
@@ -41,6 +46,8 @@ const EMPTY_PRODUCT: Omit<Product, "id"> & { pairs_with: Pairing[] } = {
   description: "",
   available: true,
   suggest_essential: false,
+  sold_at: null,
+  sold_channel: null,
   pairs_with: [],
 };
 
@@ -178,6 +185,22 @@ export default function AdminProductsPage() {
         payload.visible_at = new Date().toISOString();
       }
     }
+    // ── Sold tracking ──────────────────────────────────────────
+    // When an item is marked SOLD, stamp when it sold and via which channel,
+    // so off-site sales (IG/WhatsApp) count accurately in analytics.
+    const wasSold = editing?.tag === "SOLD";
+    const isSold = productFields.tag === "SOLD";
+    if (isSold && !wasSold) {
+      // Newly sold — record the moment (unless one was already provided).
+      payload.sold_at = productFields.sold_at || new Date().toISOString();
+      payload.sold_channel = productFields.sold_channel || "Instagram";
+    } else if (!isSold && wasSold) {
+      // Un-sold (tag changed away from SOLD) — clear the sale record.
+      payload.sold_at = null;
+      payload.sold_channel = null;
+    }
+    // If it was and remains SOLD, keep the original sold_at; channel edits pass through.
+
     // Track whether this save makes an item newly available, so we can alert
     // customers whose wishlist matches (fires regardless of drop vs. manual).
     let newlyAvailableId: number | null = null;
@@ -537,6 +560,25 @@ export default function AdminProductsPage() {
               </div>
             </div>
           </div>
+
+          {/* Sold channel — only when marked SOLD, so off-site sales are counted right */}
+          {form.tag === "SOLD" && (
+            <div className="bg-red-50/50 border border-red-100 rounded-lg p-3">
+              <label className="block text-xs font-semibold text-gray-600 mb-1">How was it sold?</label>
+              <select
+                value={form.sold_channel || "Instagram"}
+                onChange={(e) => setForm({ ...form, sold_channel: e.target.value })}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#1a6b2f]"
+              >
+                {SOLD_CHANNELS.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <p className="text-[10px] text-gray-400 mt-1">
+                {editing?.tag === "SOLD" && form.sold_at
+                  ? `Sold ${new Date(form.sold_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}. Changing this only updates the channel.`
+                  : "We'll record today as the sale date so it shows up in Analytics."}
+              </p>
+            </div>
+          )}
 
           {/* Colours */}
           <div>

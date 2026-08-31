@@ -22,6 +22,8 @@ type Product = {
   drop_id: number | null;
   tag: string | null;
   available: boolean;
+  sold_at: string | null;
+  sold_channel: string | null;
 };
 
 // product_id -> earliest paid-order timestamp (ms) for that product
@@ -57,10 +59,10 @@ export default function AnalyticsPage() {
       .not("released_at", "is", null)
       .order("released_at", { ascending: false });
 
-    // Products tied to a drop (include tag so we can detect manually-sold items)
+    // Products tied to a drop (include tag + sold info for manual/off-site sales)
     const { data: prodRows } = await supabase
       .from("products")
-      .select("id, name, category, subcategory, price, drop_id, tag, available")
+      .select("id, name, category, subcategory, price, drop_id, tag, available, sold_at, sold_channel")
       .not("drop_id", "is", null);
 
     // Order items joined with their order (for sale time + paid status)
@@ -137,19 +139,29 @@ export default function AnalyticsPage() {
     return true;
   });
 
+  // Effective sell time (ms) for a product: prefer the website order timestamp
+  // (most accurate); otherwise fall back to the manually-recorded sold_at
+  // (IG/WhatsApp sales). Returns undefined if we have no timed sale record.
+  function sellTime(p: Product): number | undefined {
+    const orderTime = saleMap.get(p.id);
+    const manualTime = p.sold_at ? new Date(p.sold_at).getTime() : undefined;
+    if (orderTime !== undefined && manualTime !== undefined) return Math.min(orderTime, manualTime);
+    return orderTime ?? manualTime;
+  }
+
   // Determine if a product sold within the window of ITS drop's release
   function soldWithinWindow(p: Product): boolean {
     const drop = p.drop_id ? dropById.get(p.drop_id) : null;
     if (!drop?.released_at) return false;
-    const saleTime = saleMap.get(p.id);
+    const saleTime = sellTime(p);
     if (saleTime === undefined) return false;
     const releaseTime = new Date(drop.released_at).getTime();
     return saleTime <= releaseTime + windowHours * 3600 * 1000;
   }
 
-  // Sold at all — either a paid order exists, or it was marked SOLD manually.
+  // Sold at all — either a timed sale record exists, or it's tagged SOLD.
   function soldEver(p: Product): boolean {
-    return saleMap.get(p.id) !== undefined || p.tag === "SOLD";
+    return sellTime(p) !== undefined || p.tag === "SOLD";
   }
 
   // ── Aggregate metrics for scoped selection ──────────────────
@@ -165,7 +177,7 @@ export default function AnalyticsPage() {
     const cur = catAgg.get(p.category) ?? { totalHours: 0, count: 0, sold: 0, total: 0 };
     cur.total++;
     const drop = p.drop_id ? dropById.get(p.drop_id) : null;
-    const saleTime = saleMap.get(p.id);
+    const saleTime = sellTime(p);
     if (drop?.released_at && saleTime !== undefined) {
       const hours = (saleTime - new Date(drop.released_at).getTime()) / 3600000;
       if (hours >= 0) { cur.totalHours += hours; cur.count++; cur.sold++; }
@@ -189,7 +201,7 @@ export default function AnalyticsPage() {
   const itemVelocity = scopedProducts
     .map((p) => {
       const drop = p.drop_id ? dropById.get(p.drop_id) : null;
-      const saleTime = saleMap.get(p.id);
+      const saleTime = sellTime(p);
       const hours = drop?.released_at && saleTime !== undefined
         ? (saleTime - new Date(drop.released_at).getTime()) / 3600000
         : null;
@@ -201,6 +213,21 @@ export default function AnalyticsPage() {
       if (b.hours === null) return -1;
       return a.hours - b.hours;
     });
+
+  // Sales channel breakdown (where sold items came from)
+  const channelAgg = new Map<string, number>();
+  for (const p of scopedProducts) {
+    if (!soldEver(p)) continue;
+    // Order-backed sales are website sales; else use the recorded channel.
+    const channel = saleMap.get(p.id) !== undefined
+      ? "Website"
+      : (p.sold_channel || "Other");
+    channelAgg.set(channel, (channelAgg.get(channel) ?? 0) + 1);
+  }
+  const channelBreakdown = [...channelAgg.entries()]
+    .map(([channel, count]) => ({ channel, count }))
+    .sort((a, b) => b.count - a.count);
+  const totalSoldForChannels = channelBreakdown.reduce((s, c) => s + c.count, 0);
 
   function fmtDuration(hours: number): string {
     if (hours < 1) return `${Math.max(1, Math.round(hours * 60))} min`;
@@ -365,6 +392,30 @@ export default function AnalyticsPage() {
           </div>
         )}
       </section>
+
+      {/* Sales channel breakdown */}
+      {totalSoldForChannels > 0 && (
+        <section className="bg-white rounded-xl border border-gray-100 p-5">
+          <h2 className="font-bold text-sm text-[#1a1a1a] mb-1">Where sales came from</h2>
+          <p className="text-[11px] text-gray-400 mb-4">
+            Website = checkout on the site. Others are off-site sales you marked SOLD (IG, WhatsApp, etc.).
+          </p>
+          <div className="space-y-2">
+            {channelBreakdown.map((c) => {
+              const pct = Math.round((c.count / totalSoldForChannels) * 100);
+              return (
+                <div key={c.channel} className="flex items-center gap-3">
+                  <span className="text-sm w-24 shrink-0">{c.channel}</span>
+                  <div className="flex-1 bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                    <div className="bg-[#1a6b2f] h-full rounded-full" style={{ width: `${pct}%` }} />
+                  </div>
+                  <span className="text-xs text-gray-500 w-16 text-right shrink-0">{c.count} · {pct}%</span>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Return customers + Demand side by side */}
       <div className="grid lg:grid-cols-2 gap-6">
