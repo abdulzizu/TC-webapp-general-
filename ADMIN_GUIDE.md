@@ -23,6 +23,7 @@ The dashboard lives at **`/admin`** (e.g. `https://www.thriftcollision.com/admin
 | Section | What it's for |
 |---------|---------------|
 | 📊 **Overview** | Your dashboard home. Key numbers at a glance. |
+| 📉 **Analytics** | How each drop performed — sell-through, velocity, revenue, demand. |
 | 👕 **Products** | Add, edit, and manage every item in the store. |
 | 📈 **Stock** | Track what's available, sold, and hidden. |
 | 📦 **Orders** | See and manage every customer order. |
@@ -30,7 +31,7 @@ The dashboard lives at **`/admin`** (e.g. `https://www.thriftcollision.com/admin
 | 💬 **Reviews** | Approve or reject customer reviews before they go public. |
 | 🎯 **Demand** | See what people are searching for and wanting. |
 | 📋 **Leads** | People who signed up to be notified about drops. |
-| 🏷️ **Discounts** | Create and manage discount codes. |
+| 🏷️ **Discounts** | Create discount codes, and email them to specific customers. |
 | ⭐ **Featured** | Choose which products appear in the homepage spotlight. |
 | 🔥 **Drops** | Plan and schedule timed product drops. |
 | 🚚 **Shipping** | Set delivery zones and their costs. |
@@ -52,6 +53,24 @@ Below that:
 
 ---
 
+## Analytics — how your drops perform
+
+This is your drop scorecard. Pick a drop (or "All released drops") and a **sell-through window** (24 hours, 48 hours, or 1 week), and you'll see:
+
+- **Sell-through %** — of the items in that drop, how many sold within the window. E.g. "35 of 50 sold — 75% within 48 hours." (Not every item sells, so this is about the percentage, not a full sellout.)
+- **Sold overall** and **revenue** for the selection.
+- **Which categories move fastest** — average time from release to sale per category. Great for deciding what to source more of.
+- **Item velocity** — every item ranked from fastest-selling to still-unsold, so you see what flew and what lingered.
+- **Where sales came from** — a split of Website vs. Instagram vs. WhatsApp, etc. (see "How was it sold?" under Products).
+- **Return customers** — an estimate of repeat vs. one-time buyers (labelled as an estimate, since guests aren't always linkable).
+- **Unfulfilled demand** — the top wishlist keywords customers are watching for. A direct sourcing signal.
+
+**Two honest notes:**
+- Sell timing is based on when an order was placed — accurate to the minute, not the second.
+- **Live website traffic / concurrent visitors are NOT here** — that lives in your **Vercel Analytics** dashboard, which already does it well.
+
+---
+
 ## Products
 
 This is where your catalogue lives. Each item is **one-of-one** — a single piece, in one size. Once it sells, there's no "restock."
@@ -60,6 +79,10 @@ Typical tasks:
 - **Add an item:** upload the photo, fill in name, category, price, size, colours. There's an **AI helper** that looks at the photo and drafts the name, category, colours and a description for you (written in the brand's voice) — you review and tweak before saving.
 - **Tags** control the little labels shown on an item: `NEW`, `2 LEFT`, `1 LEFT`, `SOLD`, `ESSENTIAL`, `STAFF PICK`.
 - **Available** controls whether the item shows in the shop at all.
+
+**Marking an item SOLD (including IG/WhatsApp sales):** when you set an item's tag to **SOLD**, a "How was it sold?" picker appears — Website, Instagram, WhatsApp, In person, or Other. Pick where the sale happened. We record today as the sale date automatically, so off-site sales show up correctly in Analytics. If you re-edit an already-sold item, the original sale date is kept — you're only changing the channel.
+
+> This matters: without picking a channel, a sale you made on IG wouldn't be counted properly in your drop performance numbers.
 
 ---
 
@@ -130,7 +153,9 @@ Your list of people who've created accounts. Handy for understanding who's shopp
 
 ## Discounts
 
-Create discount codes here (e.g. a launch promo). Codes are applied by customers at checkout and reduce the order total.
+Create discount codes here (e.g. a launch promo). Codes are applied by customers at checkout and reduce the order total. The "used" count on each code goes up only when an order is actually **paid** — not when someone just starts a checkout.
+
+**Emailing a code to specific customers:** each code has a **✉️ Send** button. Enter one or more email addresses (or tap to pick from your existing customers), add an optional personal note, and it sends each person a branded email with the code and its terms filled in. Useful for win-backs, thank-yous, or apologies. It won't let you accidentally send an inactive code without warning you.
 
 ---
 
@@ -142,7 +167,9 @@ Pick the products that appear in the homepage spotlight (the rotating hero items
 
 ## Drops
 
-Drops are timed releases of a batch of items. Plan and schedule them here. When a drop goes live, you can notify your leads — and customers who saved matching wishlist keywords can be alerted automatically that something they wanted just dropped.
+Drops are timed releases of a batch of items. Plan and schedule them here. When you **release** a drop, customers whose wishlist keywords match the new items are automatically emailed that something they wanted just dropped. The same alert also fires whenever you make a *single* item available (e.g. editing a hidden product to visible) — so no interested customer is missed. Nobody is emailed twice about the same item.
+
+> Wishlist alerts are now **item-specific**: when a customer taps "notify me" on a sold item, we save that item's name (e.g. "brown leather jacket"), not just its category — so future alerts match what they actually wanted, not everything in the category.
 
 > Tip: when building a new drop, check the **Stock** section to make sure you can see every hidden item you might want to include.
 

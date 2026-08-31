@@ -51,6 +51,22 @@ The happy path spans the checkout page, Paystack, and two server routes.
 
    Two paths exist because the client return can be interrupted (customer closes the tab) — the webhook guarantees the order still gets processed. The status guards (`processing`/`shipped`/`delivered` short-circuit) make double-processing safe.
 
+   On successful payment, both paths also: clear the item's hold (`held_until`/`held_by_order` → null), and if the order has a `discount_code`, increment its usage via the `increment_discount_use` RPC (counted once, only on real payment).
+
+---
+
+## One-of-one payment holds (preventing double-purchase)
+
+Because items are single-unit, two people must never both pay for the same piece. Handled in `POST /api/payments/initialize` before redirecting to Paystack:
+
+- Each item in the order is claimed with a **race-safe conditional update**: set `held_until = now + 5 min` and `held_by_order = <orderId>` **only if** the row isn't sold and isn't already freshly held by a *different* order.
+- If any item can't be claimed (someone else holds it, or it's sold), the whole attempt is rolled back and the route returns `409 { error: "item_held", heldItems, message }`.
+- The checkout surfaces this as an inline card offering **"Continue with available items"** (drops the blocked items, re-runs checkout on the rest) — the same card also covers the already-sold case.
+
+**Lazy expiry — no background job.** A hold is only "active" if `held_until` is in the future. Stale holds are simply ignored on read; nothing sweeps them. This is deliberate — an earlier cron-based release caused problems, so there is intentionally no scheduled release. (Verification stays as a final backstop for the rare simultaneous-payment collision.)
+
+Checkout also shows a soft heads-up if a cart item is already held by someone else, and a "held for 5 minutes" notice at the Pay button.
+
 ---
 
 ## Order status lifecycle
@@ -104,33 +120,51 @@ Text-only, photo-optional, admin-moderated. Four parts:
    - Triggered from `updateStatus('delivered')`.
    - Sends a branded Resend email from `hello@thriftcollision.com` (reply-to `help@thriftcollision.com`), CTA linking to `/review?order=<id>`.
 
-**Required table** (run once in Supabase):
-```sql
-create table if not exists public.reviews (
-  id uuid primary key default uuid_generate_v4(),
-  order_id text not null,
-  first_name text not null,
-  comment text not null,
-  photo text,
-  status text not null default 'pending',
-  featured boolean not null default false,
-  created_at timestamptz default now()
-);
-alter table public.reviews enable row level security;
-create policy "Anyone can insert reviews" on public.reviews for insert with check (true);
-create policy "Anyone can read approved reviews" on public.reviews for select using (true);
-```
+The `reviews` table (and other schema additions) are in the README's "Schema additions" block.
+
+---
+
+## Wishlist drop alerts
+
+Customers save interest as `keywords` (from the profile wishlist, or by tapping "notify me" on a sold product — which saves the item's cleaned **name**, e.g. "brown leather jacket", not just its subcategory, so alerts are specific).
+
+`POST /api/drops/notify-matches` powers the alerts. It accepts `{ dropId }` (a whole drop) or `{ productIds }` (specific newly-available items), then substring-matches each customer's keywords against `"{name} {subcategory} {description}"` of the given products and emails the matches.
+
+**Triggers:** the drop **Release** action (`admin/drops/new`) fires it for the whole drop; the products admin fires it with a single `productId` whenever an item goes hidden→visible or is created visible. So alerts fire regardless of how an item is published. (Note: there is no automatic scheduled-drop release — "scheduled" drops are released manually.)
+
+**Dedup:** before sending, it loads existing `(user_id, product_id)` pairs from `wishlist_notifications`, skips already-notified pairs, and records new ones after sending (upsert, ignore-duplicates). A customer is never emailed about the same product twice; a *different* product matching the same keyword still alerts them (the keyword is an ongoing interest until removed). Product-level dedup means multiple matching keywords still yield one email per product.
+
+---
+
+## Drop analytics
+
+`/admin/analytics` — a client-side "Drop Performance" page (no dedicated API; queries Supabase directly).
+
+- **Sell-through %** for a chosen window (24h / 48h / 1 week): of a drop's items, how many sold within `released_at + window`.
+- **Sell time** per item = the website order timestamp if one exists, else the manual `sold_at` (see below), whichever is earlier. This is why off-site sales count in the timed metrics.
+- **Revenue, category velocity, item velocity, return-customer estimate, unfulfilled demand (top keywords), and a Website-vs-off-site channel split.**
+- Only drops that still have linked products (`products.drop_id`) are analysable; released drops whose products were unlinked are filtered out of the picker.
+- Traffic/concurrent-user analytics are intentionally **not** here — that's Vercel Analytics' job (no page-view tracking exists in the DB).
+
+---
+
+## Off-site sale tracking (IG / WhatsApp)
+
+Many sales happen via DM: the customer pays into the TC account and the admin marks the item SOLD. To count these accurately, the product editor captures `sold_at` (auto-stamped when tag first becomes SOLD; original date preserved on re-save; cleared if un-sold) and `sold_channel` (Website / Instagram / WhatsApp / In person / Other). Website checkout sales are inferred from the order record; everything else uses the recorded channel. This feeds the analytics channel split and lets manual sales appear in timed sell-through/velocity.
 
 ---
 
 ## Transactional email (Resend)
 
-Two branded HTML emails, same house style (dark header, green accents, social footer), both from `hello@thriftcollision.com` / reply-to `help@thriftcollision.com`:
+Branded HTML emails, same house style (dark header, green accents, social footer), all from `hello@thriftcollision.com` / reply-to `help@thriftcollision.com`:
 
-- **Order confirmation** — `POST /api/orders/confirm`, fired from payment verification. Includes itemised order, totals, delivery address, and a "Track Your Order" CTA.
+- **Order confirmation** — `POST /api/orders/confirm`, fired from payment verification. Itemised order, totals, delivery address, "Track Your Order" CTA.
 - **Review request** — `POST /api/reviews/request`, fired on delivery. Invites a review, links to the pre-filled form.
+- **Wishlist match** — `POST /api/drops/notify-matches`, fired on drop release / item made available. Lists the matching items.
+- **Discount code** — `POST /api/admin/discounts/send`, triggered from the admin Discounts page. Sends a code + its terms to chosen customers.
+- **Lead broadcast** — `POST /api/admin/notify`, from the admin Leads page.
 
-Both do a basic origin check (must come from a known host) and require `RESEND_API_KEY`. Neither sends if there's no recipient email on the order.
+Customer-facing sends do a basic origin check and require `RESEND_API_KEY`. Order/review emails don't send without a recipient email on the order. On the Resend Pro plan (50k/month), volume isn't a constraint for targeted sends.
 
 ---
 
@@ -173,4 +207,8 @@ Both do a basic origin check (must come from a known host) and require `RESEND_A
 - **Amount tolerance** on payments intentionally allows Paystack fees (`total × 1.02 + ₦200`); don't tighten it without accounting for fees.
 - **`SUPABASE_SERVICE_ROLE_KEY` doubles as the admin-cookie signing secret.** Rotating it invalidates all admin sessions — expected, just know it.
 - **Reviews homepage section returning `null`** when unfeatured is intentional product behaviour, not a bug.
+- **Discount usage is counted on payment**, not at checkout — via `increment_discount_use`. Counting at checkout would inflate on abandoned carts (an earlier bug). The order stores `discount_code` so verification/webhook know what to increment.
+- **No scheduled-drop auto-release exists.** Drops set to "scheduled" are released manually; the wishlist-alert fires on manual release and on single-item availability changes.
+- **Payment holds use lazy expiry, no background job** — deliberately, after a prior cron-based release caused problems. Don't reintroduce a sweep.
+- **Off-site (IG) sales** only count in *timed* analytics if `sold_at` is set (auto-stamped going forward). Items marked SOLD before this feature have no `sold_at` and appear only in untimed "sold overall" counts.
 - Brand colours: green `#1a6b2f`, near-black `#1a1a1a`.

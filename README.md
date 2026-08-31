@@ -100,12 +100,15 @@ src/
 │   └── MarqueeBanner.tsx
 └── lib/
     ├── supabase/             client.ts (browser), server.ts (server), types.ts
+    ├── admin-auth.ts         verifyAdmin / verifyAdminOrCron — admin session verification
     ├── cart-context.tsx      Cart state (React context)
     ├── user-context.tsx      Customer auth/profile state + guest-order linking
     ├── products.ts           Static product catalogue + categories (fallback data)
     ├── use-products.ts       Hook to load products from Supabase, falls back to static
     └── cloudinary.ts         Wraps image URLs through Cloudinary's fetch/optimise CDN
 ```
+
+The admin dashboard (`src/app/admin/`) has these sections: `analytics` (drop performance), `products`, `stock`, `orders`, `customers`, `reviews`, `demand`, `leads`, `discounts`, `featured`, `drops`, `shipping`, `settings`, plus `login`.
 
 ### API routes (`src/app/api`)
 
@@ -130,11 +133,14 @@ src/
 - `GET  /api/admin/customers` — customer list
 - `POST /api/admin/ai-describe` — OpenAI product description from an image
 - `POST /api/admin/notify` — notify customers (e.g. drop alerts)
+- `POST /api/admin/discounts/send` — email a discount code to specific customers (Resend)
 - `POST /api/admin/clear-new-tags` — bulk-clear "NEW" tags
 - `POST /api/admin/fix-pending` — maintenance for stuck pending orders
 
 **Drops**
-- `POST /api/drops/notify-matches` — notify interested customers when a drop matches their wishlist keywords
+- `POST /api/drops/notify-matches` — notify customers whose wishlist keywords match given products. Accepts `{ dropId }` (whole drop) or `{ productIds }` (specific items). Dedupes against `wishlist_notifications` so no customer is emailed about the same item twice.
+
+> All admin routes (except `login`/`logout`) authenticate via `verifyAdmin`/`verifyAdminOrCron` in `src/lib/admin-auth.ts`.
 
 ---
 
@@ -146,7 +152,7 @@ There are two entirely separate auth systems:
 
 **Admin auth** — custom, independent of Supabase Auth. Credentials live in the `admin_users` table (bcrypt-hashed passwords). Login issues an HMAC-signed `tc_admin` httpOnly cookie (signed with `SUPABASE_SERVICE_ROLE_KEY`, valid 24h). The `/admin` layout calls `GET /api/admin/check` on mount and redirects to `/admin/login` if the cookie is missing or invalid. Login is rate-limited (5 attempts / 15 min per IP).
 
-> There is no `middleware.ts`. Admin protection is enforced in the client layout + the check route, not at the edge. Individual admin API routes should validate the cookie themselves.
+> There is no `middleware.ts`. The client-layout redirect is UX only. Real protection is server-side: every admin API route (except `login`/`logout`) verifies the signed cookie via `verifyAdmin`/`verifyAdminOrCron` in `src/lib/admin-auth.ts`.
 
 ---
 
@@ -156,23 +162,69 @@ Tables referenced across the app:
 
 | Table | Purpose |
 |-------|---------|
-| `products` | Live product catalogue (one-of-one items) |
-| `orders` | Customer orders (`guest_name`, `guest_phone`, `guest_email`, `user_id`, `status`, totals, address, `is_stockpile`, `stockpiled_until`) |
+| `products` | Live product catalogue (one-of-one items). Notable cols: `tag`, `available`, `drop_id`, `visible_at`, `held_until` + `held_by_order` (payment holds), `sold_at` + `sold_channel` (off-site sale tracking) |
+| `orders` | Customer orders (`guest_name`, `guest_phone`, `guest_email`, `user_id`, `status`, totals, address, `is_stockpile`, `stockpiled_until`, `discount_code`) |
 | `order_items` | Line items per order (product snapshot: name, image, size, qty, price) |
 | `reviews` | Customer reviews (`order_id`, `first_name`, `comment`, `photo`, `status`, `featured`) |
-| `profiles` / `user_profiles` | Customer profile data |
+| `wishlist_notifications` | Dedup log of `(user_id, product_id)` pairs already emailed, so wishlist alerts never repeat |
+| `profiles` / `user_profiles` | Customer profile data (incl. size profile) |
 | `keywords` | Wishlist keywords for drop-matching |
 | `featured_products` | Homepage hero/featured picks |
-| `drops` / `upcoming_drops` | Scheduled product drops |
-| `discount_codes` | Discount / promo codes |
+| `drops` / `upcoming_drops` | `drops` = actual releases (`name`, `status`, `released_at`, `scheduled_at`); `upcoming_drops` = homepage teasers |
+| `discount_codes` | Discount / promo codes (`uses_count` incremented on payment via the `increment_discount_use` RPC) |
 | `shipping_zones` | Delivery zones & costs |
-| `store_settings` | Global store config (e.g. free-shipping threshold) |
+| `store_settings` | Global store config (e.g. `free_shipping_threshold`, `drop_day`, `drop_time`) |
 | `admin_users` | Admin accounts (bcrypt password hashes) |
 | `temp_leads` | Captured leads (notify signups etc.) |
 
 **Storage bucket:** `product-images` (product photos + review photos).
 
 Products use a **DB-first-with-static-fallback** pattern: `use-products.ts` loads from Supabase and falls back to the static array in `products.ts` if the DB is empty or unreachable.
+
+### Schema additions (run once in Supabase if not already applied)
+
+```sql
+-- Reviews
+create table if not exists public.reviews (
+  id uuid primary key default uuid_generate_v4(),
+  order_id text not null,
+  first_name text not null,
+  comment text not null,
+  photo text,
+  status text not null default 'pending',
+  featured boolean not null default false,
+  created_at timestamptz default now()
+);
+alter table public.reviews enable row level security;
+create policy "Anyone can insert reviews" on public.reviews for insert with check (true);
+create policy "Anyone can read approved reviews" on public.reviews for select using (true);
+
+-- One-of-one payment holds
+alter table public.products
+  add column if not exists held_until timestamptz,
+  add column if not exists held_by_order text;
+
+-- Off-site sale tracking (IG/WhatsApp/etc.)
+alter table public.products
+  add column if not exists sold_at timestamptz,
+  add column if not exists sold_channel text;
+
+-- Discount code on orders + atomic usage counter
+alter table public.orders add column if not exists discount_code text;
+create or replace function public.increment_discount_use(p_code text)
+returns void language sql as $$
+  update public.discount_codes set uses_count = uses_count + 1 where code = p_code;
+$$;
+
+-- Wishlist-alert dedup log
+create table if not exists public.wishlist_notifications (
+  id bigint generated always as identity primary key,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  product_id bigint not null,
+  notified_at timestamptz not null default now(),
+  unique (user_id, product_id)
+);
+```
 
 ---
 
