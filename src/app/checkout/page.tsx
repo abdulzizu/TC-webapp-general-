@@ -348,6 +348,7 @@ function CheckoutContent() {
         subtotal: orderSubtotal,
         shipping_cost: orderShippingCost,
         discount_amount: orderDiscountAmount,
+        discount_code: discountCode || null,
         total: orderTotal,
         delivery_address: fullAddress,
         pay_method: "paystack",
@@ -377,12 +378,9 @@ function CheckoutContent() {
         );
       }
 
-      // Increment discount usage if a code was applied
-      if (discountCode) {
-        await sb.from("discount_codes")
-          .update({ uses_count: 1 })
-          .eq("code", discountCode);
-      }
+      // NOTE: discount usage is counted server-side once payment is confirmed
+      // (see /api/payments/verify and /api/payments/webhook). We intentionally
+      // do NOT increment here — that would count abandoned checkouts.
 
       // Initialize Paystack payment
       const payRes = await fetch("/api/payments/initialize", {

@@ -93,6 +93,16 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Count the discount use exactly once, now that payment is confirmed.
+    const { data: orderDiscount } = await supabase
+      .from("orders")
+      .select("discount_code")
+      .eq("id", order.id)
+      .single();
+    if (orderDiscount?.discount_code) {
+      await supabase.rpc("increment_discount_use", { p_code: orderDiscount.discount_code });
+    }
+
     return NextResponse.json({ received: true, processed: true });
   } catch (err: any) {
     console.error("Webhook error:", err);

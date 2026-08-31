@@ -82,9 +82,14 @@ export async function GET(req: NextRequest) {
       // Send order confirmation email now that payment is verified
       const { data: fullOrder } = await supabase
         .from("orders")
-        .select("guest_email, guest_name, order_id, subtotal, shipping_cost, discount_amount, total, delivery_address, is_stockpile")
+        .select("guest_email, guest_name, order_id, subtotal, shipping_cost, discount_amount, total, delivery_address, is_stockpile, discount_code")
         .eq("id", order.id)
         .single();
+
+      // Count the discount use exactly once, now that payment is confirmed.
+      if (fullOrder?.discount_code) {
+        await supabase.rpc("increment_discount_use", { p_code: fullOrder.discount_code });
+      }
 
       if (fullOrder?.guest_email) {
         const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.thriftcollision.com";
