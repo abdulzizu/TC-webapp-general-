@@ -202,7 +202,20 @@ function ShopContent() {
           </div>
 
           {/* Results grid */}
-          {filtered.length === 0 ? (
+          {isLoading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 pb-16 lg:pb-0">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="rounded-2xl overflow-hidden border border-gray-100 bg-white">
+                  <div className="w-full aspect-square bg-gray-100 animate-pulse" />
+                  <div className="p-3 space-y-2">
+                    <div className="h-2 w-16 bg-gray-100 rounded animate-pulse" />
+                    <div className="h-3 w-full bg-gray-100 rounded animate-pulse" />
+                    <div className="h-3 w-12 bg-gray-100 rounded animate-pulse" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="text-center py-24">
               <p className="text-4xl mb-4" aria-hidden="true">🔍</p>
               <p className="text-lg font-semibold text-gray-800 mb-2">No items found</p>

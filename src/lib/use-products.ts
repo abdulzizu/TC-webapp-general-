@@ -16,7 +16,10 @@ type UseProductsResult = {
  * unreachable or returns no rows.
  */
 export function useProducts(): UseProductsResult {
-  const [products, setProducts] = useState<Product[]>(STATIC_PRODUCTS.filter(p => p.available));
+  // Start empty so we never flash the static seed catalogue before the live
+  // Supabase data arrives. The static list is used ONLY as a genuine fallback
+  // (DB error or truly no rows), handled in the fetch below.
+  const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
