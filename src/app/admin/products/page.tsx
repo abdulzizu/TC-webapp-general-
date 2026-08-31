@@ -178,14 +178,33 @@ export default function AdminProductsPage() {
         payload.visible_at = new Date().toISOString();
       }
     }
+    // Track whether this save makes an item newly available, so we can alert
+    // customers whose wishlist matches (fires regardless of drop vs. manual).
+    let newlyAvailableId: number | null = null;
+
     if (creating) {
       const { id: _id, drop_id: _dropId, ...insertPayload } = payload;
-      const { error } = await supabase.from("products").insert(insertPayload);
+      const { data: inserted, error } = await supabase.from("products").insert(insertPayload).select("id").single();
       if (error) { alert("Error: " + error.message); setSaving(false); return; }
+      if (productFields.available && inserted) newlyAvailableId = inserted.id;
     } else if (editing) {
       const { error } = await supabase.from("products").update(payload).eq("id", editing.id);
       if (error) { alert("Error: " + error.message); setSaving(false); return; }
+      // Hidden → visible transition (and not sold) = newly available to shoppers.
+      if (productFields.available && !editing.available && productFields.tag !== "SOLD") {
+        newlyAvailableId = editing.id;
+      }
     }
+
+    // Fire wishlist-match alerts for the newly available item (fire-and-forget).
+    if (newlyAvailableId !== null) {
+      fetch("/api/drops/notify-matches", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productIds: [newlyAvailableId] }),
+      }).catch(() => {});
+    }
+
     setSaving(false);
     cancelForm();
     loadProducts();

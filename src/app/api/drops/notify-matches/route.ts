@@ -4,13 +4,16 @@ import { createClient } from "@supabase/supabase-js";
 export const runtime = "nodejs";
 
 // POST /api/drops/notify-matches
-// Body: { dropId: number }
-// Checks user keywords against products in this drop, emails matches
+// Body: { dropId: number }  OR  { productIds: number[] }
+// Checks user wishlist keywords against the given products (a whole drop, or a
+// specific set of newly-available items) and emails the customers who match.
 
 export async function POST(req: NextRequest) {
   try {
-    const { dropId } = await req.json();
-    if (!dropId) return NextResponse.json({ error: "dropId required" }, { status: 400 });
+    const { dropId, productIds } = await req.json();
+    if (!dropId && (!Array.isArray(productIds) || productIds.length === 0)) {
+      return NextResponse.json({ error: "dropId or productIds required" }, { status: 400 });
+    }
 
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL || "https://cdxuppunppsgryvrieoz.supabase.co",
@@ -18,11 +21,14 @@ export async function POST(req: NextRequest) {
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
 
-    // Get products in this drop
-    const { data: products } = await supabase
+    // Get the products to notify about — either a whole drop, or a specific set.
+    let query = supabase
       .from("products")
       .select("id, name, subcategory, description, image, price")
-      .eq("drop_id", dropId);
+      .eq("available", true)
+      .neq("tag", "SOLD");
+    query = dropId ? query.eq("drop_id", dropId) : query.in("id", productIds);
+    const { data: products } = await query;
 
     if (!products || products.length === 0) {
       return NextResponse.json({ matches: 0 });

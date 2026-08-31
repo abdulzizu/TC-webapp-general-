@@ -210,7 +210,18 @@ export default function ProductPage() {
   }
 
   function handleNotifyMe() {
-    const keyword = product!.subcategory.toLowerCase();
+    // Save the item's descriptive name (not just the subcategory) so alerts are
+    // specific to what they actually wanted. Strip size/parenthetical noise so a
+    // one-of-one name like "Brown Leather Jacket (M)" becomes a reusable keyword
+    // ("brown leather jacket") that can match similar future pieces.
+    const cleaned = product!.name
+      .toLowerCase()
+      .replace(/\([^)]*\)/g, "")               // drop "(M)", "(L–XL)" etc.
+      .replace(/\b(xs|s|m|l|xl|2xl|3xl|one size)\b/gi, "") // stray size tokens
+      .replace(/[#0-9]+/g, "")                 // jersey numbers, sizes
+      .replace(/\s+/g, " ")
+      .trim();
+    const keyword = cleaned || product!.subcategory.toLowerCase();
     addKeyword(keyword);
     setNotifyAdded(true);
   }
