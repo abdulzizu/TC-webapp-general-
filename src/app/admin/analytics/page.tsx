@@ -33,6 +33,8 @@ const WINDOWS = [
   { label: "24 hours", hours: 24 },
   { label: "48 hours", hours: 48 },
   { label: "1 week", hours: 168 },
+  { label: "2 weeks", hours: 336 },
+  { label: "1 month", hours: 720 },
 ];
 
 export default function AnalyticsPage() {
