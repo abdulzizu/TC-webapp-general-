@@ -261,7 +261,7 @@ export default function ProductPage() {
                       src={cloudinaryUrl(allImages[activeImage], 800)}
                       alt={`${product.name}${hasMultiple ? ` — image ${activeImage + 1}` : ""}`}
                       fill
-                      className="object-cover"
+                      className="object-contain"
                       sizes="(max-width:1024px) 100vw, 50vw"
                       priority
                     />
