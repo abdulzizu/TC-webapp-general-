@@ -129,12 +129,27 @@ function CheckoutContent() {
   // Match zone when city/state/address changes
   useEffect(() => {
     if (shippingZones.length === 0) return;
-    const searchText = `${form.address} ${form.city} ${form.state}`.toLowerCase();
 
-    // Try to find a matching zone by name (e.g. "Garki", "Lugbe", "Lagos")
-    const match = shippingZones.find((z) =>
-      searchText.includes(z.zone_name.toLowerCase())
-    );
+    // Normalise a string for fuzzy zone matching: lowercase, strip spaces/hyphens/punctuation.
+    // This means "Life Camp", "life-camp", and "Lifecamp" all become "lifecamp" and match.
+    function normalise(s: string) {
+      return s.toLowerCase().replace(/[\s\-_.,()&/]+/g, "");
+    }
+
+    const normSearch = normalise(`${form.address} ${form.city} ${form.state}`);
+
+    // Try to find a matching zone — compare normalised zone name against normalised input.
+    // Also try each word in the address individually so "Life Camp" (two words) hits "Lifecamp".
+    const match = shippingZones.find((z) => {
+      const normZone = normalise(z.zone_name);
+      // Full-string match (e.g. normalised search contains the whole zone name)
+      if (normSearch.includes(normZone)) return true;
+      // Also try matching just the zone's first meaningful word against each address token
+      // (handles "Wuse and Wuse II" → match on "wuse")
+      const zoneWords = z.zone_name.toLowerCase().split(/[\s,()&/]+/).filter((w: string) => w.length > 2);
+      const searchWords = `${form.address} ${form.city}`.toLowerCase().split(/[\s,\-./]+/).filter((w: string) => w.length > 2);
+      return zoneWords.some((zw: string) => searchWords.some((sw: string) => sw.includes(zw) || zw.includes(sw)));
+    });
 
     if (match) {
       setMatchedZone(match);
@@ -142,7 +157,6 @@ function CheckoutContent() {
       // Fallback: match by region based on state
       const state = form.state.toLowerCase();
       if (state.includes("abuja") || state.includes("fct")) {
-        // Default Abuja rate if no specific zone matched
         const abujaDefault = shippingZones.find((z) => z.region === "Abuja") || null;
         setMatchedZone(abujaDefault);
       } else if (state.includes("lagos")) {
@@ -216,7 +230,7 @@ function CheckoutContent() {
       case "phone": return !/^[\d\s+\-()+]{10,15}$/.test(value.trim()) ? "Enter a valid phone number" : "";
       case "email": return value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? "Enter a valid email" : "";
       case "address": return value.trim().length < 5 ? "Enter your delivery address" : "";
-      case "city": return value.trim().length < 2 ? "Enter your city" : "";
+      case "city": return value.trim().length < 2 ? "Enter your area or neighbourhood" : "";
       case "state": return value.trim().length < 2 ? "Enter your state" : "";
       default: return "";
     }
@@ -557,7 +571,7 @@ function CheckoutContent() {
                 />
                 <Field id="address" label="Delivery Address *" value={form.address} onChange={(v) => setField("address", v)} error={errors.address} placeholder="Street address" autoComplete="street-address" />
                 <div className="grid grid-cols-2 gap-4">
-                  <Field id="city" label="City *" value={form.city} onChange={(v) => setField("city", v)} error={errors.city} placeholder="e.g. Abuja" autoComplete="address-level2" />
+                  <Field id="city" label="Area / Neighbourhood *" value={form.city} onChange={(v) => setField("city", v)} error={errors.city} placeholder="e.g. Lifecamp, Gwarinpa" autoComplete="address-level2" hint="This determines your delivery cost" />
                   <Field id="state" label="State *" value={form.state} onChange={(v) => setField("state", v)} error={errors.state} placeholder="e.g. FCT" autoComplete="address-level1" />
                 </div>
               </div>
