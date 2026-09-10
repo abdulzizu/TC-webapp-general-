@@ -130,25 +130,41 @@ function CheckoutContent() {
   useEffect(() => {
     if (shippingZones.length === 0) return;
 
-    // Normalise a string for fuzzy zone matching: lowercase, strip spaces/hyphens/punctuation.
-    // This means "Life Camp", "life-camp", and "Lifecamp" all become "lifecamp" and match.
-    function normalise(s: string) {
-      return s.toLowerCase().replace(/[\s\-_.,()&/]+/g, "");
+    // Normalise for matching: lowercase, collapse spaces/hyphens so
+    // "Life Camp" and "Lifecamp" both match the zone "Lifecamp".
+    function norm(s: string) {
+      return s.toLowerCase().replace(/[\s\-]+/g, "");
     }
 
-    const normSearch = normalise(`${form.address} ${form.city} ${form.state}`);
+    const rawSearch = `${form.address} ${form.city} ${form.state}`.toLowerCase();
+    const normSearch = norm(`${form.address} ${form.city} ${form.state}`);
 
-    // Try to find a matching zone — compare normalised zone name against normalised input.
-    // Also try each word in the address individually so "Life Camp" (two words) hits "Lifecamp".
+    // Match: zone name appears verbatim in the raw search string,
+    // OR the normalised zone name appears in the normalised search string,
+    // OR any city listed inside parentheses in the zone name matches
+    // e.g. "Anambra (Onitsha, Awka, Nnewi)" → user types "Onitsha" → matches.
     const match = shippingZones.find((z) => {
-      const normZone = normalise(z.zone_name);
-      // Full-string match (e.g. normalised search contains the whole zone name)
-      if (normSearch.includes(normZone)) return true;
-      // Also try matching just the zone's first meaningful word against each address token
-      // (handles "Wuse and Wuse II" → match on "wuse")
-      const zoneWords = z.zone_name.toLowerCase().split(/[\s,()&/]+/).filter((w: string) => w.length > 2);
-      const searchWords = `${form.address} ${form.city}`.toLowerCase().split(/[\s,\-./]+/).filter((w: string) => w.length > 2);
-      return zoneWords.some((zw: string) => searchWords.some((sw: string) => sw.includes(zw) || zw.includes(sw)));
+      const raw = z.zone_name.toLowerCase();
+      const normalised = norm(z.zone_name);
+      // For short zone names (≤ 5 chars), require a whole-word match to prevent
+      // false positives — e.g. "Apo" must not match inside "Apostle".
+      const minLen = 5;
+      if (raw.length <= minLen) {
+        // Whole-word: must be preceded and followed by a non-word character (or string boundary)
+        const wordBoundary = new RegExp(`(?<![a-z])${raw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![a-z])`);
+        return wordBoundary.test(rawSearch);
+      }
+      if (rawSearch.includes(raw) || normSearch.includes(normalised)) return true;
+      // Extract cities listed in parentheses and check each individually
+      const parenMatch = z.zone_name.match(/\(([^)]+)\)/);
+      if (parenMatch) {
+        // Also check the part before the parenthesis (e.g. "Kano" in "Kano (Park delivery)")
+        const beforeParen = z.zone_name.replace(/\(.*\)/, "").trim().toLowerCase();
+        if (beforeParen && rawSearch.includes(beforeParen)) return true;
+        const cities = parenMatch[1].split(/[,،]+/).map((c: string) => c.trim().toLowerCase()).filter(Boolean);
+        return cities.some((c: string) => rawSearch.includes(c));
+      }
+      return false;
     });
 
     if (match) {
