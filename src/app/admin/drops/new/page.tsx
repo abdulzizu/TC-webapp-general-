@@ -30,13 +30,17 @@ function NewDropContent() {
   const [allProducts, setAllProducts] = useState<DropProduct[]>([]);
   const [step, setStep] = useState<"details" | "products" | "review">(editId ? "products" : "details");
 
-  // Load available products (hidden ones not assigned to another drop)
+  // Load products eligible for this drop:
+  // - Hidden (available = false) — not yet live on the store
+  // - Not sold
+  // - Not already assigned to a different drop
   const loadProducts = useCallback(async () => {
     const { data } = await supabase
       .from("products")
       .select("id, name, image, price, available, drop_id, tag")
       .eq("available", false)
       .neq("tag", "SOLD")
+      .is("drop_id", null)
       .order("id", { ascending: false });
     if (data) setAllProducts(data as any);
   }, [supabase]);
@@ -186,8 +190,8 @@ function NewDropContent() {
           <div>
             <h1 className="text-xl font-bold">&quot;{name}&quot; — Products</h1>
             <p className="text-sm text-gray-500 mt-1">
-              Only hidden products (not in another drop) are shown.{" "}
-              <a href="/admin/products" target="_blank" className="text-[#1a6b2f] font-semibold hover:underline">Add new products</a> with "Visible on store" unchecked.
+              Showing hidden items that are unsold and not in another drop.{" "}
+              <a href="/admin/products" target="_blank" className="text-[#1a6b2f] font-semibold hover:underline">Add new products</a> with "Visible on store" unchecked to see them here.
             </p>
           </div>
           <div className="flex gap-2">
@@ -223,7 +227,7 @@ function NewDropContent() {
         <div>
           <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Available to add ({unassignedProducts.length})</p>
           {unassignedProducts.length === 0 ? (
-            <p className="text-sm text-gray-400">No hidden products available. Add products with "Visible on store" unchecked first.</p>
+            <p className="text-sm text-gray-400">No items available. All hidden, unsold products are either already in another drop or there are none yet.</p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               {unassignedProducts.map((p) => (
