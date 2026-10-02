@@ -73,19 +73,26 @@ export default function AdminFeaturedPage() {
     if (!file) return;
     setUploading(true);
 
-    const ext = file.name.split(".").pop();
-    const path = `featured/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `featured/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
-    const { error } = await supabase.storage.from("product-images").upload(path, file);
-    if (error) {
-      alert("Upload failed: " + error.message);
+      const { error } = await supabase.storage.from("product-images").upload(path, file);
+      if (error) {
+        alert("Upload failed: " + error.message);
+        return;
+      }
+
+      const { data: { publicUrl } } = supabase.storage.from("product-images").getPublicUrl(path);
+      setForm((f) => ({ ...f, image_url: publicUrl }));
+    } catch (err: any) {
+      alert("Upload error: " + (err?.message || "Something went wrong"));
+    } finally {
+      // Always un-freeze the button, and reset the input so the same file
+      // can be re-selected (otherwise onChange won't fire and it looks frozen).
       setUploading(false);
-      return;
+      e.target.value = "";
     }
-
-    const { data: { publicUrl } } = supabase.storage.from("product-images").getPublicUrl(path);
-    setForm((f) => ({ ...f, image_url: publicUrl }));
-    setUploading(false);
   }
 
   return (

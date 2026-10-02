@@ -141,6 +141,7 @@ export default function AdminProductsPage() {
     setCreating(true);
     setEditing(null);
     setPairingSearch("");
+    setUploading(false);
   }
 
   function startEdit(p: Product) {
@@ -148,6 +149,7 @@ export default function AdminProductsPage() {
     setEditing(p);
     setCreating(false);
     setPairingSearch("");
+    setUploading(false);
   }
 
   function duplicateProduct(p: Product) {

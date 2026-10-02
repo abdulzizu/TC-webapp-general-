@@ -31,22 +31,42 @@ export default function AdminReviewsPage() {
 
   async function setStatus(id: string, status: string) {
     setUpdating(id);
-    await supabase.from("reviews").update({ status }).eq("id", id);
-    setReviews((prev) => prev.map((r) => r.id === id ? { ...r, status } : r));
+    const res = await fetch("/api/admin/reviews", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status }),
+    });
+    if (res.ok) {
+      setReviews((prev) => prev.map((r) => r.id === id ? { ...r, status } : r));
+    } else {
+      alert("Failed to update status. Please try again.");
+    }
     setUpdating(null);
   }
 
   async function toggleFeatured(id: string, featured: boolean) {
     setUpdating(id);
-    await supabase.from("reviews").update({ featured }).eq("id", id);
-    setReviews((prev) => prev.map((r) => r.id === id ? { ...r, featured } : r));
+    const res = await fetch("/api/admin/reviews", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, featured }),
+    });
+    if (res.ok) {
+      setReviews((prev) => prev.map((r) => r.id === id ? { ...r, featured } : r));
+    } else {
+      alert("Failed to update. Please try again.");
+    }
     setUpdating(null);
   }
 
   async function handleDelete(id: string) {
     if (!confirm("Delete this review permanently?")) return;
-    await supabase.from("reviews").delete().eq("id", id);
-    setReviews((prev) => prev.filter((r) => r.id !== id));
+    const res = await fetch(`/api/admin/reviews?id=${id}`, { method: "DELETE" });
+    if (res.ok) {
+      setReviews((prev) => prev.filter((r) => r.id !== id));
+    } else {
+      alert("Failed to delete. Please try again.");
+    }
   }
 
   const filtered = filter === "all" ? reviews : reviews.filter((r) => r.status === filter);

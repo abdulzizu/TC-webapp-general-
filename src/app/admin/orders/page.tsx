@@ -20,11 +20,16 @@ type Order = {
   pay_method: string;
   is_stockpile: boolean;
   stockpiled_until: string | null;
+  review_email_sent_at: string | null;
   created_at: string;
   order_items: any[];
 };
 
 const STATUSES = ["pending", "processing", "stockpiled", "shipped", "delivered", "unsuccessful"];
+
+// Don't send a customer more than one review-request email within this window.
+// Reviews are store-level (not product-level), so one ask per delivery batch is enough.
+const REVIEW_EMAIL_WINDOW_DAYS = 21;
 
 export default function AdminOrdersPage() {
   const supabase = createClient();
@@ -64,22 +69,58 @@ export default function AdminOrdersPage() {
         }
       }
 
-      // Send a review-request email to the customer (if we have their email)
+      // Send a review-request email to the customer (if we have their email),
+      // but only once per REVIEW_EMAIL_WINDOW_DAYS so repeat customers with several
+      // orders delivered around the same time don't get spammed with duplicate asks.
+      let reviewEmailSentAt: string | null = null;
       if (order?.guest_email) {
-        try {
-          await fetch("/api/reviews/request", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email: order.guest_email,
-              name: order.guest_name || "there",
-              orderId: order.order_id,
-            }),
-          });
-        } catch (emailErr) {
-          console.error("Failed to send review request email:", emailErr);
+        const windowStart = new Date(Date.now() - REVIEW_EMAIL_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+
+        // Find this customer's other orders: signed-in users match on user_id,
+        // guests match on email (the thing we're emailing anyway).
+        const recentlyEmailed = orders.some((o) => {
+          if (o.id === orderId) return false;
+          const sameCustomer = order.user_id
+            ? o.user_id === order.user_id
+            : (!!order.guest_email && o.guest_email === order.guest_email);
+          if (!sameCustomer) return false;
+          return !!o.review_email_sent_at && new Date(o.review_email_sent_at) >= windowStart;
+        });
+
+        if (!recentlyEmailed) {
+          try {
+            const res = await fetch("/api/reviews/request", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                email: order.guest_email,
+                name: order.guest_name || "there",
+                orderId: order.order_id,
+              }),
+            });
+            if (res.ok) {
+              reviewEmailSentAt = new Date().toISOString();
+              // Persist so future deliveries (this session or later) respect the window.
+              await supabase
+                .from("orders")
+                .update({ review_email_sent_at: reviewEmailSentAt })
+                .eq("id", orderId);
+            }
+          } catch (emailErr) {
+            console.error("Failed to send review request email:", emailErr);
+          }
         }
       }
+
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === orderId
+            ? { ...o, status: newStatus, review_email_sent_at: reviewEmailSentAt ?? o.review_email_sent_at }
+            : o
+        )
+      );
+      setUpdating(null);
+      return;
     }
 
     setOrders((prev) => prev.map((o) => o.id === orderId ? { ...o, status: newStatus } : o));
