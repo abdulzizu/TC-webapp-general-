@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
-import { cloudinaryUrl } from "@/lib/cloudinary";
 
 type Product = {
   id: number;
@@ -861,7 +860,7 @@ export default function AdminProductsPage() {
                           className="bg-white border border-gray-100 rounded-lg p-2 text-left hover:border-[#1a6b2f] transition group"
                         >
                           <div className="relative aspect-square rounded overflow-hidden bg-gray-100 mb-1">
-                            {p.image && <Image src={cloudinaryUrl(p.image, 100)} alt="" fill className="object-cover" sizes="100px" />}
+                            {p.image && <Image src={p.image} alt="" fill className="object-cover" sizes="100px" />}
                             <div className="absolute inset-0 bg-[#1a6b2f]/0 group-hover:bg-[#1a6b2f]/10 transition flex items-center justify-center">
                               <span className="opacity-0 group-hover:opacity-100 text-white bg-[#1a6b2f] rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold transition">+</span>
                             </div>
@@ -997,7 +996,7 @@ export default function AdminProductsPage() {
                   <tr key={p.id} className="hover:bg-gray-50/50">
                     <td className="px-4 py-2">
                       <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-gray-100">
-                        {p.image && <Image src={cloudinaryUrl(p.image, 40)} alt="" fill className="object-cover" sizes="40px" />}
+                        {p.image && <Image src={p.image} alt="" fill className="object-cover" sizes="40px" />}
                       </div>
                     </td>
                     <td className="px-4 py-2 font-medium text-[#1a1a1a]">{p.name}</td>
