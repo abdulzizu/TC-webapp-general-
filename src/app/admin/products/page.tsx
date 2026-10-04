@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
+import { cloudinaryUrl } from "@/lib/cloudinary";
 
 type Product = {
   id: number;
@@ -70,6 +71,7 @@ export default function AdminProductsPage() {
   const [visibilityFilter, setVisibilityFilter] = useState<"all" | "visible" | "hidden">("all");
   const [essentialFilter, setEssentialFilter] = useState<"all" | "yes" | "no">("all");
   const [sortBy, setSortBy] = useState<"name" | "price-asc" | "price-desc" | "newest">("newest");
+  const [visibleCount, setVisibleCount] = useState(50);
   const [editing, setEditing] = useState<Product | null>(null);
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState<Omit<Product, "id"> & { pairs_with: Pairing[] }>(EMPTY_PRODUCT);
@@ -110,6 +112,9 @@ export default function AdminProductsPage() {
   }, [supabase]);
 
   useEffect(() => { loadProducts(); }, [loadProducts]);
+
+  // Reset visible count whenever filters change so we always start from the top.
+  useEffect(() => { setVisibleCount(50); }, [search, categoryFilter, tagFilter, visibilityFilter, essentialFilter, sizeFilter, sortBy]);
 
   const filtered = products
     .filter((p) => {
@@ -856,7 +861,7 @@ export default function AdminProductsPage() {
                           className="bg-white border border-gray-100 rounded-lg p-2 text-left hover:border-[#1a6b2f] transition group"
                         >
                           <div className="relative aspect-square rounded overflow-hidden bg-gray-100 mb-1">
-                            {p.image && <Image src={p.image} alt="" fill className="object-cover" sizes="100px" />}
+                            {p.image && <Image src={cloudinaryUrl(p.image, 100)} alt="" fill className="object-cover" sizes="100px" />}
                             <div className="absolute inset-0 bg-[#1a6b2f]/0 group-hover:bg-[#1a6b2f]/10 transition flex items-center justify-center">
                               <span className="opacity-0 group-hover:opacity-100 text-white bg-[#1a6b2f] rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold transition">+</span>
                             </div>
@@ -968,7 +973,7 @@ export default function AdminProductsPage() {
       </div>
 
       {/* Results count */}
-      <p className="text-xs text-gray-400">{filtered.length} of {products.length} products</p>
+      <p className="text-xs text-gray-400">{Math.min(visibleCount, filtered.length)} of {filtered.length} shown ({products.length} total)</p>
 
       {loading ? (
         <div className="text-sm text-gray-400">Loading…</div>
@@ -988,11 +993,11 @@ export default function AdminProductsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {filtered.map((p) => (
+                {filtered.slice(0, visibleCount).map((p) => (
                   <tr key={p.id} className="hover:bg-gray-50/50">
                     <td className="px-4 py-2">
                       <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-gray-100">
-                        {p.image && <Image src={p.image} alt="" fill className="object-cover" sizes="40px" />}
+                        {p.image && <Image src={cloudinaryUrl(p.image, 40)} alt="" fill className="object-cover" sizes="40px" />}
                       </div>
                     </td>
                     <td className="px-4 py-2 font-medium text-[#1a1a1a]">{p.name}</td>
@@ -1018,6 +1023,18 @@ export default function AdminProductsPage() {
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* Show more */}
+      {!loading && visibleCount < filtered.length && (
+        <div className="text-center pt-2">
+          <button
+            onClick={() => setVisibleCount((c) => c + 50)}
+            className="px-5 py-2 border border-gray-200 rounded-full text-sm font-semibold text-gray-600 hover:border-[#1a6b2f] hover:text-[#1a6b2f] transition"
+          >
+            Show more ({filtered.length - visibleCount} remaining)
+          </button>
         </div>
       )}
     </div>
