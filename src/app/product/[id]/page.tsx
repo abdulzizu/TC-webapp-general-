@@ -95,7 +95,7 @@ export default function ProductPage() {
     // Set static fallback first
     setRelated(
       PRODUCTS
-        .filter((p) => p.id !== product.id && p.available)
+        .filter((p) => p.id !== product.id && p.available && p.tag !== "SOLD")
         .sort((a, b) => {
           const aScore = a.subcategory === product.subcategory ? 2 : a.category === product.category ? 1 : 0;
           const bScore = b.subcategory === product.subcategory ? 2 : b.category === product.category ? 1 : 0;
@@ -109,7 +109,9 @@ export default function ProductPage() {
       .from("products")
       .select("*")
       .eq("available", true)
+      .neq("tag", "SOLD")
       .neq("id", product.id)
+      .order("created_at", { ascending: false })
       .limit(20)
       .then(({ data }) => {
         if (data && data.length > 0) {
