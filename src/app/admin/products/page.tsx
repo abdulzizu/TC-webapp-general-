@@ -777,7 +777,7 @@ export default function AdminProductsPage() {
 
                       // Get matching products and shuffle
                       const candidates = products
-                        .filter((p) => targetSubs.includes(p.subcategory) && p.name !== form.name && p.available && p.tag !== "SOLD");
+                        .filter((p) => targetSubs.includes(p.subcategory) && p.name !== form.name && p.tag !== "SOLD");
                       // Fisher-Yates shuffle
                       for (let i = candidates.length - 1; i > 0; i--) {
                         const j = Math.floor(Math.random() * (i + 1));
@@ -843,7 +843,6 @@ export default function AdminProductsPage() {
                           p.name !== form.name &&
                           p.id !== editing?.id &&
                           p.tag !== "SOLD" &&
-                          p.available &&
                           !excludeSubs.includes(p.subcategory)
                         )
                         .sort((a, b) => b.id - a.id) // newest first
