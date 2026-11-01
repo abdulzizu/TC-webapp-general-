@@ -239,11 +239,13 @@ export default function AdminOrdersPage() {
                     <div className="space-y-2">
                       {(order.order_items ?? []).map((item: any, i: number) => (
                         <div key={i} className="flex items-center gap-3 text-sm bg-gray-50 rounded-lg px-3 py-2">
-                          {item.product_image && (
-                            <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-gray-200 shrink-0">
+                          <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-gray-200 shrink-0 flex items-center justify-center">
+                            {item.product_image ? (
                               <Image src={item.product_image} alt={item.product_name} fill className="object-cover" sizes="40px" />
-                            </div>
-                          )}
+                            ) : (
+                              <span className="text-gray-400 text-base">👕</span>
+                            )}
+                          </div>
                           <div className="flex-1 min-w-0">
                             <span className="font-medium truncate block">{item.product_name}</span>
                             <span className="text-xs text-gray-400">Size: {item.size} · Qty: {item.quantity}</span>

@@ -106,11 +106,13 @@ export default function TrackingPage() {
                 <div className="space-y-3">
                   {order.order_items.map((item: any, i: number) => (
                     <div key={i} className="flex items-center gap-3">
-                      {item.product_image && (
-                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-[#ede8d8] shrink-0">
+                      <div className="w-12 h-12 rounded-lg overflow-hidden bg-[#ede8d8] shrink-0 flex items-center justify-center">
+                        {item.product_image ? (
                           <img src={item.product_image} alt={item.product_name} className="w-full h-full object-cover" />
-                        </div>
-                      )}
+                        ) : (
+                          <span className="text-gray-400 text-xl">👕</span>
+                        )}
+                      </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-[#1a1a1a] truncate">{item.product_name}</p>
                         <p className="text-xs text-gray-400">Size: {item.size} · Qty: {item.quantity}</p>

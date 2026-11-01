@@ -288,7 +288,11 @@ export default function ProfilePage() {
                         {(order.items ?? []).map((item) => (
                           <div key={item.productId} className="flex items-center gap-3 bg-gray-50 rounded-xl px-3 py-2">
                             <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-[#ede8d8] shrink-0">
-                              <Image src={item.productImage} alt={item.productName} fill className="object-cover" sizes="40px" />
+                              {item.productImage ? (
+                                <Image src={item.productImage} alt={item.productName} fill className="object-cover" sizes="40px" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-gray-400 text-lg">👕</div>
+                              )}
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-xs font-semibold text-[#1a1a1a] line-clamp-1">{item.productName}</p>
