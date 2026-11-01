@@ -702,7 +702,12 @@ export default function AdminProductsPage() {
                 {form.pairs_with.map((pairing, i) => (
                   <div key={i} className="flex items-start gap-3 p-3 bg-[#1a6b2f]/5 border border-[#1a6b2f]/20 rounded-xl">
                     <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-100 shrink-0">
-                      {(() => { const p = products.find(x => x.name === pairing.item); return p?.image ? <Image src={p.image} alt="" fill className="object-cover" sizes="48px" /> : null; })()}
+                      {(() => {
+                        // Same names can repeat — prefer the newest unsold listing
+                        const matches = products.filter(x => x.name === pairing.item).sort((a, b) => b.id - a.id);
+                        const p = matches.find(x => x.tag !== "SOLD") ?? matches[0];
+                        return p?.image ? <Image src={p.image} alt="" fill className="object-cover" sizes="48px" /> : null;
+                      })()}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-[#1a1a1a] truncate">{pairing.item}</p>
@@ -772,7 +777,7 @@ export default function AdminProductsPage() {
 
                       // Get matching products and shuffle
                       const candidates = products
-                        .filter((p) => targetSubs.includes(p.subcategory) && p.name !== form.name && p.available);
+                        .filter((p) => targetSubs.includes(p.subcategory) && p.name !== form.name && p.available && p.tag !== "SOLD");
                       // Fisher-Yates shuffle
                       for (let i = candidates.length - 1; i > 0; i--) {
                         const j = Math.floor(Math.random() * (i + 1));
@@ -837,14 +842,11 @@ export default function AdminProductsPage() {
                           !form.pairs_with.some((pw) => pw.item === p.name) &&
                           p.name !== form.name &&
                           p.id !== editing?.id &&
+                          p.tag !== "SOLD" &&
+                          p.available &&
                           !excludeSubs.includes(p.subcategory)
                         )
-                        .sort((a, b) => {
-                          // Available items first, sold items last
-                          const aScore = a.available && a.tag !== "SOLD" ? 0 : a.tag === "SOLD" ? 2 : 1;
-                          const bScore = b.available && b.tag !== "SOLD" ? 0 : b.tag === "SOLD" ? 2 : 1;
-                          return aScore - bScore;
-                        })
+                        .sort((a, b) => b.id - a.id) // newest first
                         .slice(0, 20)
                         .map((p) => (
                           <button

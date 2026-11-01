@@ -141,7 +141,9 @@ export default function ProductPage() {
       .from("products")
       .select("*")
       .eq("available", true)
+      .neq("tag", "SOLD")
       .in("name", names)
+      .order("id", { ascending: false }) // if names collide, newest listing wins
       .then(({ data }) => {
         if (data) {
           const resolved = product.pairsWith
