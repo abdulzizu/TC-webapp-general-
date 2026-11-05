@@ -35,6 +35,9 @@ const WINDOWS = [
   { label: "1 week", hours: 168 },
   { label: "2 weeks", hours: 336 },
   { label: "1 month", hours: 720 },
+  { label: "3 months", hours: 2160 },
+  { label: "6 months", hours: 4320 },
+  { label: "All time", hours: 876000 }, // ~100 years = effectively unbounded
 ];
 
 export default function AnalyticsPage() {
