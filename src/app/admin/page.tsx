@@ -23,21 +23,39 @@ export default function AdminOverview() {
   useEffect(() => {
     const supabase = createClient();
 
+    // Supabase returns at most 1000 rows per request, so page through all orders.
+    // Without this, Total Orders / Revenue / stockpile alerts silently ignore the oldest orders.
+    async function fetchAllOrders() {
+      const rows: any[] = [];
+      for (let from = 0; ; from += 1000) {
+        const { data } = await supabase
+          .from("orders")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .order("id", { ascending: false })
+          .range(from, from + 999);
+        if (!data || data.length === 0) break;
+        rows.push(...data);
+        if (data.length < 1000) break;
+      }
+      return rows;
+    }
+
     async function load() {
       const [
         { data: products },
-        { data: orders },
-        { data: profiles },
-        { data: leads },
+        orders,
+        { count: customerCount },
+        { count: leadCount },
       ] = await Promise.all([
         supabase.from("products").select("id, available, tag, price"),
-        supabase.from("orders").select("*").order("created_at", { ascending: false }),
-        supabase.from("profiles").select("id"),
-        supabase.from("temp_leads").select("id"),
+        fetchAllOrders(),
+        supabase.from("profiles").select("id", { count: "exact", head: true }),
+        supabase.from("temp_leads").select("id", { count: "exact", head: true }),
       ]);
 
       const prods = products ?? [];
-      const ords = orders ?? [];
+      const ords = orders;
 
       setMetrics({
         totalProducts: prods.length,
@@ -45,8 +63,8 @@ export default function AdminOverview() {
         soldOutProducts: prods.filter((p: any) => p.tag === "SOLD").length,
         totalOrders: ords.length,
         processingOrders: ords.filter((o: any) => o.status === "processing").length,
-        totalCustomers: (profiles ?? []).length,
-        totalLeads: (leads ?? []).length,
+        totalCustomers: customerCount ?? 0,
+        totalLeads: leadCount ?? 0,
         revenue: ords
           .filter((o: any) => o.status !== "unsuccessful")
           .reduce((sum: number, o: any) => sum + (o.total ?? 0), 0),
@@ -54,14 +72,16 @@ export default function AdminOverview() {
 
       setRecentOrders(ords.slice(0, 5));
 
-      // Find stockpiled orders approaching deadline (within 5 days)
+      // Stockpiled orders that are overdue OR due within 5 days (most overdue first).
+      // Overdue ones used to drop out of this list the moment their deadline passed.
       const fiveDaysFromNow = new Date();
       fiveDaysFromNow.setDate(fiveDaysFromNow.getDate() + 5);
-      const approaching = ords.filter((o: any) =>
-        o.status === "stockpiled" && o.stockpiled_until &&
-        new Date(o.stockpiled_until) <= fiveDaysFromNow &&
-        new Date(o.stockpiled_until) > new Date()
-      );
+      const approaching = ords
+        .filter((o: any) =>
+          o.status === "stockpiled" && o.stockpiled_until &&
+          new Date(o.stockpiled_until) <= fiveDaysFromNow
+        )
+        .sort((a: any, b: any) => new Date(a.stockpiled_until).getTime() - new Date(b.stockpiled_until).getTime());
       setApproachingStockpiles(approaching);
 
       setLoading(false);
@@ -116,18 +136,29 @@ export default function AdminOverview() {
       {/* Stockpile deadline alerts */}
       {approachingStockpiles.length > 0 && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-          <p className="font-bold text-amber-800 text-sm mb-2">⚠️ Stockpile deadlines approaching ({approachingStockpiles.length})</p>
+          <p className="font-bold text-amber-800 text-sm mb-2">
+            ⚠️ Stockpile deadlines ({approachingStockpiles.length})
+            {(() => {
+              const overdueCount = approachingStockpiles.filter((o: any) => new Date(o.stockpiled_until).getTime() < Date.now()).length;
+              return overdueCount > 0 ? <span className="text-red-600"> · {overdueCount} overdue</span> : null;
+            })()}
+          </p>
           <div className="space-y-2">
             {approachingStockpiles.map((o: any) => {
-              const daysLeft = Math.ceil((new Date(o.stockpiled_until).getTime() - Date.now()) / 86400000);
+              const ms = new Date(o.stockpiled_until).getTime() - Date.now();
+              const overdue = ms < 0;
+              const daysOver = Math.floor(-ms / 86400000);
+              const daysLeft = Math.ceil(ms / 86400000);
               return (
                 <div key={o.id} className="flex items-center justify-between text-sm">
                   <div>
                     <span className="font-mono font-bold text-xs">{o.order_id}</span>
                     <span className="text-gray-500 ml-2">{o.guest_name || "Signed-in user"}</span>
                   </div>
-                  <span className={`text-xs font-semibold ${daysLeft <= 2 ? "text-red-600" : "text-amber-700"}`}>
-                    {daysLeft <= 0 ? "Expires today!" : `${daysLeft} day${daysLeft !== 1 ? "s" : ""} left`}
+                  <span className={`text-xs font-semibold ${overdue || daysLeft <= 2 ? "text-red-600" : "text-amber-700"}`}>
+                    {overdue
+                      ? (daysOver === 0 ? "Deadline passed today" : `Overdue by ${daysOver} day${daysOver !== 1 ? "s" : ""}`)
+                      : daysLeft <= 0 ? "Expires today!" : `${daysLeft} day${daysLeft !== 1 ? "s" : ""} left`}
                   </span>
                 </div>
               );
