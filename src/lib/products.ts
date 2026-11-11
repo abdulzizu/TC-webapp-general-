@@ -684,7 +684,7 @@ export const CATEGORIES = {
 };
 
 export const POPULAR_SEARCHES = [
-  "Sweatpants", "Rugby polo shirt", "Shorts", "Jeans", "T-shirts", "Jersey", "Trackpants", "Shirt", "Polo shirt",
+  "Sweatpants", "Sneakers", "Shorts", "Jeans", "T-shirts", "Jersey", "Trackpants", "Shirt", "Polo shirt",
 ];
 
 export function getProduct(id: number): Product | undefined {

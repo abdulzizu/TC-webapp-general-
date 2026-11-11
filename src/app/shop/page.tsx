@@ -11,6 +11,8 @@ import Navbar from "@/components/Navbar";
 import { POPULAR_SEARCHES } from "@/lib/products";
 import { useProducts } from "@/lib/use-products";
 
+// Sentinel meaning "no maximum price" (slider dragged all the way right, or untouched).
+const PRICE_NO_LIMIT = 10_000_000;
 const ALL_SIZES = ["XS","S","M","L","XL","2XL","3XL","28","30","32","34","36","38","40","41","42","43","44","One Size"];
 const ALL_COLOURS = ["Black","White","Navy","Blue","Red","Grey","Burgundy","Pink","Green","Brown","Yellow"];
 const SORT_OPTIONS = [
@@ -30,7 +32,13 @@ function ShopContent() {
   const [selectedSub, setSelectedSub] = useState(searchParams.get("sub") || "");
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedColours, setSelectedColours] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 35000]);
+  // No upper limit by default — a hard ₦35,000 cap used to hide pricier items from the shop entirely.
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, PRICE_NO_LIMIT]);
+  // Slider max follows the most expensive item (never below ₦35,000), rounded up to the next ₦5,000.
+  const maxPrice = useMemo(() => {
+    const top = products.reduce((m, p) => Math.max(m, p.price), 0);
+    return Math.max(35000, Math.ceil(top / 5000) * 5000);
+  }, [products]);
   const [availableOnly, setAvailableOnly] = useState(false);
   const [sort, setSort] = useState("new");
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -111,12 +119,12 @@ function ShopContent() {
 
   function clearFilters() {
     setQuery(""); setSelectedCategory(""); setSelectedSub("");
-    setSelectedSizes([]); setSelectedColours([]); setPriceRange([0, 35000]);
+    setSelectedSizes([]); setSelectedColours([]); setPriceRange([0, PRICE_NO_LIMIT]);
     setAvailableOnly(false); setSort("new"); setVisibleCount(16);
     router.push("/shop");
   }
 
-  const hasFilters = query || selectedCategory || selectedSub || selectedSizes.length || selectedColours.length || availableOnly || priceRange[0] > 0 || priceRange[1] < 35000;
+  const hasFilters = query || selectedCategory || selectedSub || selectedSizes.length || selectedColours.length || availableOnly || priceRange[0] > 0 || priceRange[1] < maxPrice;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
@@ -170,7 +178,7 @@ function ShopContent() {
           <FilterPanel
             selectedSizes={selectedSizes} toggleSize={toggleSize}
             selectedColours={selectedColours} toggleColour={toggleColour}
-            priceRange={priceRange} setPriceRange={setPriceRange}
+            priceRange={priceRange} setPriceRange={setPriceRange} maxPrice={maxPrice}
             availableOnly={availableOnly} setAvailableOnly={setAvailableOnly}
             hasFilters={!!hasFilters} clearFilters={clearFilters}
           />
@@ -290,7 +298,7 @@ function ShopContent() {
             <FilterPanel
               selectedSizes={selectedSizes} toggleSize={toggleSize}
               selectedColours={selectedColours} toggleColour={toggleColour}
-              priceRange={priceRange} setPriceRange={setPriceRange}
+              priceRange={priceRange} setPriceRange={setPriceRange} maxPrice={maxPrice}
               availableOnly={availableOnly} setAvailableOnly={setAvailableOnly}
               hasFilters={!!hasFilters} clearFilters={() => { clearFilters(); setFiltersOpen(false); }}
             />
@@ -301,10 +309,10 @@ function ShopContent() {
   );
 }
 
-function FilterPanel({ selectedSizes, toggleSize, selectedColours, toggleColour, priceRange, setPriceRange, availableOnly, setAvailableOnly, hasFilters, clearFilters }: {
+function FilterPanel({ selectedSizes, toggleSize, selectedColours, toggleColour, priceRange, setPriceRange, maxPrice, availableOnly, setAvailableOnly, hasFilters, clearFilters }: {
   selectedSizes: string[]; toggleSize: (s: string) => void;
   selectedColours: string[]; toggleColour: (c: string) => void;
-  priceRange: [number, number]; setPriceRange: (r: [number, number]) => void;
+  priceRange: [number, number]; setPriceRange: (r: [number, number]) => void; maxPrice: number;
   availableOnly: boolean; setAvailableOnly: (v: boolean) => void;
   hasFilters: boolean; clearFilters: () => void;
 }) {
@@ -358,10 +366,16 @@ function FilterPanel({ selectedSizes, toggleSize, selectedColours, toggleColour,
         <div className="flex items-center gap-2 mb-2">
           <span className="text-sm text-gray-600">₦{priceRange[0].toLocaleString()}</span>
           <span className="text-gray-400">–</span>
-          <span className="text-sm text-gray-600">₦{priceRange[1].toLocaleString()}</span>
+          <span className="text-sm text-gray-600">
+            ₦{Math.min(priceRange[1], maxPrice).toLocaleString()}{priceRange[1] >= maxPrice ? "+" : ""}
+          </span>
         </div>
-        <input type="range" min={0} max={35000} step={500} value={priceRange[1]}
-          onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
+        <input type="range" min={0} max={maxPrice} step={500} value={Math.min(priceRange[1], maxPrice)}
+          onChange={(e) => {
+            const v = Number(e.target.value);
+            // Dragging fully right means "no maximum", so pricier items are never cut off.
+            setPriceRange([priceRange[0], v >= maxPrice ? PRICE_NO_LIMIT : v]);
+          }}
           className="w-full accent-[#1a6b2f]" aria-label="Maximum price" />
       </div>
     </div>
