@@ -70,10 +70,25 @@ export default function AnalyticsPage() {
       .select("id, name, category, subcategory, price, drop_id, tag, available, sold_at, sold_channel")
       .not("drop_id", "is", null);
 
+    // Supabase returns at most 1000 rows per request, so page through the whole
+    // table. Without this, recent sales silently drop out of the numbers.
+    async function fetchAll(table: string, columns: string): Promise<any[]> {
+      const rows: any[] = [];
+      for (let from = 0; ; from += 1000) {
+        const { data } = await supabase
+          .from(table)
+          .select(columns)
+          .order("id", { ascending: true })
+          .range(from, from + 999);
+        if (!data || data.length === 0) break;
+        rows.push(...data);
+        if (data.length < 1000) break;
+      }
+      return rows;
+    }
+
     // Order items joined with their order (for sale time + paid status)
-    const { data: itemRows } = await supabase
-      .from("order_items")
-      .select("product_id, orders!inner(created_at, status)");
+    const itemRows = await fetchAll("order_items", "id, product_id, orders!inner(created_at, status)");
 
     // Build product -> earliest paid sale time
     const map: SaleMap = new Map();
@@ -93,9 +108,7 @@ export default function AnalyticsPage() {
     // ── Return-customer estimate ──────────────────────────────
     // Match orders to a buyer identity: user_id if signed in, else guest_phone,
     // else guest_email. Count identities with >1 paid order as repeat.
-    const { data: orderRows } = await supabase
-      .from("orders")
-      .select("user_id, guest_phone, guest_email, status");
+    const orderRows = await fetchAll("orders", "id, user_id, guest_phone, guest_email, status");
     const buyerCounts = new Map<string, number>();
     for (const o of (orderRows ?? []) as any[]) {
       if (!PAID_STATUSES.includes(o.status)) continue;
