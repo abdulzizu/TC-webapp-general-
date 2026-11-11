@@ -43,11 +43,21 @@ export default function AdminOrdersPage() {
   const perPage = 15;
 
   const loadOrders = useCallback(async () => {
-    const { data } = await supabase
-      .from("orders")
-      .select("*, order_items(*)")
-      .order("created_at", { ascending: false });
-    if (data) setOrders(data as any);
+    // Supabase returns at most 1000 rows per request, so page through all orders.
+    // Otherwise the oldest orders silently disappear from the list and from search.
+    const all: any[] = [];
+    for (let from = 0; ; from += 1000) {
+      const { data } = await supabase
+        .from("orders")
+        .select("*, order_items(*)")
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false })
+        .range(from, from + 999);
+      if (!data || data.length === 0) break;
+      all.push(...data);
+      if (data.length < 1000) break;
+    }
+    setOrders(all as any);
     setLoading(false);
   }, [supabase]);
 

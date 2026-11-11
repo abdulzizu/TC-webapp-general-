@@ -34,14 +34,23 @@ export default function AdminCustomersPage() {
 
     if (!profiles) { setLoading(false); return; }
 
-    // Load orders grouped by user
-    const { data: orders } = await supabase
-      .from("orders")
-      .select("order_id, total, status, created_at, user_id")
-      .order("created_at", { ascending: false });
+    // Load orders grouped by user. Supabase caps a request at 1000 rows, so page
+    // through everything or customers with older orders show too few orders/spend.
+    const orders: any[] = [];
+    for (let from = 0; ; from += 1000) {
+      const { data } = await supabase
+        .from("orders")
+        .select("order_id, total, status, created_at, user_id")
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false })
+        .range(from, from + 999);
+      if (!data || data.length === 0) break;
+      orders.push(...data);
+      if (data.length < 1000) break;
+    }
 
     const ordersByUser: Record<string, any[]> = {};
-    (orders ?? []).forEach((o: any) => {
+    orders.forEach((o: any) => {
       if (o.user_id) {
         if (!ordersByUser[o.user_id]) ordersByUser[o.user_id] = [];
         ordersByUser[o.user_id].push(o);
